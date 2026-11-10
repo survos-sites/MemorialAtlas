@@ -1,4 +1,4 @@
-<article class="card">
+<article class="card" id="media-{{ media.id }}">
     <a href="{{ path('media_file', {id:media.id}) }}"><img src="{{ path('media_file', {id:media.id}) }}" alt="{{ media.originalName }}"></a>
     <div class="body">
         <span class="badge">{{ media.position + 1 }} · Image · {{ media.marking }}</span>
@@ -28,7 +28,7 @@
             {% set review = media.aiResults.captureReview %}
             {% set answer = review.answers.relationship %}
             <details><summary>Neighboring capture: {{ answer.choice|replace({'_':' '}) }}</summary>
-                <p>Jev compared OCR and descriptions with <a href="{{ path('item_show', {id:review.previousItemId}) }}">the previous capture</a>. This is a suggestion, not a verified grouping.</p>
+                <p>Jev compared OCR and descriptions with <a href="{{ path('item_show', {id:review.previousItemId}) }}#media-{{ review.previousMediaId }}">the previous photograph</a>. This is a suggestion, not a verified grouping.</p>
                 <p>{{ (answer.probabilities[answer.choice] * 100)|round }}% model probability · {{ review.model }} · no automatic merge.</p>
                 <details><summary>Decision evidence</summary><pre>{{ review|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></details>
             </details>
