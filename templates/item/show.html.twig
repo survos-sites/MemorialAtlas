@@ -6,6 +6,17 @@
 {% if item.processingError %}<p role="alert">Processing failed: {{ item.processingError }}</p>{% endif %}
 {% if item.aiResults.catalog is defined %}<details><summary>Extracted inscription and uncertain readings</summary><pre>{{ item.aiResults.catalog.record|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></details>{% endif %}
 {% if item.aiResults.captureGrouping is defined %}<details><summary>Capture grouping · {{ item.media|length }} photographs · proposed</summary><p>{{ item.aiResults.captureGrouping.basis }}</p><p>Grouped by visual review, using capture order, inscriptions and visible details. GPS did not determine identity.</p></details>{% endif %}
+{% if item.aiResults.markerFacts is defined %}
+<section class="card"><div class="body"><h2>Proposed marker facts</h2>
+{% set facts = item.aiResults.markerFacts.record %}
+<p>{{ facts.orientation|capitalize }} · {{ facts.form|replace({'_':' '}) }} · {{ facts.people|length }} named people</p>
+{% for person in facts.people %}<p><strong>{{ person.name }}</strong>: {{ person.birth ?? '?' }} – {{ person.death ?? 'no death date read' }}{% if not person.commemorated %} (mentioned person){% endif %}
+{% for id in person.mediaIds %} <a href="#media-{{ id }}">Photo {{ id }}</a>{% endfor %} {{ person.uncertainty }}</p>{% endfor %}
+{% if facts.symbols %}<p>Symbols: {{ facts.symbols|join(', ') }}</p>{% endif %}
+{% if facts.epitaph %}<blockquote>{{ facts.epitaph }}</blockquote>{% endif %}
+{% for uncertainty in facts.uncertainties %}<p>{{ uncertainty }}</p>{% endfor %}
+<details><summary>Extraction evidence and source references</summary><pre>{{ facts|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></details>
+</div></section>{% endif %}
 <div class="gallery">{% for media in item.media %}
     {% include 'media/_' ~ media.kind ~ '_show.html.twig' with {media: media} only %}
 {% endfor %}</div>{% endblock %}

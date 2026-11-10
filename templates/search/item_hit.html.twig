@@ -3,6 +3,8 @@
     <div class="body">
         <span class="badge">{{ hit.imageCount }} {{ hit.imageCount == 1 ? 'photo' : 'photos' }}</span>
         <span class="badge">{{ hit.reviewStatus == 'review' ? 'Ready to review' : hit.reviewStatus }}</span>
+        {% if hit.markerOrientation != 'Not assessed' %}<p><span class="badge">{{ hit.markerOrientation }}</span> {{ hit.namedPeopleCount }} named · {{ hit.recordedDeathCount }} with unambiguous proposed death dates</p>{% endif %}
+        {% if hit.familyName %}<p class="muted">{{ hit.familyName|join(' · ') }}</p>{% endif %}
         <h3><a href="{{ path('item_show', {id:hit.id}) }}">{{ hit.title }}</a></h3>
         {% if hit.cemetery != 'Unassigned' %}<p>{{ hit.cemetery }}</p>{% endif %}
         {% if hit.description %}<p>{{ hit.description|slice(0,240) }}{% if hit.description|length > 240 %}…{% endif %}</p>{% endif %}

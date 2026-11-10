@@ -25,6 +25,16 @@ final readonly class ItemDocument
         #[Field(facet: true, widget: Widget::Select)] public int $imageCount,
         #[Field] public ?int $imageId,
         #[Field] public ?string $thumbnailUrl = null,
+        #[Field(facet: true, widget: Widget::Select)] public string $markerOrientation = 'Not assessed',
+        #[Field(facet: true, widget: Widget::Select)] public string $markerForm = 'Not assessed',
+        #[Field(facet: true, widget: Widget::Select)] public ?int $namedPeopleCount = null,
+        #[Field(facet: true, widget: Widget::Select)] public ?int $recordedDeathCount = null,
+        #[Field(facet: true, widget: Widget::Select)] public ?int $birthOnlyCount = null,
+        #[Field(facet: true, widget: Widget::Select)] public ?int $otherNamedPeopleCount = null,
+        #[Field(searchable: true, facet: true, widget: Widget::Select)] public array $symbols = [],
+        #[Field(searchable: true, facet: true, widget: Widget::Select)] public array $epitaphThemes = [],
+        #[Field(searchable: true)] public ?string $epitaph = null,
+        #[Field(searchable: true, facet: true, widget: Widget::Select)] public array $familyName = [],
     ) {}
 
     public static function fromItem(Item $item): self
@@ -35,6 +45,10 @@ final readonly class ItemDocument
             if (is_string($person['name'] ?? null) && trim($person['name']) !== '') $names[] = $person['name'];
             if (is_string($person['inscription'] ?? null)) $inscriptions[] = $person['inscription'];
         }
+        $facts = $item->aiResults['markerFacts']['record'] ?? null;
+        $people = $facts['people'] ?? [];
+        foreach ($people as $person) if (trim($person['name']) !== '') $names[] = $person['name'];
+        $hasDate = static fn ($date): bool => is_string($date) && trim($date) !== '';
         $count = 0; $imageId = null;
         foreach ($item->media as $media) {
             $sources[] = $media->source ?? 'Unassigned';
@@ -49,6 +63,13 @@ final readonly class ItemDocument
         return new self($item->id, $item->title, $item->description, array_values(array_unique($names)),
             implode("\n", array_unique($inscriptions)), implode("\n", $observations), implode("\n", $transcripts),
             $item->cemetery === null ? 'Unassigned' : (string) $item->cemetery,
-            array_values(array_unique($sources ?: ['Unassigned'])), $item->recordType, $item->marking, $count, $imageId);
+            array_values(array_unique($sources ?: ['Unassigned'])), $item->recordType, $item->marking, $count, $imageId, null,
+            $facts['orientation'] ?? 'Not assessed', $facts['form'] ?? 'Not assessed',
+            $facts === null ? null : count($people),
+            $facts === null ? null : count(array_filter($people, static fn ($p) => $p['commemorated'] && trim($p['uncertainty'] ?? '') === '' && $hasDate($p['death']))),
+            $facts === null ? null : count(array_filter($people, static fn ($p) => $p['commemorated'] && trim($p['uncertainty'] ?? '') === '' && $hasDate($p['birth']) && !$hasDate($p['death']))),
+            $facts === null ? null : count(array_filter($people, static fn ($p) => !$p['commemorated'])),
+            $facts['symbols'] ?? [], $facts['themes'] ?? [], $facts['epitaph'] ?? null,
+            array_values(array_unique(array_filter(array_map(static fn ($p) => isset($p['familyName']) && trim($p['familyName']) !== '' ? mb_convert_case(trim($p['familyName']), MB_CASE_TITLE, 'UTF-8') : null, $people)))));
     }
 }

@@ -246,3 +246,24 @@ symfony php tests/search-context.php
 Item edits use the bundle's normal indexing listener. Media edits, additions and
 removals queue their parent Item; cemetery edits queue affected Items as well as
 photographs. Run the spool consumer regularly to keep both indexes current.
+
+### Pilot marker facts
+
+Run `symfony console app:markers:extract ITEM_ID [ITEM_ID ...]` after the normal
+photo workflow. This optional synchronous step sends all prepared photographs of
+each selected item and supporting OCR to the configured vision platform. Symfony
+AI maps the response to `MarkerFacts` and `MarkerPerson` DTOs. Results retain the
+model, prompt, input hashes, raw response and supporting media IDs; identical
+inputs reuse the previous extraction.
+
+Item search exposes proposed marker orientation/form, family name, named-person
+count, recorded-death-date count, birth-only count, other mentioned-person count,
+symbols and epitaph themes. Family names retain the extracted spelling, with
+capitalization normalized for facets. Unassessed records have unknown counts,
+not zero. A missing death date never establishes that someone is living; an
+ambiguous lone date should remain unclassified. Date-count facets conservatively exclude people for whom the extraction states any uncertainty; the raw proposed dates remain visible for review. These are proposed inscription facts,
+not verified burial records. Details and source references appear on the item.
+
+After first adding these fields, run `elastic:index:rebuild items --keep-old`.
+Later extractions are indexed with `elastic:spool:flush`. This pilot is explicit
+and is not automatically run for every import.
