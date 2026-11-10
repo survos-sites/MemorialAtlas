@@ -20,8 +20,13 @@ $checkQueued = static function () use ($spool,$image): void {
     $spool->drain(App\Entity\Image::class, static fn (array $ids) => count($ids));
 };
 try {
+    $spool->drain(App\Entity\Item::class, static fn (array $ids) => count($ids));
+    $image->ocrText='Corrected inscription'; $em->flush();
+    if (array_map('strval', $spool->pendingIds(App\Entity\Item::class)) !== [(string)$item->id]) throw new RuntimeException('Media edits must enqueue their aggregate item.');
+    $spool->drain(App\Entity\Item::class, static fn (array $ids) => count($ids));
     $item->title='Corrected name'; $em->flush(); $checkQueued();
     $cemetery->name='Corrected cemetery'; $em->flush(); $checkQueued();
+    if (array_map('strval', $spool->pendingIds(App\Entity\Item::class)) !== [(string)$item->id]) throw new RuntimeException('Cemetery edits must enqueue aggregate items.');
     $em->remove($item); $em->flush();
     if (count($spool->pendingIds(App\Entity\Image::class)) !== 1) throw new RuntimeException('Parent deletion must enqueue image removal.');
 } finally {

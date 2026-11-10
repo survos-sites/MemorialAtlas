@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+{% block title %}Search items · StoneStory{% endblock %}
+{% block javascripts %}{{ importmap(['app','search']) }}{% endblock %}
+{% block body %}
+<p>Items · <a href="{{ path('image_search') }}">Photographs</a></p>
+<span class="eyebrow">Explore the collection</span>
+<h1>Search the whole record.</h1>
+<p>One result per item, combining its suggested record, inscriptions and observations from every photograph, and any audio transcripts. Readings and groupings remain open to review.</p>
+<twig:Survos:Search:Layout name="items" :urlRewriting="true" />
+{% endblock %}

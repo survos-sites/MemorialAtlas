@@ -226,3 +226,23 @@ not asserted as an exact grave position. The formal cemetery name is unconfirmed
 Run `symfony php tests/capture-manifest.php` and
 `symfony php tests/capture-review.php` for manifest validation and cached decision
 checks without paid AI requests.
+
+### Search aggregate items
+
+`/search` searches one document per Item: its suggested title and description,
+extracted names and inscriptions, OCR and observations from every attached image,
+and available audio transcripts. Results show the photo count and open the full
+item. Cemetery, source, record type, review status and photo count are facets.
+`/search/images` retains photograph-level search and Jev classification facets.
+Both are full-text search; semantic retrieval remains a separate future step.
+
+```bash
+symfony console elastic:index:rebuild items --keep-old
+symfony console elastic:spool:flush
+symfony php tests/item-search.php
+symfony php tests/search-context.php
+```
+
+Item edits use the bundle's normal indexing listener. Media edits, additions and
+removals queue their parent Item; cemetery edits queue affected Items as well as
+photographs. Run the spool consumer regularly to keep both indexes current.

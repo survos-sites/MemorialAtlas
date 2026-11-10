@@ -10,8 +10,14 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class SearchController extends AbstractController
 {
-    #[Route('/search', name: 'image_search', methods: ['GET'])]
-    public function __invoke(): Response
+    #[Route('/search', name: 'item_search', methods: ['GET'])]
+    public function items(): Response
+    {
+        return $this->render('search/items.html.twig');
+    }
+
+    #[Route('/search/images', name: 'image_search', methods: ['GET'])]
+    public function images(): Response
     {
         return $this->render('search/images.html.twig');
     }
