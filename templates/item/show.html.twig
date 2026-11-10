@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
-{% block title %}{{ item.title }} · StoneReader{% endblock %}
-{% block body %}<p><a href="{{ path('home') }}">← Home</a></p><span class="badge">{{ item.marking }}</span><h1>{{ item.title }}</h1>{% if item.description %}<p>{{ item.description }}</p>{% endif %}<p class="muted">{{ item.media|length }} media files in capture order. {% if item.marking == 'review' %}Proposed inscription record. Check the photograph before accepting names and dates.{% elseif item.marking == 'draft' %}Not processed yet.{% endif %}</p>
+{% block title %}{{ item.title }} · StoneStory{% endblock %}
+{% block body %}<p><a href="{{ path('home') }}">← Home</a></p><span class="badge">{{ item.marking }}</span><h1>{{ item.title }}</h1>{% if item.description %}<div class="prose">{{ item.description|markdown_to_html }}</div>{% endif %}<p class="muted">{{ item.media|length }} media files in capture order. {% if item.marking == 'review' %}Proposed inscription record. Check the photograph before accepting names and dates.{% elseif item.marking == 'draft' %}Not processed yet.{% endif %}</p>
 {% if item.cemetery %}<p><strong>Cemetery (supplied):</strong> {{ item.cemetery }}</p>{% endif %}
 {% if item.locationContext %}<p><strong>Capture context (supplied):</strong> {{ item.locationContext }}</p>{% endif %}
 {% if item.processingError %}<p role="alert">Processing failed: {{ item.processingError }}</p>{% endif %}

@@ -14,7 +14,7 @@
                 <tr><td>{{ question }}</td><td>{{ answer.choice }}</td><td>{{ (answer.probabilities[answer.choice] * 100)|round }}%</td><td>{{ (answer.confidence * 100)|round }}%</td></tr>
             {% endfor %}
             </tbody></table>
-            {% if not assessment.visualDetailsAssessed %}<p class="muted">Flowers, separate markers, materials and condition were not assessed. OCR has not been verified against the image.</p>{% endif %}
+            {% if not assessment.visualDetailsAssessed %}<p class="muted">This text-only decision step did not assess flowers, separate markers, materials or condition, or verify OCR against the photograph.</p>{% endif %}
             {% if assessment.reviewFields %}<p>Check these uncertain answers: {{ assessment.reviewFields|join(', ') }}.</p>{% endif %}
             {% for key in ['jevText', 'jevImage'] %}
                 {% if media.aiResults[key] is defined %}
@@ -23,7 +23,7 @@
                 {% endif %}
             {% endfor %}
         {% endif %}
-        {% if media.description %}<h3>Visual observations</h3><p>{{ media.description }}</p>{% endif %}
+        {% if media.description %}<h3>Visual observations</h3><div class="prose">{{ media.description|markdown_to_html }}</div>{% endif %}
         {% if media.ocrText %}<details><summary>OCR</summary><pre>{{ media.ocrText }}</pre></details>{% endif %}
         {% if media.imageMetadata.imagor is defined %}<details><summary>Image metadata</summary><pre>{{ media.imageMetadata|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></details>{% endif %}
     </div>
