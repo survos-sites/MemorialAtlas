@@ -41,7 +41,13 @@ final class ReviewCaptureCommand extends Command
             if ($previous->marking !== 'processed' || $current->marking !== 'processed') continue;
             $state = ['previous' => self::evidence($previous), 'current' => self::evidence($current)];
             $hash = hash('sha256', json_encode([$state, CaptureQuestions::VERSION, $this->jev->model], JSON_THROW_ON_ERROR));
-            if (($current->aiResults['captureReview']['inputHash'] ?? null) === $hash) continue;
+            if (($current->aiResults['captureReview']['inputHash'] ?? null) === $hash) {
+                if (!$input->getOption('dry-run') && ($current->aiResults['captureReview']['previousItemId'] ?? null) !== $previous->item->id) {
+                    $current->aiResults['captureReview']['previousItemId'] = $previous->item->id;
+                    $this->em->flush();
+                }
+                continue;
+            }
             if ($input->getOption('dry-run')) { $output->writeln($previous->originalName.' → '.$current->originalName); ++$count; continue; }
             try {
                 $run = $this->jev->evaluate($state, CaptureQuestions::questions());

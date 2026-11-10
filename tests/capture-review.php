@@ -35,6 +35,10 @@ if ($images[0]->item === $images[1]->item || $em->getRepository(App\Entity\Item:
 if ($images[1]->aiResults['captureReview']['previousMediaId'] !== $images[0]->id) throw new RuntimeException('Missing source evidence link.');
 $tester->execute(['cemetery'=>$cemetery->id]);
 if ($calls !== 1) throw new RuntimeException('Identical evidence should reuse its decision.');
+$images[1]->aiResults['captureReview']['previousItemId'] = -1;
+$em->flush();
+$tester->execute(['cemetery'=>$cemetery->id]);
+if ($calls !== 1 || $images[1]->aiResults['captureReview']['previousItemId'] !== $images[0]->item->id) throw new RuntimeException('Refresh cached owner links without another AI request.');
 $images[1]->ocrText = 'Revised reading'; $em->flush();
 $tester->execute(['cemetery'=>$cemetery->id]);
 if ($calls !== 2) throw new RuntimeException('Changed evidence must invalidate the cached decision.');

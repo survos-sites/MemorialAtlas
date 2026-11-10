@@ -22,6 +22,7 @@ final class ImportCommand extends Command
     protected function configure(): void
     {
         $this->addArgument('directory', InputArgument::REQUIRED)
+            ->addOption('manifest', null, InputOption::VALUE_REQUIRED, 'Reviewed capture manifest with ordered groups and SHA-256 checksums')
             ->addOption('images-per-item', null, InputOption::VALUE_REQUIRED, 'Number of consecutive photos per item', '1')
             ->addOption('one-item', null, InputOption::VALUE_REQUIRED, 'Group every selected file into one named item')
             ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Only select the first N files in filename order')
@@ -80,9 +81,32 @@ final class ImportCommand extends Command
                 }
             }
         }
+        $grouping = null;
         $groups = $name !== null ? ($files ? [$files] : []) : array_chunk($files, $perItem);
+        if ($input->getOption('manifest') !== null) {
+            if ($name !== null || $only !== [] || $limit !== null || $perItem !== 1) {
+                $io->error('--manifest cannot be combined with selection or grouping options.');
+                return Command::INVALID;
+            }
+            try {
+                $grouping = \App\Service\CaptureManifest::load($input->getOption('manifest'), $directory);
+                $byName = [];
+                foreach ($files as $file) {
+                    if (isset($byName[$file->getFilename()])) throw new \InvalidArgumentException('Duplicate basename in import directory.');
+                    $byName[$file->getFilename()] = $file;
+                }
+                $groups = [];
+                foreach ($grouping['groups'] as $group) {
+                    $groups[] = array_map(static fn ($file) => $byName[$file] ?? throw new \InvalidArgumentException('Unsupported media: '.$file), $group['files']);
+                }
+                $files = array_merge(...$groups);
+            } catch (\Throwable $error) {
+                $io->error($error->getMessage());
+                return Command::INVALID;
+            }
+        }
         $new = $reused = $failed = 0;
-        foreach ($groups as $group) {
+        foreach ($groups as $groupIndex => $group) {
             if ($input->getOption('dry-run')) {
                 $io->listing(array_map(static fn ($file) => $file->getRelativePathname(), $group));
                 continue;
@@ -108,6 +132,22 @@ final class ImportCommand extends Command
                 return Command::INVALID;
             }
             $item = $owners ? reset($owners) : new Item($name ?? $group[0]->getBasename('.'.$group[0]->getExtension()));
+            if ($grouping !== null && $owners) {
+                $selectedHashes = array_map(static fn ($file) => hash_file('sha256', $file->getPathname()), $group);
+                foreach ($item->media as $media) {
+                    if (!in_array($media->sha256, $selectedHashes, true)) {
+                        $io->error('Existing item includes photos outside this manifest group. Regroup explicitly first.');
+                        return Command::INVALID;
+                    }
+                }
+            }
+            if ($grouping !== null) {
+                $item->aiResults['captureGrouping'] = $grouping['groups'][$groupIndex] + [
+                    'version' => $grouping['version'], 'method' => $grouping['groupingMethod'],
+                    'importBatch' => $grouping['name'], 'gpsUsedForIdentity' => false,
+                ];
+                $item->locationContext = $grouping['context'];
+            }
             if ($cemetery !== null) {
                 if ($item->cemetery !== null && $item->cemetery->id !== $cemetery->id) {
                     $io->error('An existing record belongs to a different cemetery. Correct it explicitly in Collection.');
