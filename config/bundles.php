@@ -22,4 +22,5 @@ return [
     Survos\SearchBundle\SurvosSearchBundle::class => ['all' => true],
     Survos\JsonlBundle\SurvosJsonlBundle::class => ['all' => true],
     Survos\ElasticBundle\SurvosElasticBundle::class => ['all' => true],
+    Survos\CloudflaredBundle\SurvosCloudflaredBundle::class => ['all' => true],
 ];

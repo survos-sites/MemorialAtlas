@@ -168,3 +168,7 @@ StoneStory is deployed independently of Harvest. The repository contains the app
 The Dokku app is `stonestory` on `fsn1`, served at https://stonestory.survos.com. The PHP buildpack uses `Procfile`, `nginx.conf`, and `app.json`; predeploy compiles assets and applies migrations. Set `DEFAULT_URI` for the public hostname and `SEARCH_INDEX_PREFIX` to isolate the search index. Mount `var/elastic-spool` persistently and run one worker to flush search updates.
 
 Before every deployment, run `symfony console doctrine:schema:validate` against local PostgreSQL. Push the tested commit to the repository, then to Dokku. Load demo data separately after migrations and run `elastic:index:rebuild images --keep-old`. Admin sign-in remains disabled until `ADMIN_PASSWORD_HASH` is configured.
+
+### Local tunnel testing
+
+`survos/cloudflared-bundle` detects this checkout in the Symfony proxy index and reads the running tunnel's ingress. Set `CLOUDFLARED_MACHINE` for your machine, then run `symfony console cloudflared:status`. Run `symfony console cloudflared:ingress scanfony` to preview the additional development route, and `symfony console cloudflared:probe` after that route is active. The bundle guards profiler routes on Cloudflare requests and is disabled in production by default. Development tunnels use `survos.org`; the production hostname remains `stonestory.survos.com`.

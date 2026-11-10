@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4859611238644b580d1a7c7bb027e210",
+    "content-hash": "43e38d34ffdcc908b9a8905d26972bb7",
     "packages": [
         {
             "name": "async-aws/core",
@@ -2768,6 +2768,65 @@
             ],
             "time": "2026-11-08T13:56:36+00:00",
             "published-time": "2026-11-08T13:57:09+00:00"
+        },
+        {
+            "name": "survos/cloudflared-bundle",
+            "version": "2.41.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/survos/cloudflared-bundle.git",
+                "reference": "3c437fe5f2732caa1c6df951f40bbba3ea6ca301"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/survos/cloudflared-bundle/zipball/3c437fe5f2732caa1c6df951f40bbba3ea6ca301",
+                "reference": "3c437fe5f2732caa1c6df951f40bbba3ea6ca301",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.5",
+                "survos/kit-bundle": "^2.5",
+                "symfony/console": "^8.1",
+                "symfony/framework-bundle": "^8.1",
+                "symfony/http-client": "^8.1",
+                "symfony/process": "^8.1",
+                "symfony/yaml": "^8.1"
+            },
+            "type": "symfony-bundle",
+            "extra": {
+                "symfony": {
+                    "require": "^8.1"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Survos\\CloudflaredBundle\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Expose a local Symfony dev app through a named cloudflared tunnel: derive its public URL from the running tunnel, probe that the tunnel really answers from this machine, and generate ingress from the Symfony CLI proxy index.",
+            "keywords": [
+                "cloudflare",
+                "cloudflared",
+                "dev",
+                "symfony",
+                "tunnel"
+            ],
+            "support": {
+                "issues": "https://github.com/survos/cloudflared-bundle/issues",
+                "source": "https://github.com/survos/cloudflared-bundle/tree/2.41.9"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/kbond",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-10-13T13:10:06+00:00",
+            "published-time": "2026-10-13T13:45:13+00:00"
         },
         {
             "name": "survos/elastic-bundle",
@@ -7400,6 +7459,79 @@
             ],
             "time": "2026-09-25T15:46:47+00:00",
             "published-time": "2026-09-30T10:23:43+00:00"
+        },
+        {
+            "name": "symfony/process",
+            "version": "v8.2.0-BETA1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/process.git",
+                "reference": "c9fb4cfeb0fe4b6fdacd0113b46fd54eaa04835f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/process/zipball/c9fb4cfeb0fe4b6fdacd0113b46fd54eaa04835f",
+                "reference": "c9fb4cfeb0fe4b6fdacd0113b46fd54eaa04835f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.4.1"
+            },
+            "conflict": {
+                "symfony/dependency-injection": "<8.1"
+            },
+            "require-dev": {
+                "symfony/config": "^7.4|^8.0",
+                "symfony/dependency-injection": "^8.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Process\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Executes commands in sub-processes",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/process/tree/v8.2.0-BETA1"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-11-03T14:34:49+00:00",
+            "published-time": "2026-11-04T12:33:47+00:00"
         },
         {
             "name": "symfony/property-access",

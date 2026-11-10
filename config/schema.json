@@ -14320,6 +14320,61 @@
                 },
                 "additionalProperties": false
             },
+            "survos_cloudflared": {
+                "$ref": "#/$defs/types/object_null",
+                "properties": {
+                    "enabled": {
+                        "$ref": "#/$defs/types/boolean_null",
+                        "default": null,
+                        "description": "Resolve the tunnel and serve /_cloudflared/whoami. Default: on in the dev environment only, so prod never probes loopback ports."
+                    },
+                    "port": {
+                        "$ref": "#/$defs/types/integer_null",
+                        "default": null,
+                        "description": "This app's local port. Default: looked up by project directory in the Symfony proxy index, which already knows the port pinned in .symfony.local.yaml."
+                    },
+                    "hostname": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": null,
+                        "description": "Force the public hostname instead of finding it in the running tunnel's ingress. Rarely right: a pinned name is the hand-maintained value this bundle exists to remove."
+                    },
+                    "machine": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "%env(default::CLOUDFLARED_MACHINE)%",
+                        "description": "Hostname prefix for this machine (m4 → m4-<app>.<zone>). Per machine, not per app, hence an env var set once in the shell profile."
+                    },
+                    "zone": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "survos.org",
+                        "description": "DNS zone the tunnel hostnames live in: dev-only survos.org (see README \"Hostnames\")."
+                    },
+                    "proxy_index": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "http://127.0.0.1:7080/index.json",
+                        "description": "Symfony CLI proxy project index."
+                    },
+                    "metrics": {
+                        "$ref": "#/$defs/types/array_null",
+                        "items": {
+                            "$ref": "#/$defs/types/scalar"
+                        },
+                        "default": [
+                            "http://127.0.0.1:20241",
+                            "http://127.0.0.1:20242",
+                            "http://127.0.0.1:20243",
+                            "http://127.0.0.1:20244",
+                            "http://127.0.0.1:20245"
+                        ],
+                        "description": "cloudflared metrics servers to look for running tunnels on. cloudflared takes the first free port of 20241-20245."
+                    },
+                    "guard_debug_routes": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "404 /_profiler and /_wdt, and drop X-Debug-Token, for requests that came through Cloudflare."
+                    }
+                },
+                "additionalProperties": false
+            },
             "survos_elastic": {
                 "$ref": "#/$defs/types/object_null",
                 "properties": {
@@ -17971,6 +18026,9 @@
         "stimulus": {
             "$ref": "#/$defs/nodes/stimulus"
         },
+        "survos_cloudflared": {
+            "$ref": "#/$defs/nodes/survos_cloudflared"
+        },
         "survos_elastic": {
             "$ref": "#/$defs/nodes/survos_elastic"
         },
@@ -18072,6 +18130,9 @@
                 "services": true,
                 "stimulus": {
                     "$ref": "#/$defs/nodes/stimulus"
+                },
+                "survos_cloudflared": {
+                    "$ref": "#/$defs/nodes/survos_cloudflared"
                 },
                 "survos_elastic": {
                     "$ref": "#/$defs/nodes/survos_elastic"
@@ -18181,6 +18242,9 @@
                 "stimulus": {
                     "$ref": "#/$defs/nodes/stimulus"
                 },
+                "survos_cloudflared": {
+                    "$ref": "#/$defs/nodes/survos_cloudflared"
+                },
                 "survos_elastic": {
                     "$ref": "#/$defs/nodes/survos_elastic"
                 },
@@ -18287,6 +18351,9 @@
                 },
                 "stimulus": {
                     "$ref": "#/$defs/nodes/stimulus"
+                },
+                "survos_cloudflared": {
+                    "$ref": "#/$defs/nodes/survos_cloudflared"
                 },
                 "survos_elastic": {
                     "$ref": "#/$defs/nodes/survos_elastic"

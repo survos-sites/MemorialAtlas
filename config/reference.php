@@ -2397,6 +2397,16 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     route_prefix?: scalar|Param|null, // URL prefix applied to all routes from this bundle. // Default: "/admin/elastic"
  *     locale_prefix?: bool|Param, // Prepend {_locale} (constrained to kernel.enabled_locales) to this bundle's route prefix, e.g. /{_locale}/f instead of /f -- for bundles whose routes are meant to be shared/bookmarked, so the URL itself carries the locale instead of a query param. // Default: false
  * }
+ * @psalm-type SurvosCloudflaredConfig = array{
+ *     enabled?: bool|Param|null, // Resolve the tunnel and serve /_cloudflared/whoami. Default: on in the dev environment only, so prod never probes loopback ports. // Default: null
+ *     port?: int|Param, // This app's local port. Default: looked up by project directory in the Symfony proxy index, which already knows the port pinned in .symfony.local.yaml. // Default: null
+ *     hostname?: scalar|Param|null, // Force the public hostname instead of finding it in the running tunnel's ingress. Rarely right: a pinned name is the hand-maintained value this bundle exists to remove. // Default: null
+ *     machine?: scalar|Param|null, // Hostname prefix for this machine (m4 → m4-<app>.<zone>). Per machine, not per app, hence an env var set once in the shell profile. // Default: "%env(default::CLOUDFLARED_MACHINE)%"
+ *     zone?: scalar|Param|null, // DNS zone the tunnel hostnames live in: dev-only survos.org (see README "Hostnames"). // Default: "survos.org"
+ *     proxy_index?: scalar|Param|null, // Symfony CLI proxy project index. // Default: "http://127.0.0.1:7080/index.json"
+ *     metrics?: list<scalar|Param|null>,
+ *     guard_debug_routes?: bool|Param, // 404 /_profiler and /_wdt, and drop X-Debug-Token, for requests that came through Cloudflare. // Default: true
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -2433,6 +2443,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     survos_search?: SurvosSearchConfig,
  *     survos_jsonl?: SurvosJsonlConfig,
  *     survos_elastic?: SurvosElasticConfig,
+ *     survos_cloudflared?: SurvosCloudflaredConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -2470,6 +2481,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         survos_search?: SurvosSearchConfig,
  *         survos_jsonl?: SurvosJsonlConfig,
  *         survos_elastic?: SurvosElasticConfig,
+ *         survos_cloudflared?: SurvosCloudflaredConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -2507,6 +2519,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         survos_search?: SurvosSearchConfig,
  *         survos_jsonl?: SurvosJsonlConfig,
  *         survos_elastic?: SurvosElasticConfig,
+ *         survos_cloudflared?: SurvosCloudflaredConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -2545,6 +2558,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         survos_search?: SurvosSearchConfig,
  *         survos_jsonl?: SurvosJsonlConfig,
  *         survos_elastic?: SurvosElasticConfig,
+ *         survos_cloudflared?: SurvosCloudflaredConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,
