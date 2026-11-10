@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+{% block title %}Search photographs · StoneReader{% endblock %}
+{% block javascripts %}{{ importmap(['app','search']) }}{% endblock %}
+{% block body %}
+<span class="eyebrow">Explore the collection</span>
+<h1>Find a name.<br>Follow the evidence.</h1>
+<p>Search names and inscriptions, or explore Jev’s proposed classifications. “Not assessed” means the question was not answered; “absent” means the model did not see it. All readings remain open to review.</p>
+<twig:Survos:Search:Layout name="images" :urlRewriting="true" />
+<details><summary>How this search is built</summary><p>Survos FieldBundle declares which image fields are searchable, sortable and filterable. SearchBundle turns that metadata into this interface, with Elasticsearch handling names, inscriptions and facet counts. Jev supplies proposed classifications; the photographs remain the evidence.</p></details>
+{% endblock %}

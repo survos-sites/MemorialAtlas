@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+<section class="hero">
+    <div><span class="eyebrow">From cemetery photographs to lasting records</span><h1>Read what<br>remains.</h1><p>A name, a date, a few words in stone. Bring your cemetery photographs together, read their inscriptions, and preserve the details for someone to check.</p><p class="muted">{{ itemCount }} records · {{ mediaCount }} photographs and notes</p><a class="button" href="#memorials">Explore the memorials</a></div>
+    {% if images %}<figure><img src="{{ path('media_file', {id: images[0].id}) }}" alt="A photographed memorial inscription"><figcaption>The photograph comes first. Every reading remains open to review.</figcaption></figure>{% endif %}
+</section>
+<section class="steps" aria-label="How it works">
+    <div><span class="eyebrow">01 · Gather</span><h3>Keep the context.</h3><p>A headstone, another angle, the cemetery sign. Keep related photographs together.</p></div>
+    <div><span class="eyebrow">02 · Read</span><h3>Start with the inscription.</h3><p>Read the text first. Look more closely at the photograph when the evidence is uncertain.</p></div>
+    <div><span class="eyebrow">03 · Review</span><h3>Leave room for doubt.</h3><p>Check names and dates against the stone. A proposed reading is never a verified burial record.</p></div>
+</section>
+<section id="memorials"><div class="section-title"><h2>In the collection</h2><a href="{{ path('admin') }}">Manage records →</a></div><div class="grid">
+{% for item in items %}<article class="card">{% if item.media.first and item.media.first.kind == 'image' %}<a href="{{ path('item_show', {id:item.id}) }}"><img loading="lazy" src="{{ path('media_file', {id:item.media.first.id}) }}" alt="{{ item.title }}"></a>{% endif %}<div class="body"><span class="badge">{{ item.marking == 'review' ? 'Ready to review' : item.marking }}</span><h3><a href="{{ path('item_show', {id:item.id}) }}">{{ item.title }}</a></h3><p class="muted">{{ item.media|length }} photographs / notes</p>{% if item.description %}<p>{{ item.description|slice(0,180) }}{% if item.description|length > 180 %}…{% endif %}</p>{% endif %}</div></article>
+{% else %}<div class="empty"><h3>Your first inscription starts here.</h3><p>Import a directory of cemetery photographs. The README includes the TombReader sample collection and the command for your own photos.</p></div>{% endfor %}</div></section>
+{% if audio %}<h2>Field notes</h2><div class="grid">{% for media in audio %}{% include 'media/_audio_card.html.twig' with {media:media} only %}{% endfor %}</div>{% endif %}
+<p class="muted">TombReader sample photographs: Johan Bos, University of Groningen · <a href="https://www.let.rug.nl/bos/tombreader/">TombReader</a> · CC BY-NC 4.0.</p>
+<details><summary>Demo setup and processing services</summary><p class="muted">Configuration presence only; these checks do not test connectivity or account balances.</p><div class="grid">{% for model in models %}<article class="card"><div class="body"><strong>{{ model.stage }}</strong><p>{{ model.provider }} · <code>{{ model.model }}</code></p><span class="badge">{{ model.enabled ? 'Selected' : 'Disabled' }}</span></div></article>{% endfor %}</div><ul class="requirements">{% for requirement in requirements %}<li><span class="{{ requirement.configured ? 'configured' : 'missing' }}">{{ requirement.configured ? 'Configured' : 'Not configured' }}</span> · {{ requirement.name }}{% if not requirement.required %} (optional){% endif %}</li>{% endfor %}</ul><p>Setup and sample commands are in the README.</p></details>
+{% endblock %}

@@ -1,0 +1,30 @@
+<article class="card">
+    <a href="{{ path('media_file', {id:media.id}) }}"><img src="{{ path('media_file', {id:media.id}) }}" alt="{{ media.originalName }}"></a>
+    <div class="body">
+        <span class="badge">{{ media.position + 1 }} · Image · {{ media.marking }}</span>
+        <p>{{ media.originalName }}</p>
+        {% if media.latitude is not null and media.longitude is not null %}<p>Camera GPS: {{ media.latitude }}, {{ media.longitude }}</p>{% else %}<p class="muted">No camera GPS recorded.</p>{% endif %}
+        {% if media.aiResults.decision is defined %}<p>{{ media.aiResults.decision.model }}: {{ media.aiResults.decision.type }} · confidence {{ (media.aiResults.decision.confidence * 100)|round }}%</p>{% endif %}
+        {% if media.aiResults.jevDecision is defined %}
+            {% set assessment = media.aiResults.jevDecision %}
+            <h3>Image extraction</h3>
+            <p>{{ assessment.route == 'text' ? 'Inscription text only' : 'Image and text assessed' }} · {{ assessment.model }}</p>
+            <table><thead><tr><th>Question</th><th>Answer</th><th>Probability</th><th>Confidence</th></tr></thead><tbody>
+            {% for question, answer in assessment.answers %}
+                <tr><td>{{ question }}</td><td>{{ answer.choice }}</td><td>{{ (answer.probabilities[answer.choice] * 100)|round }}%</td><td>{{ (answer.confidence * 100)|round }}%</td></tr>
+            {% endfor %}
+            </tbody></table>
+            {% if not assessment.visualDetailsAssessed %}<p class="muted">Flowers, separate markers, materials and condition were not assessed. OCR has not been verified against the image.</p>{% endif %}
+            {% if assessment.reviewFields %}<p>Check these uncertain answers: {{ assessment.reviewFields|join(', ') }}.</p>{% endif %}
+            {% for key in ['jevText', 'jevImage'] %}
+                {% if media.aiResults[key] is defined %}
+                    {% set run = media.aiResults[key] %}
+                    <details><summary>{{ key }} · {{ run.durationMs }} ms · {{ run.usage.input_tokens }} input tokens</summary><pre>{{ run|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></details>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        {% if media.description %}<h3>Visual observations</h3><p>{{ media.description }}</p>{% endif %}
+        {% if media.ocrText %}<details><summary>OCR</summary><pre>{{ media.ocrText }}</pre></details>{% endif %}
+        {% if media.imageMetadata.imagor is defined %}<details><summary>Image metadata</summary><pre>{{ media.imageMetadata|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></details>{% endif %}
+    </div>
+</article>

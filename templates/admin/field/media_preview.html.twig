@@ -1,0 +1,9 @@
+{% set media = entity.instance %}
+{% if media.kind == 'image' %}
+    <a href="{{ path('item_show', {id:media.item.id}) }}"><img loading="lazy" src="{{ path('media_file', {id:media.id}) }}" alt="{{ media.originalName }}" style="width:160px;max-height:200px;object-fit:contain"></a>
+    {% if media.description %}<p>{{ ea().crud.currentAction == 'detail' ? media.description : media.description|slice(0,120) ~ (media.description|length > 120 ? '…' : '') }}</p>{% endif %}
+{% else %}
+    <audio controls preload="none" src="{{ path('media_file', {id:media.id}) }}" aria-label="{{ media.originalName }}"></audio>
+    <p>{{ media.transcript ? (ea().crud.currentAction == 'detail' ? media.transcript : media.transcript|slice(0,120) ~ (media.transcript|length > 120 ? '…' : '')) : 'Awaiting transcription.' }}</p>
+{% endif %}
+<div><a href="{{ path('item_show', {id:media.item.id}) }}">{{ media.originalName }}</a></div>

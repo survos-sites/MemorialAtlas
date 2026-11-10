@@ -1,0 +1,8 @@
+survos_elastic:
+    spool_enabled: true
+    async: false
+    spool_dir: '%kernel.project_dir%/var/elastic-spool'
+
+when@test:
+    survos_elastic:
+        spool_dir: '%kernel.project_dir%/var/elastic-spool-test'

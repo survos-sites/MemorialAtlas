@@ -1,0 +1,79 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Service;
+
+use App\Entity\Image;
+use AsyncAws\S3\S3Client;
+use Survos\ImagorBundle\Service\ImagorUrlBuilder;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+
+final readonly class PhotoMetadata
+{
+    public function __construct(
+        private MediaStorage $storage,
+        private ImagorUrlBuilder $imagor,
+        private HttpClientInterface $http,
+        #[Autowire('%env(bool:SCANFONY_META_OCR)%')] private bool $metaOcr,
+        #[Autowire('%env(S3_ENDPOINT)%')] private string $endpoint,
+        #[Autowire('%env(AWS_S3_BUCKET_NAME)%')] private string $bucket,
+        #[Autowire('%env(AWS_S3_ACCESS_ID)%')] private string $accessKey,
+        #[Autowire('%env(AWS_S3_ACCESS_SECRET)%')] private string $secret,
+    ) {}
+
+    public function prepare(Image $media): void
+    {
+        $path = $this->storage->path($media);
+        if ($media->sourceUrl === null) {
+            $key = 'scanfony/originals/'.$media->sha256;
+            $s3 = new S3Client(['endpoint' => $this->endpoint, 'region' => 'fsn1', 'pathStyleEndpoint' => true, 'accessKeyId' => $this->accessKey, 'accessKeySecret' => $this->secret]);
+            $stream = fopen($path, 'rb');
+            try {
+                $s3->putObject(['Bucket' => $this->bucket, 'Key' => $key, 'Body' => $stream, 'ContentType' => $media->mimeType])->resolve();
+            } finally {
+                fclose($stream);
+            }
+            $media->sourceUrl = 's3://'.$this->bucket.'/'.$key;
+        }
+        $requestOcr = $this->metaOcr && $media->ocrText === null;
+        if (!isset($media->imageMetadata['imagor']) || ($requestOcr && !isset($media->imageMetadata['imagor']['ocr']))) {
+            $meta = $this->http->request('GET', $this->imagor->metaUrl($media->sourceUrl, $requestOcr ? ['thumbhash', 'blurhash', 'avgcolor', 'ocr'] : ['thumbhash', 'blurhash', 'avgcolor']), ['max_duration' => 90])->toArray();
+            if (empty($meta['width']) || empty($meta['height'])) {
+                throw new \RuntimeException('Imagor did not return valid image dimensions.');
+            }
+            if ($requestOcr && !is_string($meta['ocr']['text'] ?? null)) throw new \RuntimeException('Imagor OCR was requested but no text was returned. Check the RustO build or disable SCANFONY_META_OCR.');
+            $media->imageMetadata['imagor'] = $meta;
+        }
+        if ($media->ocrText === null && isset($media->imageMetadata['imagor']['ocr'])) {
+            $media->ocrText = $media->imageMetadata['imagor']['ocr']['text'];
+            $media->aiResults['ocr'] = ['provider'=>'imagor', 'raw'=>$media->imageMetadata['imagor']['ocr']];
+        }
+        $exif = $media->imageMetadata['imagor']['exif'] ?? [];
+        $media->latitude = self::coordinate(isset($exif['GPSLatitude']) ? explode(' ', $exif['GPSLatitude']) : [], $exif['GPSLatitudeRef'] ?? '', 90);
+        $media->longitude = self::coordinate(isset($exif['GPSLongitude']) ? explode(' ', $exif['GPSLongitude']) : [], $exif['GPSLongitudeRef'] ?? '', 180);
+        $media->imageMetadata['capture'] = [
+            'dateTimeOriginal' => $exif['DateTimeOriginal'] ?? null,
+            'coordinateSource' => $media->latitude !== null && $media->longitude !== null ? 'Imagor EXIF GPS (camera position)' : null,
+        ];
+        // The large preset keeps weathered lettering legible; the 512px observe preset is too small here.
+        $media->imageUrl = $this->imagor->preset($media->sourceUrl, 'large');
+    }
+
+    public static function coordinate(array $parts, string $reference, int $max): ?float
+    {
+        if (count($parts) !== 3 || !in_array($reference, $max === 90 ? ['N','S'] : ['E','W'], true)) {
+            return null;
+        }
+        $numbers = [];
+        foreach ($parts as $part) {
+            $fraction = explode('/', (string) $part, 2);
+            if (!is_numeric($fraction[0]) || (isset($fraction[1]) && (!is_numeric($fraction[1]) || (float) $fraction[1] === 0.0))) return null;
+            $numbers[] = (float) $fraction[0] / (isset($fraction[1]) ? (float) $fraction[1] : 1);
+        }
+        if ($numbers[0] < 0 || $numbers[1] < 0 || $numbers[1] >= 60 || $numbers[2] < 0 || $numbers[2] >= 60) return null;
+        $value = $numbers[0] + $numbers[1] / 60 + $numbers[2] / 3600;
+        return $value > $max ? null : $value * (in_array($reference, ['S','W'], true) ? -1 : 1);
+    }
+}

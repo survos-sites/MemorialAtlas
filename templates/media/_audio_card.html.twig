@@ -1,0 +1,6 @@
+<article class="card"><div class="body">
+    <span class="badge">Audio · {{ media.marking }}</span>
+    <h3><a href="{{ path('item_show', {id: media.item.id}) }}">{{ media.item.title }}</a></h3>
+    <audio controls preload="none" style="width:100%" src="{{ path('media_file', {id: media.id}) }}" aria-label="{{ media.originalName }}"></audio>
+    <p>{{ media.transcript ? (media.transcript|length > 180 ? media.transcript|slice(0,180) ~ '…' : media.transcript) : 'Awaiting transcription.' }}</p>
+</div></article>

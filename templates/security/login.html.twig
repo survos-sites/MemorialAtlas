@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+{% block title %}Administrator sign in · StoneReader{% endblock %}
+{% block body %}
+<h1>Administrator sign in</h1>
+<p>Browsing and searching photographs is public. Sign in to manage records.</p>
+{% if error %}<p role="alert">Sign in failed. Check your username and password.</p>{% endif %}
+<form method="post" action="{{ path('app_login') }}">
+    <p><label>Username <input name="_username" value="{{ username }}" autocomplete="username" required></label></p>
+    <p><label>Password <input type="password" name="_password" autocomplete="current-password" required></label></p>
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+    <button type="submit">Sign in</button>
+</form>
+{% endblock %}

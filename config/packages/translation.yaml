@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=../schema.json
+translation:
+    default_path: '%kernel.project_dir%/translations'
+    providers:

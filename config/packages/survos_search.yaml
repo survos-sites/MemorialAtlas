@@ -1,0 +1,5 @@
+survos_search:
+    default_adapter: es
+    index_prefix: '%env(SEARCH_INDEX_PREFIX)%'
+    adapters:
+        es: '%env(ELASTICSEARCH_DSN)%'
