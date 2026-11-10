@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -u
+while true; do
+    php bin/console elastic:spool:flush
+    sleep 10
+done
