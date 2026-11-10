@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ cemetery.name }} · StoneStory{% endblock %}
+{% block body %}
+<p><a href="{{ path('home') }}">← Home</a> · <a href="{{ path('image_search') }}">Search photographs</a></p>
+<span class="eyebrow">Cemetery collection</span><h1>{{ cemetery.name }}</h1>
+<p>{{ cemetery.locality }} · {{ total }} proposed items. These are photographic records, not a verified count of graves or people.</p>
+<p class="muted">Overview and detail photographs may share an item. Groupings remain open to review; GPS records the camera position, not a plot boundary.</p>
+<div class="grid">
+{% for item in items %}
+<article class="card">
+{% if item.media.first %}<a href="{{ path('item_show', {id:item.id}) }}"><img loading="lazy" src="{{ path('media_file', {id:item.media.first.id}) }}" alt="{{ item.title }}"></a>{% endif %}
+<div class="body"><span class="badge">{{ item.marking == 'review' ? 'Ready to review' : item.marking }}</span>
+<h3><a href="{{ path('item_show', {id:item.id}) }}">{{ item.title }}</a></h3>
+<p>{{ item.media|length }} {{ item.media|length == 1 ? 'photograph' : 'photographs grouped' }}</p>
+{% if item.description %}<p>{{ item.description|slice(0,180) }}{% if item.description|length > 180 %}…{% endif %}</p>{% endif %}
+</div></article>
+{% else %}<p>No photographs imported yet.</p>{% endfor %}
+</div>
+<p>Page {{ page }} of {{ pages }}
+{% if page > 1 %} · <a href="{{ path('cemetery_show', {id:cemetery.id,page:page-1}) }}">Previous</a>{% endif %}
+{% if page < pages %} · <a href="{{ path('cemetery_show', {id:cemetery.id,page:page+1}) }}">Next</a>{% endif %}</p>
+{% endblock %}

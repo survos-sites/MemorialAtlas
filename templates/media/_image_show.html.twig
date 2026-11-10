@@ -24,6 +24,15 @@
             {% endfor %}
         {% endif %}
         {% if media.description %}<h3>Visual observations</h3><div class="prose">{{ media.description|markdown_to_html }}</div>{% endif %}
+        {% if media.aiResults.captureReview is defined %}
+            {% set review = media.aiResults.captureReview %}
+            {% set answer = review.answers.relationship %}
+            <details><summary>Neighboring capture: {{ answer.choice|replace({'_':' '}) }}</summary>
+                <p>Jev compared OCR and descriptions with <a href="{{ path('item_show', {id:review.previousItemId}) }}">the previous capture</a>. This is a suggestion, not a verified grouping.</p>
+                <p>{{ (answer.probabilities[answer.choice] * 100)|round }}% model probability · {{ review.model }} · no automatic merge.</p>
+                <details><summary>Decision evidence</summary><pre>{{ review|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></details>
+            </details>
+        {% endif %}
         {% if media.ocrText %}<details><summary>OCR</summary><pre>{{ media.ocrText }}</pre></details>{% endif %}
         {% if media.imageMetadata.imagor is defined %}<details><summary>Image metadata</summary><pre>{{ media.imageMetadata|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></details>{% endif %}
     </div>

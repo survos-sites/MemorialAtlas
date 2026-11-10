@@ -1,10 +1,11 @@
 {% extends 'base.html.twig' %}
 {% block title %}{{ item.title }} · StoneStory{% endblock %}
 {% block body %}<p><a href="{{ path('home') }}">← Home</a></p><span class="badge">{{ item.marking }}</span><h1>{{ item.title }}</h1>{% if item.description %}<div class="prose">{{ item.description|markdown_to_html }}</div>{% endif %}<p class="muted">{{ item.media|length }} media files in capture order. {% if item.marking == 'review' %}Proposed inscription record. Check the photograph before accepting names and dates.{% elseif item.marking == 'draft' %}Not processed yet.{% endif %}</p>
-{% if item.cemetery %}<p><strong>Cemetery (supplied):</strong> {{ item.cemetery }}</p>{% endif %}
+{% if item.cemetery %}<p><strong>Cemetery (supplied):</strong> <a href="{{ path('cemetery_show', {id:item.cemetery.id}) }}">{{ item.cemetery }}</a></p>{% endif %}
 {% if item.locationContext %}<p><strong>Capture context (supplied):</strong> {{ item.locationContext }}</p>{% endif %}
 {% if item.processingError %}<p role="alert">Processing failed: {{ item.processingError }}</p>{% endif %}
 {% if item.aiResults.catalog is defined %}<details><summary>Extracted inscription and uncertain readings</summary><pre>{{ item.aiResults.catalog.record|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></details>{% endif %}
+{% if item.aiResults.captureGrouping is defined %}<details><summary>Capture grouping · {{ item.media|length }} photographs · proposed</summary><p>{{ item.aiResults.captureGrouping.basis }}</p><p>Grouped by visual review, using capture order, inscriptions and visible details. GPS did not determine identity.</p></details>{% endif %}
 <div class="gallery">{% for media in item.media %}
     {% include 'media/_' ~ media.kind ~ '_show.html.twig' with {media: media} only %}
 {% endfor %}</div>{% endblock %}

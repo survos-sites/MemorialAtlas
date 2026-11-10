@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\{Item, Media, Image, Audio};
+use App\Entity\{Item, Media, Image, Audio, Cemetery};
 use App\Service\{MediaStorage, SetupStatus};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,6 +24,22 @@ final class HomeController extends AbstractController
             'images' => $em->getRepository(Image::class)->findBy([], ['id' => 'DESC'], 12),
             'itemCount' => $em->getRepository(Item::class)->count(),
             'mediaCount' => $em->getRepository(Media::class)->count(),
+        ]);
+    }
+
+    #[Route('/cemeteries/{id}', name: 'cemetery_show', requirements: ['id' => '\\d+'])]
+    public function cemetery(Cemetery $cemetery, EntityManagerInterface $em, \Symfony\Component\HttpFoundation\Request $request): Response
+    {
+        $page = max(1, $request->query->getInt('page', 1));
+        $repo = $em->getRepository(Item::class);
+        $total = $repo->count(['cemetery' => $cemetery]);
+        $pages = max(1, (int) ceil($total / 48));
+        $page = min($page, $pages);
+        return $this->render('cemetery/show.html.twig', [
+            'cemetery' => $cemetery,
+            'items' => $em->createQuery('SELECT i, MIN(m.originalName) AS HIDDEN captureName FROM App\\Entity\\Item i JOIN i.media m WHERE i.cemetery = :cemetery GROUP BY i.id ORDER BY captureName, i.id')
+                ->setParameter('cemetery', $cemetery)->setFirstResult(($page - 1) * 48)->setMaxResults(48)->getResult(),
+            'total' => $total, 'page' => $page, 'pages' => $pages,
         ]);
     }
 
