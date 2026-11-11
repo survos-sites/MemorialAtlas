@@ -21,7 +21,15 @@ final class HomeController extends AbstractController
             'models' => $setup->models(),
             'items' => $em->getRepository(Item::class)->findBy([], ['id' => 'DESC'], 12),
             'audio' => $em->getRepository(Audio::class)->findBy([], ['id' => 'DESC'], 12),
-            'images' => $em->getRepository(Image::class)->findBy([], ['id' => 'DESC'], 12),
+            'heroImage' => $em->createQueryBuilder()
+                ->select('image')
+                ->from(Image::class, 'image')
+                ->join('image.item', 'item')
+                ->where('item.recordType = :recordType')
+                ->setParameter('recordType', 'gravestone')
+                ->orderBy('image.id', 'DESC')
+                ->setMaxResults(1)
+                ->getQuery()->getOneOrNullResult(),
             'itemCount' => $em->getRepository(Item::class)->count(),
             'mediaCount' => $em->getRepository(Media::class)->count(),
         ]);
