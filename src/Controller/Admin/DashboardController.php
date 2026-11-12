@@ -18,7 +18,7 @@ final class DashboardController extends AbstractDashboardController
     {
         return $this->redirect($this->container->get(AdminUrlGenerator::class)->setController(ItemCrudController::class)->generateUrl());
     }
-    public function configureDashboard(): Dashboard { return Dashboard::new()->setTitle('StoneReader'); }
+    public function configureDashboard(): Dashboard { return Dashboard::new()->setTitle('MemorialAtlas'); }
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linkToRoute('Search photographs', 'fa fa-search', 'image_search');

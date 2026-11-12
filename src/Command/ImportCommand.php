@@ -31,6 +31,7 @@ final class ImportCommand extends Command
             ->addOption('cemetery', null, InputOption::VALUE_REQUIRED, 'Existing cemetery ID, managed in Collection > Cemeteries')
             ->addOption('context', null, InputOption::VALUE_REQUIRED, 'Shared user-supplied location/capture context')
             ->addOption('only', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Select exact filenames, repeat for a sample set')
+            ->addOption('text-only', null, InputOption::VALUE_NONE, 'Use OCR and text decisions only; never send images to Jev or vision')
             ->addOption('process', null, InputOption::VALUE_NONE, 'Publish images, run metadata and AI, then save a review draft')
             ->addOption('dry-run', null, InputOption::VALUE_NONE);
     }
@@ -175,7 +176,7 @@ final class ImportCommand extends Command
             if ($input->getOption('process')) {
                 $io->section('Item '.$item->id.': '.$item->title);
                 try {
-                    $this->processor->process($item, static fn (string $step) => $io->writeln($step));
+                    $this->processor->process($item, static fn (string $step) => $io->writeln($step), $input->getOption('text-only') ? false : null);
                 } catch (\Throwable $error) {
                     ++$failed;
                     $io->error($error->getMessage());

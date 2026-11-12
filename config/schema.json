@@ -7792,6 +7792,9 @@
                 },
                 "additionalProperties": false
             },
+            "api_platform": {
+                "$ref": "#/$defs/types/variable"
+            },
             "asset": {
                 "anyOf": [
                     {
@@ -9403,7 +9406,7 @@
                         "$ref": "#/$defs/nodes/cache"
                     },
                     "web_link": {
-                        "$ref": "#/$defs/types/variable"
+                        "$ref": "#/$defs/nodes/web_link"
                     },
                     "lock": {
                         "$ref": "#/$defs/nodes/lock"
@@ -10655,6 +10658,126 @@
                     "enabled": true,
                     "resources": []
                 }
+            },
+            "nelmio_cors": {
+                "$ref": "#/$defs/types/object_null",
+                "properties": {
+                    "defaults": {
+                        "$ref": "#/$defs/types/object_null",
+                        "properties": {
+                            "allow_credentials": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": false
+                            },
+                            "allow_origin": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "allow_headers": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "allow_methods": {
+                                "$ref": "#/$defs/types/array_null",
+                                "items": {
+                                    "$ref": "#/$defs/types/scalar"
+                                }
+                            },
+                            "allow_private_network": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": false
+                            },
+                            "expose_headers": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "max_age": {
+                                "$ref": "#/$defs/types/scalar",
+                                "default": 0
+                            },
+                            "hosts": {
+                                "$ref": "#/$defs/types/array_null",
+                                "items": {
+                                    "$ref": "#/$defs/types/scalar"
+                                }
+                            },
+                            "origin_regex": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": false
+                            },
+                            "forced_allow_origin_value": {
+                                "$ref": "#/$defs/types/scalar",
+                                "default": null
+                            },
+                            "skip_same_as_origin": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": true
+                            }
+                        },
+                        "additionalProperties": false,
+                        "default": {
+                            "allow_credentials": false,
+                            "allow_origin": [],
+                            "allow_headers": [],
+                            "allow_methods": [],
+                            "allow_private_network": false,
+                            "expose_headers": [],
+                            "max_age": 0,
+                            "hosts": [],
+                            "origin_regex": false,
+                            "forced_allow_origin_value": null,
+                            "skip_same_as_origin": true
+                        }
+                    },
+                    "paths": {
+                        "$ref": "#/$defs/types/object_null",
+                        "additionalProperties": {
+                            "$ref": "#/$defs/types/object_null",
+                            "properties": {
+                                "allow_credentials": {
+                                    "$ref": "#/$defs/types/boolean"
+                                },
+                                "allow_origin": {
+                                    "$ref": "#/$defs/types/variable"
+                                },
+                                "allow_headers": {
+                                    "$ref": "#/$defs/types/variable"
+                                },
+                                "allow_methods": {
+                                    "$ref": "#/$defs/types/array_null",
+                                    "items": {
+                                        "$ref": "#/$defs/types/scalar"
+                                    }
+                                },
+                                "allow_private_network": {
+                                    "$ref": "#/$defs/types/boolean"
+                                },
+                                "expose_headers": {
+                                    "$ref": "#/$defs/types/variable"
+                                },
+                                "max_age": {
+                                    "$ref": "#/$defs/types/scalar",
+                                    "default": 0
+                                },
+                                "hosts": {
+                                    "$ref": "#/$defs/types/array_null",
+                                    "items": {
+                                        "$ref": "#/$defs/types/scalar"
+                                    }
+                                },
+                                "origin_regex": {
+                                    "$ref": "#/$defs/types/boolean"
+                                },
+                                "forced_allow_origin_value": {
+                                    "$ref": "#/$defs/types/scalar",
+                                    "default": null
+                                },
+                                "skip_same_as_origin": {
+                                    "$ref": "#/$defs/types/boolean"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "additionalProperties": false
             },
             "property_access": {
                 "anyOf": [
@@ -15945,6 +16068,29 @@
                     "auto_mapping": []
                 }
             },
+            "web_link": {
+                "anyOf": [
+                    {
+                        "$ref": "#/$defs/types/object_null",
+                        "properties": {
+                            "enabled": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": true
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    {
+                        "type": [
+                            "boolean"
+                        ]
+                    }
+                ],
+                "default": {
+                    "enabled": true
+                },
+                "description": "Web links configuration"
+            },
             "web_profiler": {
                 "$ref": "#/$defs/types/object_null",
                 "properties": {
@@ -17981,6 +18127,9 @@
         "ai": {
             "$ref": "#/$defs/nodes/ai"
         },
+        "api_platform": {
+            "$ref": "#/$defs/nodes/api_platform"
+        },
         "asset": {
             "$ref": "#/$defs/nodes/asset"
         },
@@ -18007,6 +18156,9 @@
         },
         "lock": {
             "$ref": "#/$defs/nodes/lock"
+        },
+        "nelmio_cors": {
+            "$ref": "#/$defs/nodes/nelmio_cors"
         },
         "property_access": {
             "$ref": "#/$defs/nodes/property_access"
@@ -18074,6 +18226,9 @@
         "validation": {
             "$ref": "#/$defs/nodes/validation"
         },
+        "web_link": {
+            "$ref": "#/$defs/nodes/web_link"
+        },
         "workflow": {
             "$ref": "#/$defs/nodes/workflow"
         },
@@ -18082,6 +18237,9 @@
             "properties": {
                 "ai": {
                     "$ref": "#/$defs/nodes/ai"
+                },
+                "api_platform": {
+                    "$ref": "#/$defs/nodes/api_platform"
                 },
                 "asset": {
                     "$ref": "#/$defs/nodes/asset"
@@ -18110,6 +18268,9 @@
                 },
                 "lock": {
                     "$ref": "#/$defs/nodes/lock"
+                },
+                "nelmio_cors": {
+                    "$ref": "#/$defs/nodes/nelmio_cors"
                 },
                 "parameters": true,
                 "property_access": {
@@ -18178,6 +18339,9 @@
                 },
                 "validation": {
                     "$ref": "#/$defs/nodes/validation"
+                },
+                "web_link": {
+                    "$ref": "#/$defs/nodes/web_link"
                 },
                 "web_profiler": {
                     "$ref": "#/$defs/nodes/web_profiler"
@@ -18194,6 +18358,9 @@
                 "ai": {
                     "$ref": "#/$defs/nodes/ai"
                 },
+                "api_platform": {
+                    "$ref": "#/$defs/nodes/api_platform"
+                },
                 "asset": {
                     "$ref": "#/$defs/nodes/asset"
                 },
@@ -18221,6 +18388,9 @@
                 },
                 "lock": {
                     "$ref": "#/$defs/nodes/lock"
+                },
+                "nelmio_cors": {
+                    "$ref": "#/$defs/nodes/nelmio_cors"
                 },
                 "parameters": true,
                 "property_access": {
@@ -18289,6 +18459,9 @@
                 },
                 "validation": {
                     "$ref": "#/$defs/nodes/validation"
+                },
+                "web_link": {
+                    "$ref": "#/$defs/nodes/web_link"
                 },
                 "web_profiler": {
                     "$ref": "#/$defs/nodes/web_profiler"
@@ -18307,6 +18480,9 @@
                 "ai": {
                     "$ref": "#/$defs/nodes/ai"
                 },
+                "api_platform": {
+                    "$ref": "#/$defs/nodes/api_platform"
+                },
                 "asset": {
                     "$ref": "#/$defs/nodes/asset"
                 },
@@ -18333,6 +18509,9 @@
                 },
                 "lock": {
                     "$ref": "#/$defs/nodes/lock"
+                },
+                "nelmio_cors": {
+                    "$ref": "#/$defs/nodes/nelmio_cors"
                 },
                 "property_access": {
                     "$ref": "#/$defs/nodes/property_access"
@@ -18399,6 +18578,9 @@
                 },
                 "validation": {
                     "$ref": "#/$defs/nodes/validation"
+                },
+                "web_link": {
+                    "$ref": "#/$defs/nodes/web_link"
                 },
                 "workflow": {
                     "$ref": "#/$defs/nodes/workflow"

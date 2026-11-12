@@ -20,9 +20,9 @@ final class ExtractMarkerCommand extends Command
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
-        #[AutowireLocator(['mistral' => new Autowire(service: 'ai.platform.mistral'), 'openai' => new Autowire(service: 'ai.platform.openai'), 'ollama' => new Autowire(service: 'ai.platform.ollama')])] private readonly ContainerInterface $platforms,
-        #[Autowire('%env(SCANFONY_VISION_PLATFORM)%')] private readonly string $provider,
-        #[Autowire('%env(SCANFONY_VISION_MODEL)%')] private readonly string $model,
+        #[AutowireLocator(['mistral_rusto' => new Autowire(service: 'ai.platform.mistral_rusto'), 'mistral' => new Autowire(service: 'ai.platform.mistral'), 'openai' => new Autowire(service: 'ai.platform.openai'), 'ollama' => new Autowire(service: 'ai.platform.ollama')])] private readonly ContainerInterface $platforms,
+        #[Autowire('%env(SCANFONY_EXTRACTION_PLATFORM)%')] private readonly string $provider,
+        #[Autowire('%env(SCANFONY_EXTRACTION_MODEL)%')] private readonly string $model,
     ) { parent::__construct(); }
 
     protected function configure(): void { $this->addArgument('items', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Item IDs'); }

@@ -31,6 +31,11 @@ final readonly class ImageDecision
             unset($image->aiResults[Q::TEXT_RUN]);
         }
         $route = $textRun === null ? Q::VISION_ROUTE : Q::route($textRun['answers'], $this->visualContext);
+        $visionEnabled = $image->item->aiResults['processingPolicy']['visionEnabled'] ?? true;
+        if (!$visionEnabled) {
+            if ($textRun === null) throw new \RuntimeException('OCR-only processing needs readable OCR text. Review or transcribe this image before retrying.');
+            $route = Q::TEXT_ROUTE;
+        }
         $run = $textRun;
         if ($route === Q::VISION_ROUTE) {
             $imageHash = hash('sha256', $hash.'|'.$image->imageUrl.'|jpeg1568-pad280-v1');

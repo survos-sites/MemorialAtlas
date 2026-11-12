@@ -23,4 +23,6 @@ return [
     Survos\JsonlBundle\SurvosJsonlBundle::class => ['all' => true],
     Survos\ElasticBundle\SurvosElasticBundle::class => ['all' => true],
     Survos\CloudflaredBundle\SurvosCloudflaredBundle::class => ['all' => true],
+    ApiPlatform\Symfony\Bundle\ApiPlatformBundle::class => ['all' => true],
+    Nelmio\CorsBundle\NelmioCorsBundle::class => ['all' => true],
 ];

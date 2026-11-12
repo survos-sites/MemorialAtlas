@@ -1,6 +1,6 @@
 {
-  "name": "StoneStory",
-  "description": "Photographs into searchable cemetery records with Symfony AI",
+  "name": "MemorialAtlas",
+  "description": "From gravestone photographs to a searchable record of remembrance.",
   "buildpacks": [
     {
       "url": "https://github.com/heroku/heroku-buildpack-php"

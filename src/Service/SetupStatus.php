@@ -24,6 +24,10 @@ final readonly class SetupStatus
         #[Autowire('%env(SCANFONY_JEV_MODEL)%')] private string $decisionModel,
         #[Autowire('%env(SCANFONY_OCR_MODEL)%')] private string $ocrModel,
         #[Autowire('%env(bool:SCANFONY_OCR_ENABLED)%')] private bool $ocrEnabled,
+        #[Autowire('%env(SCANFONY_OCR_PLATFORM)%')] private string $ocrPlatform,
+        #[Autowire('%env(SCANFONY_EXTRACTION_PLATFORM)%')] private string $extractionPlatform,
+        #[Autowire('%env(SCANFONY_EXTRACTION_MODEL)%')] private string $extractionModel,
+        #[Autowire('%env(bool:SCANFONY_VISION_ENABLED)%')] private bool $visionEnabled,
     ) {}
 
     public function requirements(): array
@@ -33,8 +37,8 @@ final readonly class SetupStatus
             ['name' => 'S3 endpoint, bucket and credentials', 'configured' => $this->present($this->s3Endpoint, $this->bucket, $this->s3Key, $this->s3Secret), 'required' => true],
             ['name' => 'Imagor endpoint and signing secret', 'configured' => $this->present($this->imagorHost, $this->imagorSecret), 'required' => true],
             ['name' => 'TypeSafe API key and Jev model', 'configured' => $this->present($this->jevKey, $this->decisionModel), 'required' => true],
-            ['name' => 'Mistral API key', 'configured' => $this->present($this->mistralKey), 'required' => $this->visionPlatform === 'mistral' || $this->ocrEnabled],
-            ['name' => 'OpenAI API key', 'configured' => $this->present($this->openaiKey), 'required' => $this->visionPlatform === 'openai'],
+            ['name' => 'Mistral API key', 'configured' => $this->present($this->mistralKey), 'required' => ($this->visionEnabled && $this->visionPlatform === 'mistral') || $this->extractionPlatform === 'mistral' || ($this->ocrEnabled && $this->ocrPlatform === 'mistral')],
+            ['name' => 'OpenAI API key', 'configured' => $this->present($this->openaiKey), 'required' => ($this->visionEnabled && $this->visionPlatform === 'openai') || $this->extractionPlatform === 'openai'],
             ['name' => 'Hugging Face token (integration planned)', 'configured' => $this->present($this->hfToken), 'required' => false],
         ];
     }
@@ -44,8 +48,9 @@ final readonly class SetupStatus
         return [
             ['stage' => 'Metadata and primary OCR', 'provider' => 'Imagor / RustO', 'model' => '/meta', 'enabled' => true],
             ['stage' => 'OCR / image decisions', 'provider' => 'TypeSafe Jev', 'model' => $this->decisionModel, 'enabled' => true],
-            ['stage' => 'Fallback OCR', 'provider' => 'Mistral', 'model' => $this->ocrModel, 'enabled' => $this->ocrEnabled],
-            ['stage' => 'Visual description and catalog draft', 'provider' => $this->visionPlatform, 'model' => $this->visionModel, 'enabled' => true],
+            ['stage' => 'Fallback OCR', 'provider' => $this->ocrPlatform, 'model' => $this->ocrModel, 'enabled' => $this->ocrEnabled],
+            ['stage' => 'Optional visual description', 'provider' => $this->visionPlatform, 'model' => $this->visionModel, 'enabled' => $this->visionEnabled],
+            ['stage' => 'Structured catalog extraction (text)', 'provider' => $this->extractionPlatform, 'model' => $this->extractionModel, 'enabled' => true],
         ];
     }
 

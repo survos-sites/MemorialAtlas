@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 {% block body %}
 <section class="hero">
-    <div><span class="eyebrow">From cemetery photographs to lasting records</span><h1>Read what<br>remains.</h1><p>A name, a date, a few words in stone. Bring your cemetery photographs together, read their inscriptions, and preserve the details for someone to check.</p><p class="muted">{{ itemCount }} records · {{ mediaCount }} photographs and notes</p><a class="button" href="#memorials">Explore the memorials</a></div>
+    <div><span class="eyebrow">MemorialAtlas</span><h1>A record of<br>remembrance.</h1><p class="tagline">From gravestone photographs to a searchable record of remembrance.</p><p>A name, a date, a few words in stone. Bring your cemetery photographs together, read their inscriptions, and preserve the details for someone to check.</p><p class="muted">{{ itemCount }} records · {{ mediaCount }} photographs and notes</p><a class="button" href="#memorials">Explore the memorials</a></div>
     {% if heroImage %}<figure><img src="{{ path('media_file', {id: heroImage.id}) }}" alt="A photographed memorial inscription"><figcaption>The photograph comes first. Every reading remains open to review.</figcaption></figure>{% endif %}
 </section>
 <section class="steps" aria-label="How it works">

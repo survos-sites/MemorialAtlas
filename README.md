@@ -1,24 +1,55 @@
-# StoneReader
+# MemorialAtlas
 
-Read cemetery photographs into reviewable memorial records. StoneReader is the tombstone-focused Scanfony hackathon app, built with Symfony, Doctrine and PostgreSQL.
+*From gravestone photographs to a searchable record of remembrance.*
+
+MemorialAtlas is the cemetery-focused hackathon app in the Scanfony repository, built with Symfony, Doctrine and PostgreSQL.
 
 ## Setup
 
-Requires PHP 8.5+, PostgreSQL and GD extensions, Composer, Symfony CLI and Docker for the supplied database. SQLite is used only by isolated tests.
+Requires PHP 8.5+ (GD, PDO PostgreSQL and SQLite), Composer, an existing
+PostgreSQL server, and an S3 bucket with read/write credentials. The hackathon
+organizer supplies S3 settings for a bucket containing the prepared demo.
+No app-specific database container or new AI calls are needed to view it.
 
 ```bash
+git clone https://github.com/survos-sites/stonestory.git scanfony
+cd scanfony
 composer install
-# Fresh setup only: preserve an existing .env.local.
-cp .env.local.example .env.local
-docker compose up -d database
-symfony console doctrine:migrations:migrate --no-interaction
-symfony server:start -d
-symfony proxy:domain:attach scanfony
+cp .env.local.example .env.local  # fresh setup only
+# Fill DATABASE_URL and the four S3 settings in .env.local.
+bin/load-data                    # equivalent: php bin/console app:startup
+symfony server:start -d          # or: php -S 127.0.0.1:8000 -t public
 ```
 
-Open https://scanfony.wip with the Symfony local proxy. Use Symfony CLI for database commands so it supplies the running Compose connection. Configure the web server with that same PostgreSQL connection when not running through Symfony CLI. Search and record viewing are public. All /admin routes require ROLE_ADMIN; configure the administrator password below.
+`app:startup` checks required configuration, creates the application database
+on the configured server if needed, applies migrations, and downloads one small
+demo record with its photographs and saved OCR, description and Jev receipts.
+It prints the item URL. Repeating it keeps the existing demo and review changes.
+`--skip-demo` prepares an empty schema. Missing settings stop startup with the
+name of the variable to fill in; credentials are never printed. Creating a new
+database requires permission on the existing PostgreSQL server, or ask the
+organizer to provision the database first.
 
-Configure `.env.local` with an existing S3 bucket and write credentials, Imagor endpoint/signing secret, `TYPESAFE_API_KEY`, and a Mistral API key for catalog drafting. Secrets are never shown by the setup panel. Local import and browsing do not require AI credentials; `--process` does.
+The sample is stored at `scanfony/demo/v1.json` and
+`scanfony/demo/originals/<sha256>` in the configured bucket. To prepare another
+bucket, an organizer with an existing processed record runs
+`php bin/console app:demo:publish ITEM_ID`. This publishes that record's images
+and recorded evidence, not credentials. The demo never calls paid AI providers.
+Images are checksum-checked and copied locally for immediate viewing. Provider
+receipts retain their original source IDs as provenance; imported local IDs may
+differ. Keep the S3 credentials private and provide them separately from Git.
+
+The five-minute target assumes PHP/Composer, PostgreSQL and the prepared S3
+bucket are already available. Installing those services or generating fresh AI
+results is outside that target. Imagor/signing credentials and TypeSafe/Mistral
+keys are required to process new photographs, not to browse the saved demo.
+Search additionally uses Elasticsearch; the home and item pages do not require it.
+All `/admin` routes require ROLE_ADMIN and an administrator password hash.
+
+Local defaults use the shared PostgreSQL service on port 5434. Change
+`DATABASE_URL` for another developer's server. The optional standalone Compose
+files are deliberately not auto-discovered: a dynamic Docker port must not
+silently replace this explicit connection.
 
 ## Image processing
 
@@ -163,7 +194,7 @@ symfony php tests/access.php # isolated app_test database, test-only password
 
 ## Standalone deployment
 
-StoneStory is deployed independently of Harvest. The repository contains the application, migrations, and tests; photographs, database exports, reference annotations, credentials, and generated folios stay outside Git. Import images from a directory and configure PostgreSQL, Elasticsearch, Imagor/S3, and the chosen AI providers. Harvest can supply images, but is not required at runtime.
+MemorialAtlas is deployed independently of Harvest. The repository contains the application, migrations, and tests; photographs, database exports, reference annotations, credentials, and generated folios stay outside Git. Import images from a directory and configure PostgreSQL, Elasticsearch, Imagor/S3, and the chosen AI providers. Harvest can supply images, but is not required at runtime.
 
 The Dokku app is `stonestory` on `fsn1`, served at https://stonestory.survos.com. The PHP buildpack uses `Procfile`, `nginx.conf`, and `app.json`; predeploy compiles assets and applies migrations. Set `DEFAULT_URI` for the public hostname and `SEARCH_INDEX_PREFIX` to isolate the search index. Mount `var/elastic-spool` persistently and run one worker to flush search updates.
 
@@ -267,3 +298,92 @@ not verified burial records. Details and source references appear on the item.
 After first adding these fields, run `elastic:index:rebuild items --keep-old`.
 Later extractions are indexed with `elastic:spool:flush`. This pilot is explicit
 and is not automatically run for every import.
+
+## OCR-only collections and provider selection
+
+Use OCR-only processing for uniform markers such as Arlington:
+
+```bash
+php bin/console app:import /photos/arlington --cemetery=ID --process --text-only
+```
+
+The processing policy is saved on each item, including retries. OCR-only mode
+uses OCR, Jev text questions, and structured extraction from text. It never sends
+images to Jev or the generative vision model, even when a text judgment recommends
+escalation. Missing OCR stops for review instead of silently using vision.
+Uncertain readings remain proposed; visual details are not assessed. Existing
+reviewed records are preserved rather than regenerated.
+
+For varied Sperryville markers, omit `--text-only` to retain conditional image
+assessment and visual description. `SCANFONY_VISION_ENABLED=0` makes OCR-only the
+default for new records. Structured extraction is independently configured:
+
+```dotenv
+SCANFONY_OCR_PLATFORM=mistral
+SCANFONY_OCR_MODEL=mistral-ocr-latest
+SCANFONY_VISION_PLATFORM=mistral
+SCANFONY_VISION_MODEL=mistral-medium-latest
+SCANFONY_EXTRACTION_PLATFORM=mistral
+SCANFONY_EXTRACTION_MODEL=mistral-medium-latest
+```
+
+`mistral` is hosted Mistral. `mistral_rusto` is the separate RustO platform, whether running locally or in production:
+
+```dotenv
+MISTRAL_RUSTO_BASE_URL=http://127.0.0.1:8895
+MISTRAL_RUSTO_API_KEY=local
+MISTRAL_RUSTO_CHAT_MODEL=
+```
+
+The current local server supports **OCR only**, with models `tiny` and `small`.
+To use it instead of hosted fallback OCR, set `SCANFONY_OCR_PLATFORM=mistral_rusto`
+and `SCANFONY_OCR_MODEL=tiny`. Imagor metadata OCR still has priority; set
+`SCANFONY_META_OCR=0` to test the selected OCR platform on fresh photographs.
+Existing OCR receipts are reused. Hosted OCR remains the default.
+
+When the endpoint gains chat support, set `MISTRAL_RUSTO_CHAT_MODEL` to its actual
+model ID, then select `mistral_rusto` and that model independently for vision or
+extraction. Vision requires an image-capable model; extraction requires structured
+output. The current OCR server cannot do either. The explicit multi-photo
+`app:markers:extract` command uses the extraction selector but still requires
+vision capabilities; it is not part of the OCR-only import path.
+
+### Mistral OCR bridge fix
+
+The OCR client previously hardcoded `https://api.mistral.ai/v1/ocr`, ignoring the
+factory's base URL. The fix is prepared in the Symfony AI source checkout with a
+regression covering direct client calls, factory forwarding, trailing slashes,
+and the unchanged hosted default. Related upstream configuration issue:
+https://github.com/symfony/ai/issues/2900.
+
+Until a release contains it, Composer's install/update hooks apply the guarded,
+idempotent `bin/apply-mistral-ocr-fix.php`. Unexpected upstream source changes stop
+the patch instead of silently sending local OCR to the hosted service. No fork
+credentials or absolute developer paths are required by this patch.
+
+
+## Public genealogy API
+
+API Platform serves an anonymous, read-only API with interactive documentation at
+`/api/docs`. Use `Accept: application/ld+json` for paginated collections with
+`member`, `totalItems` and next-page links, or `Accept: application/json` for JSON.
+
+- `GET /api/gravestones`: captured records, 30 per page.
+- `GET /api/gravestones?cemetery=2&recordType=gravestone`: scope to a cemetery
+  and exclude captures that have not been classified as gravestones.
+- `GET /api/gravestones/69`: one record with cemetery, media, OCR, image
+  coordinates, descriptions and structured claims.
+- `GET /api/docs.jsonopenapi`: the OpenAPI schema.
+
+The collection includes unclassified captures; check `recordType` and `marking`.
+`claims.catalog.record` and `claims.markerFacts.record` contain extracted people,
+dates, inscriptions and other available facts with model provenance. These are
+AI claims requiring review, not resolved person identities. Keep cemetery and
+record identifiers when creating a genealogy graph. Photo coordinates describe
+the camera position, not a surveyed grave location. Media `contentUrl` values
+resolve against this site's origin.
+
+Cross-origin reads are public. Writes are disabled. Internal storage paths,
+donor details, errors and raw AI request payloads are excluded.
+
+Run `php tests/public-api.php` against the local server to check the contract.

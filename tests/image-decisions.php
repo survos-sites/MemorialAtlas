@@ -64,6 +64,21 @@ $answers[Q::QUALITY]['choice']='damaged';
 $answers[Q::QUALITY]['probabilities']=['usable'=>0.01,'damaged'=>0.99,'insufficient'=>0];
 $check(Q::route($answers,false)===Q::VISION_ROUTE, 'Confident damaged text still escalates.');
 
+// An OCR-only collection must not escalate even when Jev would prefer an image.
+$image->item->aiResults['processingPolicy']=['visionEnabled'=>false];
+$image->ocrText='Difficult inscription';
+$choices[Q::QUALITY]='damaged';
+$before=count($calls);
+$decision->assess($image);
+$check(count($calls)===$before+1, 'OCR-only sends exactly one text request.');
+$check(!isset($calls[array_key_last($calls)]['assets']), 'OCR-only never sends image assets.');
+$check($image->aiResults[Q::RESULT]['route']===Q::TEXT_ROUTE, 'OCR-only overrides image escalation.');
+$check(!$image->aiResults[Q::RESULT]['visualDetailsAssessed'], 'No visual claims in OCR-only mode.');
+$image->ocrText=null;
+$thrown=false;
+try {$decision->assess($image);} catch (RuntimeException) {$thrown=true;}
+$check($thrown, 'Missing OCR needs review rather than a hidden vision call.');
+
 // Exercise the current Jev assets API without transmitting a real image.
 $client = new JevClient($http, 'test-key', 'jev-1.14.0');
 $run=$client->evaluate(['ocrText'=>null],Q::image(),'jpeg-test-bytes');
@@ -78,5 +93,35 @@ foreach ([new MockResponse('{"model":"jev-1.14.0","answers":{}}'), new MockRespo
     try { $bad->evaluate(['ocrText'=>'example'], Q::text()); } catch (Throwable) { $thrown=true; }
     $check($thrown,'Invalid/provider failure must throw, not return a successful decision.');
 }
+// Complete OCR -> Jev text -> structured extraction with no vision service registered.
+$catalogCalls=0;
+$catalogHttp=new MockHttpClient(static function ($method,$url,$options) use (&$catalogCalls): MockResponse {
+    ++$catalogCalls;
+    $body=json_decode($options['body'],true,flags:JSON_THROW_ON_ERROR);
+    if (str_contains($options['body'],'"image_url"')) throw new RuntimeException('Text extraction must not send image content.');
+    if ($url!=='https://local-mistral.test/v1/chat/completions') throw new RuntimeException('Wrong extraction endpoint.');
+    if ($body['model']!=='custom-text') throw new RuntimeException('Wrong extraction model.');
+    return new MockResponse(json_encode(['choices'=>[['finish_reason'=>'stop','message'=>['role'=>'assistant','content'=>json_encode([
+        'title'=>'Recorded memorial','description'=>'OCR-derived proposal. Visual details not assessed.',
+        'recordType'=>'gravestone','people'=>[],'uncertainties'=>['OCR not visually verified'],
+    ])]]]]));
+});
+$catalogPlatform=(new App\Service\RustoMistralPlatform($catalogHttp,'https://local-mistral.test/','test-key','custom-text',$services->get('event_dispatcher')))->create();
+$locator=new Symfony\Component\DependencyInjection\ServiceLocator(['catalog'=>static fn()=>$catalogPlatform]);
+$pipeline=new App\Service\ItemProcessor($em,$services->get(App\Service\PhotoMetadata::class),
+    $services->get(App\Workflow\ItemWorkflow::class),$workflow,$locator,
+    'nonexistent-vision','mistral-ocr-latest',false,'unused-vision-model',
+    'unused-ocr','catalog','custom-text',true);
+$record=new Item('OCR-only pipeline');
+$photo=new Image($record,0,'test.jpg','ignored','image/jpeg',str_repeat('c',64));
+$photo->sourceUrl='s3://test/photo.jpg'; $photo->imageMetadata=['imagor'=>['width'=>100,'height'=>100]];
+$photo->ocrText='Recorded inscription';
+$em->persist($record);$em->flush();
+$pipeline->process($record,static function(string $step):void {},false);
+$check($record->marking==='review', 'OCR-only pipeline reaches review.');
+$check($catalogCalls===1, 'Exactly one text extraction request.');
+$check($record->aiResults['catalog']['provider']==='catalog','Extraction provenance uses its independently selected platform.');
+$check(!isset($photo->aiResults['observe']), 'No generative vision call.');
+
 $em->close(); $kernel->shutdown();
 echo "Image decisions: workflow, text-only routing, cache invalidation, Doctrine persistence, images and failures passed.\n";

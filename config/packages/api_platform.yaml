@@ -1,0 +1,11 @@
+api_platform:
+    title: MemorialAtlas
+    description: 'Public gravestone captures, OCR and extracted genealogy claims. Claims require review; photo GPS is the camera position.'
+    version: 1.0.0
+    formats:
+        jsonld: ['application/ld+json']
+        json: ['application/json']
+    defaults:
+        stateless: true
+        cache_headers:
+            vary: ['Content-Type', 'Authorization', 'Origin']

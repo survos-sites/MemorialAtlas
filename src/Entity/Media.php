@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use Symfony\Component\Serializer\Attribute\Groups;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -17,6 +18,7 @@ abstract class Media
     public const AUDIO = 'audio';
 
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
+    #[Groups(['gravestone:read'])]
     public private(set) ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'media')]
@@ -24,6 +26,7 @@ abstract class Media
     public private(set) Item $item;
 
     #[ORM\Column]
+    #[Groups(['gravestone:read'])]
     public private(set) int $position;
 
     abstract public string $kind { get; }
@@ -38,9 +41,11 @@ abstract class Media
     public private(set) string $storagePath;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['gravestone:read'])]
     public private(set) string $mimeType;
 
     #[ORM\Column(length: 64)]
+    #[Groups(['gravestone:read'])]
     public private(set) string $sha256;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -61,6 +66,7 @@ abstract class Media
     public ?string $processingError = null;
 
     #[ORM\Column]
+    #[Groups(['gravestone:read'])]
     public \DateTimeImmutable $createdAt;
 
     public function __construct(Item $item, int $position, string $originalName, string $storagePath, string $mimeType, string $sha256)
@@ -76,6 +82,12 @@ abstract class Media
         $this->sha256 = $sha256;
         $this->createdAt = new \DateTimeImmutable();
         $item->addMedia($this);
+    }
+
+    #[Groups(['gravestone:read'])]
+    public function getContentUrl(): string
+    {
+        return '/media/'.$this->id;
     }
 
     public function getMarking(): string { return $this->marking; }

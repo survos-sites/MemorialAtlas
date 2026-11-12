@@ -33,10 +33,12 @@ Messenger, Scheduler, RateLimiter, Workflow... Usually there is one, and
 
 ## Running the app
 
-- If `compose.yaml` runs services (database, mailer...), run commands through
-  the Symfony CLI: `symfony console ...`, `symfony php bin/phpunit`. The CLI
-  exposes the env vars of the running containers, and `bin/console` alone
-  doesn't see them. `symfony serve -d` starts a web server.
+- Local development uses the shared PostgreSQL server on port 5434, database
+  `scanfony`. Override credentials in `.env.local`. Do not start another database
+  for this app. `symfony serve -d` starts the web server.
+- `compose.standalone*.yaml` retain the optional isolated setup. They are named
+  explicitly so Symfony CLI cannot override DATABASE_URL with a dynamic Docker
+  port. Use them only when intentionally working without shared services.
 - There's no need to clear the cache in dev: the kernel rebuilds what changed.
 - When something fails, read `var/log/dev.log` and the profiler (`/_profiler`
   lists the last requests) before changing code.
