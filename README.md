@@ -20,7 +20,7 @@ Install Git, PHP 8.5+ with the extensions above, Composer, Docker with Compose,
 and the [Symfony CLI](https://symfony.com/download) first. Start Docker, then run:
 
 ```bash
-install_dir="$HOME/sites/MemorialAtlas-$(date +%Y%m%d-%H%M%S)"
+install_dir="$HOME/sites/hackathon"
 (set -o pipefail; curl -fsSL https://raw.githubusercontent.com/survos-sites/MemorialAtlas/main/bin/install.sh |
   bash -s -- --dir "$install_dir") && cd "$install_dir"
 ```
@@ -30,7 +30,8 @@ installer runs in a child shell and cannot change its parent shell’s directory
 You can use `wget -qO-` in place of `curl -fsSL`. To inspect the installer first,
 download that URL to a file and read it before running `bash install.sh`.
 
-The installer clones into the chosen directory and generates a private `.env.local`
+The installer uses `~/sites/hackathon` by default (or the directory passed with
+`--dir`) and generates a private `.env.local`
 with editable API-key placeholders from `.env.local.example`. It
 starts PostgreSQL, Elasticsearch and Imagor, installs Composer dependencies,
 loads six image references (four with saved results, two raw), builds both search indexes, reports processing
@@ -43,7 +44,7 @@ The first download of container images can take several minutes.
 From an existing checkout, run `bash bin/install.sh`. To choose a destination:
 
 ```bash
-install_dir="$HOME/sites/MemorialAtlas"
+install_dir="$HOME/sites/hackathon"
 (set -o pipefail; curl -fsSL https://raw.githubusercontent.com/survos-sites/MemorialAtlas/main/bin/install.sh |
   bash -s -- --dir "$install_dir") && cd "$install_dir"
 ```

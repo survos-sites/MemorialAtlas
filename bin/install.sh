@@ -10,7 +10,7 @@ main() {
             --existing-services) existing=1; shift ;;
             --help|-h)
                 echo 'Usage: bash bin/install.sh [--dir DIRECTORY] [--existing-services]'
-                echo 'Default: clone MemorialAtlas and start its local database, search and thumbnails.'
+                echo 'Default: install in ~/sites/hackathon and start its local database, search and thumbnails.'
                 echo 'Existing .env.local files are preserved. Use --existing-services with your own configured services.'
                 return ;;
             *) echo "Unknown option: $1" >&2; return 1 ;;
@@ -31,7 +31,7 @@ main() {
         if [[ -n "$source_file" && -f "$source_file" && -f "$(dirname "$source_file")/../composer.json" ]]; then
             target=$(cd "$(dirname "$source_file")/.." && pwd)
         else
-            target="$PWD/MemorialAtlas"
+            target="$HOME/sites/hackathon"
         fi
     fi
     if [[ ! -e "$target" ]]; then
