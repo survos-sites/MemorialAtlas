@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+{% block title %}About · MemorialAtlas{% endblock %}
+{% block body %}
+<article style="max-width:780px">
+<span class="eyebrow">Why MemorialAtlas</span>
+<h1>A photograph is a beginning.</h1>
+<p>Gravestones preserve more than names and dates. A shared marker, a marriage inscription, or the words “beloved father” can offer clues to a family and the community around it. MemorialAtlas turns photographs of these markers into searchable records of remembrance, keeping the original evidence close to every interpretation.</p>
+<h2>From photographs to records</h2>
+<ol class="prose">
+<li><strong>Collect the evidence.</strong> Photograph the marker and its details, record the cemetery, and keep GPS coordinates when available. Several photographs may show different parts of the same marker.</li>
+<li><strong>Read the inscription.</strong> OCR produces text from each photograph. Hosted Mistral OCR and a separate Mistral-compatible RustO endpoint can be selected independently.</li>
+<li><strong>Extract meaning.</strong> Structured extraction proposes names, birth and death dates, inscriptions and relationship clues. “Married” can be evidence of a marriage; two names on a stone alone do not establish one. Jev assessments help decide how to use the evidence and suggest which photographs belong together.</li>
+<li><strong>Use vision where it helps.</strong> A visual description can add context for unusual or weathered markers. The text-only workflow uses OCR and structured extraction without requiring a vision model.</li>
+<li><strong>Review and search.</strong> Review the photograph, OCR and recorded AI claims together. Search combines the available evidence into a record for the marker, while uncertainties remain visible.</li>
+</ol>
+<h2>Evidence before certainty</h2>
+<p>Extracted people are not automatically resolved identities, and a person mentioned on a marker is not necessarily buried there. Cemetery context helps narrow the possibilities when names are common. Photo GPS records the camera’s position, not a surveyed grave location.</p>
+<p>AI readings and groupings are proposals. The original photographs and the available processing history let a reader check how a record was produced.</p>
+<h2>A starting point for shared genealogy</h2>
+<p>Our public, read-only <a href="/api">API</a> exposes records, OCR, coordinates and structured claims for other projects to use. The aim is to support genealogy tools, including FollowTheMoney-based work and open-source family-tree projects, without losing the connection to the source photograph. <a href="/api/docs">Explore the API documentation.</a></p>
+<h2>Built in the open</h2>
+<p>MemorialAtlas is a focused project for the <a href="https://symfony.com/hackathon/">Symfony AI &amp; MCP Hackathon</a>, built with Symfony, Doctrine, API Platform and Elasticsearch. It explores how a small collection of locally gathered photographs can become useful to families, researchers and the people caring for cemeteries.</p>
+<p><a href="https://github.com/survos-sites/MemorialAtlas">Read the source and contribute on GitHub</a>, or <a href="{{ path('item_search') }}">explore the collection</a>.</p>
+</article>
+{% endblock %}

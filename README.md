@@ -11,8 +11,9 @@ Production runs as the Dokku app `memorialatlas` on `fsn1`. The deployment remot
 ## Setup
 
 Requires PHP 8.5+ (GD, PDO PostgreSQL and SQLite), Composer, an existing
-PostgreSQL server, and an S3 bucket with read/write credentials. The hackathon
-organizer supplies S3 settings for a bucket containing the prepared demo.
+PostgreSQL server, and an S3 bucket with read/write credentials. The current demo loader requires S3 credentials for a bucket containing the prepared demo.
+A public Hugging Face dataset containing photographs and recorded extraction results
+is planned but has not been published yet.
 No app-specific database container or new AI calls are needed to view it.
 
 ```bash
