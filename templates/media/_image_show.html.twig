@@ -1,5 +1,5 @@
 <article class="card" id="media-{{ media.id }}">
-    <a href="{{ path('media_file', {id:media.id}) }}"><img src="{{ path('media_file', {id:media.id}) }}" alt="{{ media.originalName }}"></a>
+    <a href="{{ path('media_file', {id:media.id}) }}"><twig:ux:image :src="media.thumbnailSource" width="600" alt="{{ media.originalName }}" /></a>
     <div class="body">
         <span class="badge">{{ media.position + 1 }} · Image · {{ media.marking }}</span>
         <p>{{ media.originalName }}</p>

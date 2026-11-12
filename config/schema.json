@@ -15850,6 +15850,95 @@
                 },
                 "additionalProperties": false
             },
+            "ux_image": {
+                "$ref": "#/$defs/types/object_null",
+                "properties": {
+                    "provider": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": null
+                    },
+                    "formats": {
+                        "$ref": "#/$defs/types/array_null",
+                        "items": {
+                            "$ref": "#/$defs/types/scalar"
+                        },
+                        "default": [
+                            "avif",
+                            "webp",
+                            "jpeg"
+                        ]
+                    },
+                    "resolutions": {
+                        "$ref": "#/$defs/types/array_null",
+                        "items": {
+                            "$ref": "#/$defs/types/integer"
+                        },
+                        "default": [
+                            6016,
+                            5120,
+                            4480,
+                            3840,
+                            3200,
+                            2560,
+                            2048,
+                            1920,
+                            1668,
+                            1280,
+                            1080,
+                            960,
+                            828,
+                            750,
+                            640
+                        ]
+                    },
+                    "quality": {
+                        "$ref": "#/$defs/types/integer_null",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": null,
+                        "description": "The quality of every generated image that sets none itself; null leaves it to the provider."
+                    },
+                    "presets": {
+                        "$ref": "#/$defs/types/object_null",
+                        "additionalProperties": {
+                            "$ref": "#/$defs/types/object_null",
+                            "properties": {
+                                "width": {
+                                    "$ref": "#/$defs/types/integer",
+                                    "minimum": 1
+                                },
+                                "height": {
+                                    "$ref": "#/$defs/types/integer",
+                                    "minimum": 1
+                                },
+                                "fit": {
+                                    "$ref": "#/$defs/types/scalar"
+                                },
+                                "format": {
+                                    "$ref": "#/$defs/types/string_null"
+                                },
+                                "quality": {
+                                    "$ref": "#/$defs/types/integer",
+                                    "minimum": 1,
+                                    "maximum": 100
+                                },
+                                "operations": {
+                                    "$ref": "#/$defs/types/object_null",
+                                    "additionalProperties": {
+                                        "$ref": "#/$defs/types/object_null",
+                                        "additionalProperties": {
+                                            "$ref": "#/$defs/types/scalar"
+                                        }
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "description": "Named sets of transformations, applied through the \"preset\" prop or option."
+                    }
+                },
+                "additionalProperties": false
+            },
             "ux_router": {
                 "$ref": "#/$defs/types/object_null",
                 "properties": {
@@ -18220,6 +18309,9 @@
         "ux_icons": {
             "$ref": "#/$defs/nodes/ux_icons"
         },
+        "ux_image": {
+            "$ref": "#/$defs/nodes/ux_image"
+        },
         "ux_router": {
             "$ref": "#/$defs/nodes/ux_router"
         },
@@ -18333,6 +18425,9 @@
                 },
                 "ux_icons": {
                     "$ref": "#/$defs/nodes/ux_icons"
+                },
+                "ux_image": {
+                    "$ref": "#/$defs/nodes/ux_image"
                 },
                 "ux_router": {
                     "$ref": "#/$defs/nodes/ux_router"
@@ -18454,6 +18549,9 @@
                 "ux_icons": {
                     "$ref": "#/$defs/nodes/ux_icons"
                 },
+                "ux_image": {
+                    "$ref": "#/$defs/nodes/ux_image"
+                },
                 "ux_router": {
                     "$ref": "#/$defs/nodes/ux_router"
                 },
@@ -18572,6 +18670,9 @@
                 },
                 "ux_icons": {
                     "$ref": "#/$defs/nodes/ux_icons"
+                },
+                "ux_image": {
+                    "$ref": "#/$defs/nodes/ux_image"
                 },
                 "ux_router": {
                     "$ref": "#/$defs/nodes/ux_router"

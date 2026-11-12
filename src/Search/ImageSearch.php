@@ -12,14 +12,14 @@ use Survos\SearchBundle\Search\{AbstractFieldSearch, HitTemplateSearchInterface}
 #[AsSearch(index: Image::class, name: 'images', adapter: 'es')]
 final class ImageSearch extends AbstractFieldSearch implements HitTemplateSearchInterface
 {
-    public function __construct(private readonly FieldReader $fields, private readonly \Survos\ImagorBundle\Service\ImagorUrlBuilder $imagor) {}
+    public function __construct(private readonly FieldReader $fields, private readonly \Symfony\UX\Image\ImageUrlGenerator $imagor) {}
     protected function getFieldClass(array $options = []): string { return ImageDocument::class; }
     public function getHitTemplate(): ?string { return 'search/image_hit.html.twig'; }
 
     public function document(Image $image): array
     {
         $document = get_object_vars(ImageDocument::fromImage($image));
-        $document['thumbnailUrl'] = $image->sourceUrl === null ? null : $this->imagor->preset($image->sourceUrl, 'thumb');
+        $document['thumbnailUrl'] = $this->imagor->generate($image->getThumbnailSource(), preset: 'thumb');
         return $document;
     }
 

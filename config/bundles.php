@@ -25,4 +25,5 @@ return [
     Survos\CloudflaredBundle\SurvosCloudflaredBundle::class => ['all' => true],
     ApiPlatform\Symfony\Bundle\ApiPlatformBundle::class => ['all' => true],
     Nelmio\CorsBundle\NelmioCorsBundle::class => ['all' => true],
+    Symfony\UX\Image\UXImageBundle::class => ['all' => true],
 ];

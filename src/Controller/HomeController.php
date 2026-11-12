@@ -60,6 +60,9 @@ final class HomeController extends AbstractController
     #[Route('/media/{id}', name: 'media_file', requirements: ['id' => '\d+'])]
     public function media(Media $media, MediaStorage $storage, \Survos\ImagorBundle\Service\ImagorUrlBuilder $imagor): Response
     {
+        if ($media instanceof Image && str_starts_with($media->sourceUrl ?? '', 'https://')) {
+            return $this->redirect($media->sourceUrl);
+        }
         if ($media instanceof Image && $media->sourceUrl !== null) {
             return $this->redirect($imagor->preset($media->sourceUrl, 'large'));
         }

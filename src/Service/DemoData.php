@@ -8,7 +8,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\{AsCommand, Argument};
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class DemoData
@@ -52,11 +51,24 @@ final readonly class DemoData
     public function load(): Item
     {
         $data=$this->http->request('GET', $this->manifestUrl)->toArray();
+        if (($data['version'] ?? null) === 2) {
+            if (empty($data['records'])) throw new \RuntimeException('Empty demo collection.');
+            $first = null;
+            foreach ($data['records'] as $record) {
+                $item = $this->loadRecord($record);
+                $first ??= $item;
+            }
+            return $first;
+        }
+        return $this->loadRecord($data);
+    }
+
+    private function loadRecord(array $data): Item
+    {
         if (($data['version']??null)!==1 || empty($data['images'])) throw new \RuntimeException('Unsupported or empty demo package.');
         // A durable demo identity makes retries idempotent without overwriting reviewed records.
         $existing=$this->em->getConnection()->fetchOne("SELECT id FROM item WHERE ai_results->>'demoKey' = ?",[$data['key']]);
         if ($existing) return $this->em->find(Item::class,(int)$existing);
-        $files=new Filesystem();
         $item=new Item($data['item']['title']);
         foreach (['description','locationContext','recordType','marking','aiResults'] as $field) $item->$field=$data['item'][$field];
         $item->aiResults['demoKey']=$data['key'];
@@ -67,12 +79,8 @@ final readonly class DemoData
         }
         foreach ($data['images'] as $image) {
             if (!preg_match('/^[a-f0-9]{64}$/D',$image['sha256']) || !str_starts_with($image['url'] ?? '', 'https://')) throw new \RuntimeException('Invalid demo image reference.');
-            $tmp=$files->tempnam(sys_get_temp_dir(),'scanfony-demo-');
-            try {
-                $files->dumpFile($tmp, $this->http->request('GET', $image['url'])->getContent());
-                if (hash_file('sha256',$tmp)!==$image['sha256']) throw new \RuntimeException('Demo image checksum mismatch.');
-                $media=$this->storage->import($item,$tmp,$image['originalName']);
-            } finally {$files->remove($tmp);}
+            $media=new Image($item, count($item->media), $image['originalName'], substr($image['sha256'],0,2).'/'.$image['sha256'], $image['mimeType'], $image['sha256']);
+            $media->sourceUrl=$image['url'];
             foreach (['source','donor','description','ocrText','latitude','longitude','marking','aiResults','imageMetadata'] as $field) $media->$field=$image[$field];
             // Retain provider receipts as originally recorded; source IDs are provenance, not local foreign keys.
             $media->aiResults['demoSourceMediaId']=$image['id'];

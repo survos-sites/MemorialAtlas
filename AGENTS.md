@@ -36,9 +36,9 @@ Messenger, Scheduler, RateLimiter, Workflow... Usually there is one, and
 - Local development uses the shared PostgreSQL server on port 5434, database
   `scanfony`. Override credentials in `.env.local`. Do not start another database
   for this app. `symfony serve -d` starts the web server.
-- `compose.standalone*.yaml` retain the optional isolated setup. They are named
-  explicitly so Symfony CLI cannot override DATABASE_URL with a dynamic Docker
-  port. Use them only when intentionally working without shared services.
+- `docker-compose.yaml` contains Imagor and an optional `standalone` database
+  profile. Use the database only without shared services. Service-ignore labels
+  prevent Symfony CLI from overriding DATABASE_URL.
 - There's no need to clear the cache in dev: the kernel rebuilds what changed.
 - When something fails, read `var/log/dev.log` and the profiler (`/_profiler`
   lists the last requests) before changing code.

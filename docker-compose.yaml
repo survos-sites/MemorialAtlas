@@ -1,0 +1,37 @@
+services:
+  imagor:
+    image: shumc/imagor:1.10.1
+    ports:
+      - "127.0.0.1:${IMAGOR_PORT:-8088}:8000"
+    environment:
+      IMAGOR_UNSAFE: "1"
+      HTTP_LOADER_ALLOWED_SOURCES: "huggingface.co,*.huggingface.co,*.hf.co"
+      FILE_LOADER_BASE_DIR: /media
+      FILE_STORAGE_BASE_DIR: /cache/source
+      FILE_RESULT_STORAGE_BASE_DIR: /cache/result
+    volumes:
+      - ./var/media:/media:ro
+      - ./var/imagor:/cache
+    labels:
+      com.symfony.server.service-ignore: "true"
+
+  database:
+    image: timescale/timescaledb-ha:pg18
+    profiles: [standalone]
+    user: root
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-memorialatlas}
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5544}:5432"
+    volumes:
+      - ${POSTGRES_DATA_DIR:-./var/postgres}:/home/postgres/pgdata/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/10-vector.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    labels:
+      com.symfony.server.service-ignore: "true"

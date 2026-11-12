@@ -10,6 +10,12 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity]
 class Image extends Media
 {
+    public function getThumbnailSource(): string
+    {
+        $source = $this->sourceUrl ?: $this->storagePath;
+        return str_starts_with($source, 's3://') ? substr($source, 5) : $source;
+    }
+
     #[Groups(['gravestone:read'])]
     public string $kind { get => self::IMAGE; }
 

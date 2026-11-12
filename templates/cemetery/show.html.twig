@@ -8,7 +8,7 @@
 <div class="grid">
 {% for item in items %}
 <article class="card">
-{% if item.media.first %}<a href="{{ path('item_show', {id:item.id}) }}"><img loading="lazy" src="{{ path('media_file', {id:item.media.first.id}) }}" alt="{{ item.title }}"></a>{% endif %}
+{% if item.media.first and item.media.first.kind == 'image' %}<a href="{{ path('item_show', {id:item.id}) }}"><twig:ux:image :src="item.media.first.thumbnailSource" width="360" alt="{{ item.title }}" /></a>{% endif %}
 <div class="body"><span class="badge">{{ item.marking == 'review' ? 'Ready to review' : item.marking }}</span>
 <h3><a href="{{ path('item_show', {id:item.id}) }}">{{ item.title }}</a></h3>
 <p>{{ item.media|length }} {{ item.media|length == 1 ? 'photograph' : 'photographs grouped' }}</p>

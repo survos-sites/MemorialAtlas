@@ -38,6 +38,8 @@
         "symfony/security-csrf": "^8.2@beta",
         "symfony/stimulus-bundle": "^3.7",
         "symfony/twig-bundle": "^8.2@beta",
+        "symfony/ux-image": "^3.7",
+        "symfony/ux-imagor-image": "^3.7",
         "symfony/validator": "^8.2@beta",
         "symfony/workflow": "^8.2@beta",
         "symfony/yaml": "^8.2@beta",

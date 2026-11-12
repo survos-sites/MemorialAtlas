@@ -8,7 +8,7 @@
         <p>A name, a date, “beloved father,” a shared life. Cemetery inscriptions preserve connections between people and the places they called home. MemorialAtlas helps families, researchers and communities find those details and return to the photographs behind them.</p>
         <a class="button" href="{{ path('item_search') }}">Search the collection</a>
     </div>
-    {% if heroImage %}<figure><img src="{{ path('media_file', {id: heroImage.id}) }}" alt="A gravestone from the MemorialAtlas collection"><figcaption>Every record begins with a photograph. Every reading remains open to review.</figcaption></figure>{% endif %}
+    {% if heroImage %}<figure><twig:ux:image :src="heroImage.thumbnailSource" width="600" alt="A gravestone from the MemorialAtlas collection" /><figcaption>Every record begins with a photograph. Every reading remains open to review.</figcaption></figure>{% endif %}
 </section>
 <section style="max-width:800px">
 <h2>A camera roll is only the beginning.</h2>

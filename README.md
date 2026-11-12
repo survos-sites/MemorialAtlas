@@ -10,27 +10,30 @@ Production runs as the Dokku app `memorialatlas` on `fsn1`. The deployment remot
 
 ## Setup
 
-Requires PHP 8.5+ (GD, PDO PostgreSQL and SQLite), Composer and an existing
-PostgreSQL server. The [public Sperryville demo](https://huggingface.co/datasets/museado/memorialatlas-demo)
-includes one photograph with saved OCR, descriptions and extraction results.
+Requires PHP 8.5+ (GD, PDO PostgreSQL and SQLite), Composer, Docker for Imagor,
+and PostgreSQL (existing or the optional Compose service below). The [public Sperryville demo](https://huggingface.co/datasets/museado/memorialatlas-demo)
+includes four photographs with saved OCR and extraction results.
 No S3, Hugging Face or AI credentials are required to load and browse it.
 
 ~~~bash
 git clone https://github.com/survos-sites/MemorialAtlas.git
 cd MemorialAtlas
-composer install
 cp .env.local.example .env.local
-# Set DATABASE_URL for your existing PostgreSQL server.
+composer install
+docker compose --profile standalone up -d --wait
 bin/load-data
 symfony server:start -d          # or: php -S 127.0.0.1:8000 -t public
 ~~~
 
 Startup creates the application database if needed, applies migrations, downloads
-the public demo and prints its item URL. Repeating it preserves the existing
-demo and review changes. Photos are checksum-checked and stored locally.
+the public demo listing and prints its item URL. Repeating it preserves the existing
+demo and review changes. Image URLs and checksums are retained from the manifest. Originals stay on Hugging Face; Imagor fetches them only when a thumbnail is requested.
 The selected saved receipts retain source IDs as provenance. No AI calls occur.
 
-The five-minute target assumes PHP/Composer and PostgreSQL are already available.
+The five-minute target assumes PHP/Composer and Docker are already available;
+the first container-image download depends on your connection. To use an existing
+PostgreSQL server, set DATABASE_URL in .env.local and start only
+`docker compose up -d imagor`.
 Your database user needs permission to create the application database, or you
 can create that database beforehand. Startup never provisions a server.
 Use --skip-demo for an empty schema. DEMO_MANIFEST_URL selects a different
@@ -45,10 +48,10 @@ S3 and provider credentials are for processing new photographs or the optional
 app:demo:publish legacy S3 export, not for loading the public demo.
 All /admin routes require ROLE_ADMIN and an administrator password hash.
 
-Local defaults use the shared PostgreSQL service on port 5434. Change
-`DATABASE_URL` for another developer's server. The optional standalone Compose
-files are deliberately not auto-discovered: a dynamic Docker port must not
-silently replace this explicit connection.
+The committed .env defaults use the shared PostgreSQL service on port 5434;
+.env.local.example selects the standalone service on port 5544. Change
+`DATABASE_URL` for another developer's server. The optional standalone database uses a fixed port and a Symfony CLI ignore
+label so Docker cannot silently replace this explicit connection.
 
 ## Image processing
 
@@ -386,3 +389,26 @@ Cross-origin reads are public. Writes are disabled. Internal storage paths,
 donor details, errors and raw AI request payloads are excluded.
 
 Run `php tests/public-api.php` against the local server to check the contract.
+
+### Thumbnail and optional database services
+
+Start the stock Imagor image with `docker compose up -d imagor`. Symfony UX Image
+uses the UX Imagor bridge through `UX_IMAGE_DSN`; its default points to localhost
+port 8088. Public Hugging Face photos need no storage credentials. Cache files
+stay under `var/imagor` on the host. This unsigned, localhost-only configuration
+is for development; use a signed HTTPS Imagor endpoint for a public deployment.
+
+Keep using your existing PostgreSQL server, or start the optional Timescale
+PostgreSQL 18 service with `docker compose --profile standalone up -d`.
+For that service, set this in `.env.local` before running `bin/load-data`:
+
+```dotenv
+DATABASE_URL="postgresql://app:app@127.0.0.1:5544/memorialatlas?serverVersion=18&charset=utf8"
+```
+
+The image includes pgvector, enabled during initial database creation. PostgreSQL
+already includes full-text search. The application still uses Elasticsearch for
+its search page; adding this service does not change the search backend.
+Database files live in `var/postgres`, or the host directory supplied through
+`POSTGRES_DATA_DIR`. No database volume or disk-size limit is declared. The
+Symfony CLI service-ignore label prevents automatic DATABASE_URL overrides.

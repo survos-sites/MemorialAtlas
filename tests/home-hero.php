@@ -9,7 +9,7 @@ $ids = [];
 foreach (['gravestone', 'place_reference'] as $type) {
     $item = new App\Entity\Item('Homepage selection test');
     $item->recordType = $type;
-    $image = new App\Entity\Image($item, 0, 'test.jpg', 'test/hero', 'image/jpeg', hash('sha256', random_bytes(16)));
+    $image = new App\Entity\Image($item, 0, 'test.jpg', 'test/hero-'.$type, 'image/jpeg', hash('sha256', random_bytes(16)));
     $em->persist($item);
     $em->flush();
     $ids[$type] = [$item->id, $image->id];
@@ -18,7 +18,7 @@ $kernel->shutdown();
 $browser = new Symfony\Bundle\FrameworkBundle\KernelBrowser($kernel);
 try {
     $crawler = $browser->request('GET', '/');
-    if ($browser->getResponse()->getStatusCode() !== 200 || $crawler->filter('.hero img')->attr('src') !== '/media/'.$ids['gravestone'][1]) {
+    if ($browser->getResponse()->getStatusCode() !== 200 || !str_contains(rawurldecode($crawler->filter('.hero img')->attr('src')), 'test/hero-gravestone')) {
         throw new RuntimeException('The hero must select a gravestone even when a newer reference photograph exists.');
     }
 } finally {

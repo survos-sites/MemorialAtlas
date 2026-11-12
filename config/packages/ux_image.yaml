@@ -1,0 +1,8 @@
+ux_image:
+    provider: '%env(resolve:default::UX_IMAGE_DSN)%'
+    presets:
+        thumb:
+            width: 360
+            height: 360
+            fit: contain
+            format: webp
