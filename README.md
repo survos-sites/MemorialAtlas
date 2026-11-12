@@ -16,8 +16,8 @@ organizer supplies S3 settings for a bucket containing the prepared demo.
 No app-specific database container or new AI calls are needed to view it.
 
 ```bash
-git clone https://github.com/survos-sites/stonestory.git scanfony
-cd scanfony
+git clone https://github.com/survos-sites/MemorialAtlas.git
+cd MemorialAtlas
 composer install
 cp .env.local.example .env.local  # fresh setup only
 # Fill DATABASE_URL and the four S3 settings in .env.local.
