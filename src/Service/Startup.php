@@ -12,9 +12,19 @@ final readonly class Startup
     public function __construct(private DemoData $demo,
         #[Autowire('%kernel.project_dir%')] private string $directory,
         #[Autowire('%env(DATABASE_URL)%')] private string $databaseUrl,
+        private \Survos\ElasticBundle\Service\ElasticIndexService $index,
     ) {}
 
-    #[AsCommand('app:startup', 'Check configuration, create the app database, apply migrations and load the public Sperryville demo')]
+    #[AsCommand('app:load', 'Import or refresh Hugging Face image references and update search indexes')]
+    public function load(SymfonyStyle $io): int
+    {
+        $item = $this->demo->load();
+        if ($this->index->populateCommand($io) !== 0) return 1;
+        $io->success('HF records and search are ready. Start at /items/'.$item->id.'. Raw records are queued; no AI calls were made.');
+        return 0;
+    }
+
+    #[AsCommand('app:startup', 'Prepare the database, import the public HF listing and update search')]
     public function start(SymfonyStyle $io, #[Option('Prepare schema without importing demo data')] bool $skipDemo = false): int
     {
         $start=microtime(true);
@@ -33,8 +43,7 @@ final readonly class Startup
             if (!$process->isSuccessful()) return 1;
         }
         if (!$skipDemo) {
-            $item=$this->demo->load();
-            $io->success('Demo ready at /items/'.$item->id.' (saved OCR, descriptions and Jev decisions; no AI calls).');
+            if ($this->load($io) !== 0) return 1;
         }
         $io->success(sprintf('Startup finished in %.1f seconds. Run symfony server:start -d, or php -S 127.0.0.1:8000 -t public.',microtime(true)-$start));
         return 0;

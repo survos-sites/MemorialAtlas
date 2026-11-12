@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -u
+cd "$(dirname "$0")/.."
+console=(symfony console)
+# Dokku's PHP buildpack does not include the Symfony CLI.
+if ! command -v symfony >/dev/null; then console=(php bin/console); fi
 while true; do
-    php bin/console elastic:spool:flush
+    "${console[@]}" elastic:spool:flush
     sleep 10
 done

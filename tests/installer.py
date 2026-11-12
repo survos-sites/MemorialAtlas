@@ -22,8 +22,8 @@ with tempfile.TemporaryDirectory(prefix='memorialatlas-install-') as directory:
 if [[ "$*" == *random_bytes* ]]; then printf 'test-secret'; fi
 ''',
         'composer': 'exit "${INSTALL_TEST_COMPOSER_EXIT:-0}"\n',
-        'docker': 'exit 0\n',
-        'symfony': 'exit 0\n',
+        'docker': 'if [[ "$1" == info ]]; then exit "${INSTALL_TEST_RUNTIME_EXIT:-0}"; fi\n',
+        'symfony': 'if [[ "$*" == "console app:startup" ]]; then exit "${INSTALL_TEST_LOAD_EXIT:-0}"; fi\n',
     }
     for name, body in scripts.items():
         path = commands / name
@@ -39,7 +39,8 @@ if [[ "$*" == *random_bytes* ]]; then printf 'test-secret'; fi
     assert result.returncode == 0, result.stderr
     calls = log.read_text()
     assert 'compose --profile standalone --profile search up -d --wait' in calls
-    assert calls.index('load-data') < calls.index('elastic:index:rebuild') < calls.index('app:processing:status')
+    assert calls.index('symfony console app:startup') < calls.index('symfony console app:processing:status')
+    assert 'elastic:index:rebuild' not in calls
     assert calls.index('symfony server:start -d') < calls.index('symfony open:local')
     assert calls.strip().endswith('symfony open:local')
     assert 'The Hugging Face demo is already loaded' in result.stdout
@@ -83,6 +84,22 @@ if [[ "$*" == *random_bytes* ]]; then printf 'test-secret'; fi
     assert 'symfony server:stop' in log.read_text()
     assert 'docker compose --profile standalone --profile search down' in log.read_text()
     assert '--volumes' not in log.read_text()
+
+    log.write_text('')
+    runtime_target = root / 'stopped runtime'
+    result = run(runtime_target, overrides={'INSTALL_TEST_RUNTIME_EXIT': '1'})
+    assert result.returncode != 0
+    assert 'podman machine start' in result.stderr
+    assert 'composer install' not in log.read_text()
+    assert not (runtime_target / '.env.local').exists()
+    runtime_target.joinpath('.env.local').write_text('# MemorialAtlas installer: managed local services\n')
+    log.write_text('')
+    assert run(runtime_target, overrides={'INSTALL_TEST_RUNTIME_EXIT': '1'}).returncode != 0
+    assert 'composer install' not in log.read_text()
+    log.write_text('')
+    wrapper = subprocess.run(['sh', str(Path(__file__).resolve().parents[1] / 'bin/load-data')], env=env)
+    assert wrapper.returncode == 0
+    assert 'symfony console app:load' in log.read_text()
 
     occupied = root / 'unrelated'
     occupied.mkdir()

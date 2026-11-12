@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 if [[ -f vendor/symfony/messenger/MessageBus.php ]]; then
-    php bin/console messenger:stop-workers || echo 'Could not signal consumers; stop any manually started consumer with Ctrl-C.'
+    symfony console messenger:stop-workers || echo 'Could not signal consumers; stop any manually started consumer with Ctrl-C.'
 fi
 symfony server:stop
 docker compose --profile standalone --profile search down

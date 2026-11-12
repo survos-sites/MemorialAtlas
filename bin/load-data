@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 set -eu
 cd "$(dirname "$0")/.."
-exec php bin/console app:startup "$@"
+exec symfony console app:load "$@"

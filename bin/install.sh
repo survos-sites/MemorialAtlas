@@ -2,6 +2,18 @@
 # Works both from a checkout and as a complete script piped to bash.
 set -Eeuo pipefail
 
+require_runtime() {
+    command -v docker >/dev/null || { echo 'Install Docker with Compose, or configure existing services in .env.local.' >&2; return 1; }
+    docker compose version >/dev/null
+    docker info >/dev/null 2>&1 || {
+        echo 'Start your container runtime, then rerun this installer:' >&2
+        echo '  Podman on macOS: podman machine start' >&2
+        echo '  Docker Desktop: open the Docker Desktop application' >&2
+        echo 'The installer does not start the Podman VM or Docker Desktop automatically.' >&2
+        return 1
+    }
+}
+
 main() {
     local target='' existing=0 source_file="${BASH_SOURCE[0]:-}" managed=0
     while (($#)); do
@@ -44,9 +56,7 @@ main() {
             echo 'Create .env.local with DATABASE_URL, ELASTICSEARCH_DSN and UX_IMAGE_DSN for your services, then rerun with --existing-services.' >&2
             return 1
         fi
-        command -v docker >/dev/null || { echo 'Install Docker with Compose, or configure existing services in .env.local.' >&2; return 1; }
-        docker compose version >/dev/null
-        docker info >/dev/null 2>&1 || { echo 'Start Docker, then rerun this installer.' >&2; return 1; }
+        require_runtime
         local secret
         secret=$(php -r 'echo bin2hex(random_bytes(32));')
         (umask 077
@@ -64,6 +74,7 @@ main() {
         managed=1
     fi
     if ((managed)); then
+        require_runtime
         php bin/check-local-ports.php
     fi
     composer install --no-interaction --prefer-dist
@@ -73,9 +84,8 @@ main() {
     else
         echo 'Using existing .env.local and services; no database container will be started.'
     fi
-    bin/load-data
-    php bin/console elastic:index:rebuild --no-interaction
-    php bin/console app:processing:status
+    symfony console app:startup
+    symfony console app:processing:status
     symfony server:start -d
     if ! symfony open:local; then
         echo 'The server is running. Open the local URL printed above in your browser.'
@@ -86,14 +96,13 @@ main() {
 The Hugging Face demo is already loaded; no API keys were needed.
 After startup, from the project directory:
 
-  bin/load-data                                  # Fetch the public HF listing again; preserve existing records
-  php bin/console elastic:index:rebuild --no-interaction
-  php bin/console app:processing:status           # Check pending photos and missing configuration
-  php bin/console messenger:consume processing -vv # Populate missing results AFTER configuring keys
+  symfony console app:load                       # Refresh HF references and search together
+  symfony console app:processing:status           # Check pending photos and missing configuration
+  symfony console messenger:consume processing -vv # Populate missing results AFTER configuring keys
   bin/stop                                       # Stop this checkout before another fresh install
 
 For another compatible public dataset, set DEMO_MANIFEST_URL in .env.local
-before running bin/load-data. Originals stay on Hugging Face; thumbnails load on demand.
+before running symfony console app:load. Originals stay on Hugging Face; thumbnails load on demand.
 
 .env.local includes empty API-key and storage settings copied from .env.local.example.
 Edit those to process new photographs; the saved demo works without them.

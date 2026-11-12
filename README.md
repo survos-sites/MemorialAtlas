@@ -57,7 +57,7 @@ changes and does not pull Git updates or overwrite credentials.
 
 Saved OCR and claims are usable immediately. Unprocessed photographs retain their
 status and show an “Awaiting processing” badge; failed photos show “Processing
-needs retry.” Run `php bin/console app:processing:status` to see counts and missing
+needs retry.” Run `symfony console app:processing:status` to see counts and missing
 configuration. To process your own photos, fill in the S3, Imagor `/meta`, TypeSafe and
 selected AI provider placeholders in `.env.local`. Existing configuration files
 are preserved; older installations can copy missing names from `.env.local.example`. The stock
@@ -76,12 +76,12 @@ PostgreSQL server, set DATABASE_URL in .env.local and start only
 `docker compose up -d imagor`.
 Your database user needs permission to create the application database, or you
 can create that database beforehand. Startup never provisions a server.
-Use --skip-demo for an empty schema. DEMO_MANIFEST_URL selects a different
+Use `symfony console app:startup --skip-demo` for an empty schema. DEMO_MANIFEST_URL selects a different
 public demo manifest.
 
 The installer includes Elasticsearch and builds search indexes. With existing
 services, configure ELASTICSEARCH_DSN and run
-php bin/console elastic:index:rebuild --no-interaction after loading new data.
+symfony console app:load to import the HF listing and refresh both search indexes.
 Production deployments rebuild both indexes before releasing the application.
 The home, About and record pages do not need Elasticsearch.
 
@@ -355,7 +355,7 @@ and is not automatically run for every import.
 Use OCR-only processing for uniform markers such as Arlington:
 
 ```bash
-php bin/console app:import /photos/arlington --cemetery=ID --process --text-only
+symfony console app:import /photos/arlington --cemetery=ID --process --text-only
 ```
 
 The processing policy is saved on each item, including retries. OCR-only mode
@@ -449,7 +449,7 @@ is for development; use a signed HTTPS Imagor endpoint for a public deployment.
 
 Keep using your existing PostgreSQL server, or start the optional Timescale
 PostgreSQL 18 service with `docker compose --profile standalone up -d`.
-For that service, set this in `.env.local` before running `bin/load-data`:
+For that service, set this in `.env.local` before running `symfony console app:startup`:
 
 ```dotenv
 DATABASE_URL="postgresql://app:app@127.0.0.1:5544/memorialatlas?serverVersion=18&charset=utf8"
@@ -487,7 +487,10 @@ does not repair damaged image storage.
 
 ## Populate raw photographs
 
-`bin/load-data` imports the public Hugging Face listing without fetching originals.
+`symfony console app:load` imports the public Hugging Face listing without fetching
+originals and updates both search indexes. `bin/load-data` is a shortcut for this
+command. Run `symfony console app:startup` for first-time database creation and
+migrations; it calls the same loading workflow afterward.
 Records without saved results remain visible with their photographs, and pending
 records are queued in Symfony Messenger using the existing application database.
 Repeated imports preserve reviewed data and do not enqueue the same pending record
@@ -497,8 +500,8 @@ The local site shows a banner with the next steps while records await processing
 
 ```bash
 # Fill in the processing settings in .env.local first.
-php bin/console app:processing:status
-php bin/console messenger:consume processing -vv
+symfony console app:processing:status
+symfony console messenger:consume processing -vv
 ```
 
 The consumer refuses to start on pending work if required settings are missing,
@@ -511,7 +514,13 @@ New extracted data is saved and search is updated after each record; refresh the
 page to see it. This checks configuration presence, not credential validity.
 
 Transient processing errors are retried three times. Inspect failures with
-`php bin/console messenger:failed:show` and, after fixing their cause, retry with
-`php bin/console messenger:failed:retry`. Review completed records before treating
+`symfony console messenger:failed:show` and, after fixing their cause, retry with
+`symfony console messenger:failed:retry`. Review completed records before treating
 AI proposals as facts. Production visitors see a plain pending-data notice;
 configuration commands are shown locally and to signed-in administrators.
+
+The installer never starts the Podman VM or Docker Desktop itself. When the runtime
+is stopped, it prints the appropriate startup instructions and exits, including on
+reruns. Once you start the runtime, it can start this checkout's Compose services.
+Local wrappers use `symfony console`. The production search worker falls back to
+`php bin/console` when the Symfony CLI is absent from the Dokku PHP buildpack.
