@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+{% block title %}OCR lab · StoneStory{% endblock %}
+{% block body %}
+<h1>OCR lab</h1>
+<p class="muted">One image through each model of the local rusto OCR service ({{ service }}). Tombstone photos link here with the URL filled in.</p>
+
+<form method="post">
+    <p><label>URL: <input type="url" name="url" value="{{ url }}" size="80" required placeholder="https://…/image.jpg"></label></p>
+    <p>Models:
+        <label><input type="checkbox" name="models[]" value="all"{{ all ? ' checked' }}> all</label>
+        {% for m in models %}<label style="margin-left:1em"><input type="checkbox" name="models[]" value="{{ m }}"{{ not all and m in selected ? ' checked' }}> {{ m }}</label>{% endfor %}
+    </p>
+    <button type="submit">Run OCR</button>
+</form>
+
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+
+{% if results %}
+<div style="display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap:1.5rem; margin-top:1.5rem">
+    <div>{% if image %}<img src="{{ image }}" alt="Image sent to OCR" style="max-width:100%">{% endif %}</div>
+    <div style="display:grid; grid-template-columns: repeat({{ results|length > 1 ? 2 : 1 }}, minmax(0, 1fr)); gap:1rem">
+    {% for r in results %}
+        <article class="card"><div class="body">
+            <h3>{{ r.model }}</h3>
+            <p class="muted">{{ r.ms }} ms · {{ r.chars }} characters · {{ r.lines }} lines</p>
+            {% if r.error %}<p role="alert">{{ r.error }}</p>{% else %}<pre style="white-space:pre-wrap">{{ r.text }}</pre>{% endif %}
+        </div></article>
+    {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
