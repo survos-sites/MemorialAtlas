@@ -9,14 +9,16 @@ use Symfony\Component\Console\Attribute\{AsCommand, Argument};
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class DemoData
 {
-    public function __construct(private EntityManagerInterface $em, private MediaStorage $storage,
+    public function __construct(private EntityManagerInterface $em, private MediaStorage $storage, private HttpClientInterface $http,
         #[Autowire('%env(S3_ENDPOINT)%')] private string $endpoint,
         #[Autowire('%env(AWS_S3_BUCKET_NAME)%')] private string $bucket,
         #[Autowire('%env(AWS_S3_ACCESS_ID)%')] private string $accessKey,
         #[Autowire('%env(AWS_S3_ACCESS_SECRET)%')] private string $secret,
+        #[Autowire('%env(DEMO_MANIFEST_URL)%')] private string $manifestUrl,
     ) {}
 
     private function client(): S3Client
@@ -49,7 +51,7 @@ final readonly class DemoData
 
     public function load(): Item
     {
-        $data=json_decode($this->client()->getObject(['Bucket'=>$this->bucket,'Key'=>'scanfony/demo/v1.json'])->getBody()->getContentAsString(),true,512,JSON_THROW_ON_ERROR);
+        $data=$this->http->request('GET', $this->manifestUrl)->toArray();
         if (($data['version']??null)!==1 || empty($data['images'])) throw new \RuntimeException('Unsupported or empty demo package.');
         // A durable demo identity makes retries idempotent without overwriting reviewed records.
         $existing=$this->em->getConnection()->fetchOne("SELECT id FROM item WHERE ai_results->>'demoKey' = ?",[$data['key']]);
@@ -64,10 +66,10 @@ final readonly class DemoData
             $this->em->persist($cemetery); $item->cemetery=$cemetery;
         }
         foreach ($data['images'] as $image) {
-            if (!preg_match('/^[a-f0-9]{64}$/D',$image['sha256']) || $image['objectKey']!=='scanfony/demo/originals/'.$image['sha256']) throw new \RuntimeException('Invalid demo image reference.');
+            if (!preg_match('/^[a-f0-9]{64}$/D',$image['sha256']) || !str_starts_with($image['url'] ?? '', 'https://')) throw new \RuntimeException('Invalid demo image reference.');
             $tmp=$files->tempnam(sys_get_temp_dir(),'scanfony-demo-');
             try {
-                $files->dumpFile($tmp, $this->client()->getObject(['Bucket'=>$this->bucket,'Key'=>$image['objectKey']])->getBody()->getContentAsString());
+                $files->dumpFile($tmp, $this->http->request('GET', $image['url'])->getContent());
                 if (hash_file('sha256',$tmp)!==$image['sha256']) throw new \RuntimeException('Demo image checksum mismatch.');
                 $media=$this->storage->import($item,$tmp,$image['originalName']);
             } finally {$files->remove($tmp);}

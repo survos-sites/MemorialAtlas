@@ -12,19 +12,15 @@ final readonly class Startup
     public function __construct(private DemoData $demo,
         #[Autowire('%kernel.project_dir%')] private string $directory,
         #[Autowire('%env(DATABASE_URL)%')] private string $databaseUrl,
-        #[Autowire('%env(S3_ENDPOINT)%')] private string $endpoint,
-        #[Autowire('%env(AWS_S3_BUCKET_NAME)%')] private string $bucket,
-        #[Autowire('%env(AWS_S3_ACCESS_ID)%')] private string $accessKey,
-        #[Autowire('%env(AWS_S3_ACCESS_SECRET)%')] private string $secret,
     ) {}
 
-    #[AsCommand('app:startup', 'Check configuration, create the app database, apply migrations and load the S3 demo')]
+    #[AsCommand('app:startup', 'Check configuration, create the app database, apply migrations and load the public Sperryville demo')]
     public function start(SymfonyStyle $io, #[Option('Prepare schema without importing demo data')] bool $skipDemo = false): int
     {
         $start=microtime(true);
-        foreach (['DATABASE_URL'=>$this->databaseUrl,'S3_ENDPOINT'=>$this->endpoint,'AWS_S3_BUCKET_NAME'=>$this->bucket,'AWS_S3_ACCESS_ID'=>$this->accessKey,'AWS_S3_ACCESS_SECRET'=>$this->secret] as $name=>$value) {
-            if (trim($value)==='' || in_array($value, ['https://your-s3-endpoint', 'your-existing-bucket'], true)) {
-                $io->error('Set '.$name.' in .env.local. Copy .env.local.example once and supply your PostgreSQL and S3 settings.');
+        foreach (['DATABASE_URL'=>$this->databaseUrl] as $name=>$value) {
+            if (trim($value)==='') {
+                $io->error('Set '.$name.' in .env.local. Copy .env.local.example once and supply your PostgreSQL settings.');
                 return 1;
             }
         }

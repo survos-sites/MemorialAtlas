@@ -10,46 +10,40 @@ Production runs as the Dokku app `memorialatlas` on `fsn1`. The deployment remot
 
 ## Setup
 
-Requires PHP 8.5+ (GD, PDO PostgreSQL and SQLite), Composer, an existing
-PostgreSQL server, and an S3 bucket with read/write credentials. The current demo loader requires S3 credentials for a bucket containing the prepared demo.
-A public Hugging Face dataset containing photographs and recorded extraction results
-is planned but has not been published yet.
-No app-specific database container or new AI calls are needed to view it.
+Requires PHP 8.5+ (GD, PDO PostgreSQL and SQLite), Composer and an existing
+PostgreSQL server. The [public Sperryville demo](https://huggingface.co/datasets/museado/memorialatlas-demo)
+includes one photograph with saved OCR, descriptions and extraction results.
+No S3, Hugging Face or AI credentials are required to load and browse it.
 
-```bash
+~~~bash
 git clone https://github.com/survos-sites/MemorialAtlas.git
 cd MemorialAtlas
 composer install
-cp .env.local.example .env.local  # fresh setup only
-# Fill DATABASE_URL and the four S3 settings in .env.local.
-bin/load-data                    # equivalent: php bin/console app:startup
+cp .env.local.example .env.local
+# Set DATABASE_URL for your existing PostgreSQL server.
+bin/load-data
 symfony server:start -d          # or: php -S 127.0.0.1:8000 -t public
-```
+~~~
 
-`app:startup` checks required configuration, creates the application database
-on the configured server if needed, applies migrations, and downloads one small
-demo record with its photographs and saved OCR, description and Jev receipts.
-It prints the item URL. Repeating it keeps the existing demo and review changes.
-`--skip-demo` prepares an empty schema. Missing settings stop startup with the
-name of the variable to fill in; credentials are never printed. Creating a new
-database requires permission on the existing PostgreSQL server, or ask the
-organizer to provision the database first.
+Startup creates the application database if needed, applies migrations, downloads
+the public demo and prints its item URL. Repeating it preserves the existing
+demo and review changes. Photos are checksum-checked and stored locally.
+The selected saved receipts retain source IDs as provenance. No AI calls occur.
 
-The sample is stored at `scanfony/demo/v1.json` and
-`scanfony/demo/originals/<sha256>` in the configured bucket. To prepare another
-bucket, an organizer with an existing processed record runs
-`php bin/console app:demo:publish ITEM_ID`. This publishes that record's images
-and recorded evidence, not credentials. The demo never calls paid AI providers.
-Images are checksum-checked and copied locally for immediate viewing. Provider
-receipts retain their original source IDs as provenance; imported local IDs may
-differ. Keep the S3 credentials private and provide them separately from Git.
+The five-minute target assumes PHP/Composer and PostgreSQL are already available.
+Your database user needs permission to create the application database, or you
+can create that database beforehand. Startup never provisions a server.
+Use --skip-demo for an empty schema. DEMO_MANIFEST_URL selects a different
+public demo manifest.
 
-The five-minute target assumes PHP/Composer, PostgreSQL and the prepared S3
-bucket are already available. Installing those services or generating fresh AI
-results is outside that target. Imagor/signing credentials and TypeSafe/Mistral
-keys are required to process new photographs, not to browse the saved demo.
-Search additionally uses Elasticsearch; the home and item pages do not require it.
-All `/admin` routes require ROLE_ADMIN and an administrator password hash.
+Search additionally needs Elasticsearch. Configure ELASTICSEARCH_DSN and run
+php bin/console elastic:index:rebuild --no-interaction after loading data.
+Production deployments rebuild both indexes before releasing the application.
+The home, About and record pages do not need Elasticsearch.
+
+S3 and provider credentials are for processing new photographs or the optional
+app:demo:publish legacy S3 export, not for loading the public demo.
+All /admin routes require ROLE_ADMIN and an administrator password hash.
 
 Local defaults use the shared PostgreSQL service on port 5434. Change
 `DATABASE_URL` for another developer's server. The optional standalone Compose

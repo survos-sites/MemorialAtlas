@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\{Item, Media, Image, Audio, Cemetery};
-use App\Service\{MediaStorage, SetupStatus};
+use App\Entity\{Item, Media, Image, Cemetery};
+use App\Service\MediaStorage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Response, BinaryFileResponse};
@@ -14,13 +14,9 @@ use Symfony\Component\Routing\Attribute\Route;
 final class HomeController extends AbstractController
 {
     #[Route('/', name: 'home')]
-    public function index(EntityManagerInterface $em, SetupStatus $setup): Response
+    public function index(EntityManagerInterface $em): Response
     {
         return $this->render('home.html.twig', [
-            'requirements' => $setup->requirements(),
-            'models' => $setup->models(),
-            'items' => $em->getRepository(Item::class)->findBy([], ['id' => 'DESC'], 12),
-            'audio' => $em->getRepository(Audio::class)->findBy([], ['id' => 'DESC'], 12),
             'heroImage' => $em->createQueryBuilder()
                 ->select('image')
                 ->from(Image::class, 'image')
@@ -30,8 +26,6 @@ final class HomeController extends AbstractController
                 ->orderBy('image.id', 'DESC')
                 ->setMaxResults(1)
                 ->getQuery()->getOneOrNullResult(),
-            'itemCount' => $em->getRepository(Item::class)->count(),
-            'mediaCount' => $em->getRepository(Media::class)->count(),
         ]);
     }
 
