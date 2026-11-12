@@ -1,10 +1,10 @@
 {% extends 'base.html.twig' %}
-{% block title %}Search items · MemorialAtlas{% endblock %}
+{% block title %}Search memorials · MemorialAtlas{% endblock %}
 {% block javascripts %}{{ importmap(['app','search']) }}{% endblock %}
 {% block body %}
-<p>Items · <a href="{{ path('image_search') }}">Photographs</a></p>
+<p>Memorials · <a href="{{ path('image_search') }}">Photographs</a></p>
 <span class="eyebrow">Explore the collection</span>
-<h1>Search the whole record.</h1>
-<p>One result per item, combining its suggested record, inscriptions and observations from every photograph, and any audio transcripts. Readings and groupings remain open to review.</p>
+<h1>Find a name. Discover a story.</h1>
+<p>Search for a name, a date, or words on a gravestone. Open a result to see the photograph and read the inscription.</p>
 <twig:Survos:Search:Layout name="items" :urlRewriting="true" />
 {% endblock %}

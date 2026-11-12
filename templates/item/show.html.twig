@@ -18,7 +18,7 @@
 {% if item.locationContext %}<p><strong>Capture context (supplied):</strong> {{ item.locationContext }}</p>{% endif %}
 {% if item.processingError %}<p role="alert">Processing failed: {{ item.processingError }}</p>{% endif %}
 {% if item.aiResults.catalog is defined %}<details><summary>Extracted inscription and uncertain readings</summary><pre>{{ item.aiResults.catalog.record|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></details>{% endif %}
-{% if item.aiResults.captureGrouping is defined %}<details><summary>Capture grouping · {{ item.media|length }} photographs · proposed</summary><p>{{ item.aiResults.captureGrouping.basis }}</p><p>Grouped by visual review, using capture order, inscriptions and visible details. GPS did not determine identity.</p></details>{% endif %}
+{% if item.aiResults.captureGrouping.basis is defined %}<details><summary>Capture grouping · {{ item.media|length }} photographs · proposed</summary><p>{{ item.aiResults.captureGrouping.basis }}</p><p>Grouped by visual review, using capture order, inscriptions and visible details. GPS did not determine identity.</p></details>{% endif %}
 {% if item.aiResults.markerFacts is defined %}
 <section class="card"><div class="body"><h2>Proposed marker facts</h2>
 {% set facts = item.aiResults.markerFacts.record %}

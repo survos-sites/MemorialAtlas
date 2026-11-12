@@ -21,6 +21,8 @@ $storage=new App\Service\MediaStorage($dir);
 $demo=new App\Service\DemoData($em,$storage,$http,'','','','','https://example.org/manifest.json');
 try {
  $item=$demo->load();
+ $item->aiResults['captureGrouping']=['status'=>'proposed'];
+ $services->get('twig')->render('item/show.html.twig',['item'=>$item]);
  if($item->cemetery->name!=='Sperryville'||$item->media->first()->ocrText!==$image['ocrText']||is_file($storage->path($item->media->first()))||$item->media->first()->sourceUrl!==$image['url'])throw new RuntimeException('Public demo did not preserve evidence.');
  if($demo->load()->id!==$item->id||count($calls)!==2)throw new RuntimeException('Retry is not idempotent.');
  $second=$data;$second['key']='second-marker';$data=['version'=>2,'records'=>[$data,$second]];
