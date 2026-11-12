@@ -29,5 +29,12 @@ try {
  $data['key']='corrupted';$data['images'][0]['sha256']='invalid';
  try {$demo->load();throw new LogicException('Corrupt photo accepted.');}
  catch(RuntimeException $e){if($e->getMessage()!=='Invalid demo image reference.')throw $e;}
+ $pending=new App\Entity\Image($item,1,'pending.jpg','pending/photo','image/jpeg',hash('sha256','pending'));
+ $em->persist($pending);$em->flush();
+ $output=new Symfony\Component\Console\Output\BufferedOutput();
+ $io=new Symfony\Component\Console\Style\SymfonyStyle(new Symfony\Component\Console\Input\ArrayInput([]),$output);
+ (new App\Service\ProcessingStatus($em,$services->get(App\Service\SetupStatus::class)))->report($io);
+ if(!str_contains($output->fetch(),'1 photographs still need processing or retry'))throw new RuntimeException('Pending photographs not flagged.');
+ if($pending->marking!=='uploaded')throw new RuntimeException('Status reporting changed processing state.');
  echo "Public demo: empty S3 credentials, remote photo without downloading bytes, saved evidence, idempotency and invalid reference rejection passed.\n";
 } finally {$fs->remove($dir);}

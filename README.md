@@ -15,15 +15,42 @@ and PostgreSQL (existing or the optional Compose service below). The [public Spe
 includes four photographs with saved OCR and extraction results.
 No S3, Hugging Face or AI credentials are required to load and browse it.
 
-~~~bash
-git clone https://github.com/survos-sites/MemorialAtlas.git
-cd MemorialAtlas
-cp .env.local.example .env.local
-composer install
-docker compose --profile standalone up -d --wait
-bin/load-data
-symfony server:start -d          # or: php -S 127.0.0.1:8000 -t public
-~~~
+Install Git, PHP 8.5+ with the extensions above, Composer, Docker with Compose,
+and the [Symfony CLI](https://symfony.com/download) first. Start Docker, then run:
+
+```bash
+wget -qO- https://raw.githubusercontent.com/survos-sites/MemorialAtlas/main/bin/install.sh | bash
+```
+
+Or use `curl -fsSL` in place of `wget -qO-`. To inspect the installer first,
+download that URL to a file and read it before running `bash install.sh`.
+
+The installer clones into `./MemorialAtlas`, generates a private `.env.local`,
+starts PostgreSQL, Elasticsearch and Imagor, installs Composer dependencies,
+loads the four saved records, builds both search indexes, reports processing
+readiness, and ends with `symfony server:start -d`. No AI calls are made.
+The first download of container images can take several minutes.
+
+From an existing checkout, run `bash bin/install.sh`. To choose a destination:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/survos-sites/MemorialAtlas/main/bin/install.sh | bash -s -- --dir ~/sites/MemorialAtlas
+```
+
+Existing `.env.local` files are preserved. Unless created by this installer,
+they select existing services: the installer does not start another database.
+Configure `DATABASE_URL`, `ELASTICSEARCH_DSN` and `UX_IMAGE_DSN` before running
+`bash bin/install.sh --existing-services`. Rerunning preserves demo review
+changes and does not pull Git updates or overwrite credentials.
+
+Saved OCR and claims are usable immediately. Unprocessed photographs retain their
+status and show an “Awaiting processing” badge; failed photos show “Processing
+needs retry.” Run `php bin/console app:processing:status` to see counts and missing
+configuration. To process your own photos, add the S3, Imagor `/meta`, TypeSafe and
+selected AI provider settings from `.env.local.example` to `.env.local`. The stock
+thumbnail container does not supply OCR. No vault or API-key prompt is needed for
+the saved demo, and the installer never starts paid processing.
+
 
 Startup creates the application database if needed, applies migrations, downloads
 the public demo listing and prints its item URL. Repeating it preserves the existing
@@ -39,8 +66,9 @@ can create that database beforehand. Startup never provisions a server.
 Use --skip-demo for an empty schema. DEMO_MANIFEST_URL selects a different
 public demo manifest.
 
-Search additionally needs Elasticsearch. Configure ELASTICSEARCH_DSN and run
-php bin/console elastic:index:rebuild --no-interaction after loading data.
+The installer includes Elasticsearch and builds search indexes. With existing
+services, configure ELASTICSEARCH_DSN and run
+php bin/console elastic:index:rebuild --no-interaction after loading new data.
 Production deployments rebuild both indexes before releasing the application.
 The home, About and record pages do not need Elasticsearch.
 
