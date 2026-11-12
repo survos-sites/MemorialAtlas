@@ -18,7 +18,15 @@ $http=new Symfony\Component\HttpClient\MockHttpClient(static function($method,$u
  return new Symfony\Component\HttpClient\Response\MockResponse(json_encode($data,JSON_THROW_ON_ERROR));
 });
 $storage=new App\Service\MediaStorage($dir);
-$demo=new App\Service\DemoData($em,$storage,$http,'','','','','https://example.org/manifest.json');
+$bus=new class implements Symfony\Component\Messenger\MessageBusInterface {
+ public array $messages=[];
+ public function dispatch(object $message, array $stamps=[]): Symfony\Component\Messenger\Envelope {
+  $this->messages[]=$message;return new Symfony\Component\Messenger\Envelope($message,$stamps);
+ }
+};
+$status=new App\Service\ProcessingStatus($em,$services->get(App\Service\SetupStatus::class));
+$queue=new App\Service\ProcessingQueue($em,$bus,$status);
+$demo=new App\Service\DemoData($em,$storage,$http,'','','','','https://example.org/manifest.json',$queue);
 try {
  $item=$demo->load();
  $item->aiResults['captureGrouping']=['status'=>'proposed'];
@@ -38,5 +46,22 @@ try {
  (new App\Service\ProcessingStatus($em,$services->get(App\Service\SetupStatus::class)))->report($io);
  if(!str_contains($output->fetch(),'1 photographs still need processing or retry'))throw new RuntimeException('Pending photographs not flagged.');
  if($pending->marking!=='uploaded')throw new RuntimeException('Status reporting changed processing state.');
+ if($bus->messages)throw new RuntimeException('Saved records were queued for paid processing.');
+ $data=['version'=>1,'key'=>'raw-reference','images'=>[['sha256'=>hash('sha256','raw'),'url'=>'https://example.org/raw.jpg']]];
+ $raw=$demo->load();$demo->load();
+ if(count($bus->messages)!==1||$bus->messages[0]->itemId!==$raw->id||$raw->marking!=='draft'||$raw->media->first()->marking!=='uploaded')throw new RuntimeException('Raw references must queue once without downloading or processing.');
+ $html=$services->get('twig')->render('item/show.html.twig',['item'=>$raw]);
+ if(!str_contains($html,'messenger:consume processing')||!str_contains($html,'waiting for transcription'))throw new RuntimeException('Missing processing banner.');
+ if($status->pendingCount()!==1)throw new RuntimeException('Incorrect pending record count.');
+ $reflection=new ReflectionClass(App\Service\SetupStatus::class);
+ $emptySetup=$reflection->newInstanceArgs(array_map(static fn($p)=>$p->getType()->getName()==='bool'?true:(str_ends_with($p->getName(),'Platform')?'mistral':''),$reflection->getConstructor()->getParameters()));
+ $guardStatus=new App\Service\ProcessingStatus($em,$emptySetup);
+ if(in_array('S3 endpoint, bucket and credentials',$guardStatus->missingRequirements(),true))throw new RuntimeException('Public references should not require S3.');
+ $worker=new Symfony\Component\Messenger\Worker(['processing'=>new Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport()],$bus);
+ try {
+  (new App\Service\ProcessingQueue($em,$bus,$guardStatus))->start(new Symfony\Component\Messenger\Event\WorkerStartedEvent($worker));
+  throw new LogicException('Unconfigured consumer was allowed to start.');
+ } catch(RuntimeException $e) { if(!str_contains($e->getMessage(),'Queued photos have not been consumed'))throw $e; }
+ if(count($bus->messages)!==1||$raw->marking!=='draft')throw new RuntimeException('Configuration guard changed queued work.');
  echo "Public demo: empty S3 credentials, remote photo without downloading bytes, saved evidence, idempotency and invalid reference rejection passed.\n";
 } finally {$fs->remove($dir);}

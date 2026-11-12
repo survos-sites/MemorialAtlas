@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+if [[ -f vendor/autoload.php ]]; then
+    php bin/console messenger:stop-workers
+fi
+symfony server:stop
+docker compose --profile standalone --profile search down
+echo 'This checkout is stopped. Database files and cached data are retained.'

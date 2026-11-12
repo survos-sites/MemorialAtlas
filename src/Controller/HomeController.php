@@ -13,10 +13,13 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class HomeController extends AbstractController
 {
+    public function __construct(private readonly \App\Service\ProcessingStatus $processingStatus) {}
+
     #[Route('/', name: 'home')]
     public function index(EntityManagerInterface $em): Response
     {
         return $this->render('home.html.twig', [
+            'pendingCount' => $this->processingStatus->pendingCount(),
             'heroImage' => $em->createQueryBuilder()
                 ->select('image')
                 ->from(Image::class, 'image')

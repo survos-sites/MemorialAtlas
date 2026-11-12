@@ -2,6 +2,7 @@
 {% block title %}Search memorials · MemorialAtlas{% endblock %}
 {% block javascripts %}{{ importmap(['app','search']) }}{% endblock %}
 {% block body %}
+{% include '_processing_banner.html.twig' %}
 <p>Memorials · <a href="{{ path('image_search') }}">Photographs</a></p>
 <span class="eyebrow">Explore the collection</span>
 <h1>Find a name. Discover a story.</h1>

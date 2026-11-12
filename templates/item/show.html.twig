@@ -1,6 +1,7 @@
 {% extends 'base.html.twig' %}
 {% block title %}{{ item.title }} · MemorialAtlas{% endblock %}
 {% block body %}
+{% include '_processing_banner.html.twig' with {pendingCount: item.marking in ['draft','ready','processing','failed'] ? 1 : 0} %}
 <p><a href="{{ path('home') }}">← Home</a></p>
 {% set images = item.media|filter(m => m.kind == 'image') %}
 <section class="item-overview">

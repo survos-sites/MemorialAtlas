@@ -63,6 +63,9 @@ main() {
     if (( !existing )) && grep -q '^# MemorialAtlas installer: managed local services$' .env.local; then
         managed=1
     fi
+    if ((managed)); then
+        php bin/check-local-ports.php
+    fi
     composer install --no-interaction --prefer-dist
     if ((managed)); then
         mkdir -p var/media var/imagor var/postgres
@@ -86,6 +89,8 @@ After startup, from the project directory:
   bin/load-data                                  # Fetch the public HF listing again; preserve existing records
   php bin/console elastic:index:rebuild --no-interaction
   php bin/console app:processing:status           # Check pending photos and missing configuration
+  php bin/console messenger:consume processing -vv # Populate missing results AFTER configuring keys
+  bin/stop                                       # Stop this checkout before another fresh install
 
 For another compatible public dataset, set DEMO_MANIFEST_URL in .env.local
 before running bin/load-data. Originals stay on Hugging Face; thumbnails load on demand.

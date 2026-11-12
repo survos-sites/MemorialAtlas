@@ -1,0 +1,12 @@
+{% if pendingCount|default(0) > 0 %}
+<aside class="card" role="status" style="padding:18px;margin-bottom:24px">
+<strong>{{ pendingCount }} {{ pendingCount == 1 ? 'record is' : 'records are' }} waiting for transcription and extraction.</strong>
+<p>The original photographs are available now. Names, dates and other details will appear as processing finishes. Refresh this page to see new results.</p>
+{% if app.environment != 'prod' or is_granted('ROLE_ADMIN') %}
+<p>Configure the processing keys and Imagor OCR endpoint in <code>.env.local</code>, then run:</p>
+<pre>php bin/console app:processing:status
+php bin/console messenger:consume processing -vv</pre>
+<p>The consumer fills in missing results and updates search. Saved, reviewed records are preserved. Processing may incur provider charges.</p>
+{% endif %}
+</aside>
+{% endif %}

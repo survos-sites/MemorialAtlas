@@ -18,7 +18,8 @@ with tempfile.TemporaryDirectory(prefix='memorialatlas-install-') as directory:
  printf '#!/usr/bin/env bash\\necho load-data >> "$INSTALL_TEST_LOG"\\nexit "${INSTALL_TEST_LOAD_EXIT:-0}"\\n' > "${@: -1}/bin/load-data"
  chmod +x "${@: -1}/bin/load-data"
 ''',
-        'php': '''if [[ "$*" == *random_bytes* ]]; then printf 'test-secret'; fi
+        'php': '''if [[ "$*" == *check-local-ports.php* ]]; then exit "${INSTALL_TEST_PORT_EXIT:-0}"; fi
+if [[ "$*" == *random_bytes* ]]; then printf 'test-secret'; fi
 ''',
         'composer': 'exit "${INSTALL_TEST_COMPOSER_EXIT:-0}"\n',
         'docker': 'exit 0\n',
@@ -72,6 +73,17 @@ with tempfile.TemporaryDirectory(prefix='memorialatlas-install-') as directory:
 
     assert run(root / 'requires configuration', '--existing-services').returncode != 0
     assert not (root / 'requires configuration' / '.env.local').exists()
+    log.write_text('')
+    assert run(root / 'conflicting ports', overrides={'INSTALL_TEST_PORT_EXIT': '1'}).returncode != 0
+    assert 'composer install' not in log.read_text()
+    assert ' up -d ' not in log.read_text()
+    log.write_text('')
+    stop = subprocess.run(['bash', str(Path(__file__).resolve().parents[1] / 'bin/stop')], text=True, capture_output=True, env=env)
+    assert stop.returncode == 0, stop.stderr
+    assert 'symfony server:stop' in log.read_text()
+    assert 'docker compose --profile standalone --profile search down' in log.read_text()
+    assert '--volumes' not in log.read_text()
+
     occupied = root / 'unrelated'
     occupied.mkdir()
     assert run(occupied).returncode != 0

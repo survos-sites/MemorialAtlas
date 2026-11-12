@@ -12,7 +12,8 @@ Production runs as the Dokku app `memorialatlas` on `fsn1`. The deployment remot
 
 Requires PHP 8.5+ (GD, PDO PostgreSQL and SQLite), Composer, Docker for Imagor,
 and PostgreSQL (existing or the optional Compose service below). The [public Sperryville demo](https://huggingface.co/datasets/museado/memorialatlas-demo)
-includes four photographs with saved OCR and extraction results.
+includes four photographs with saved OCR and extraction results, plus two raw
+photographs that demonstrate processing setup.
 No S3, Hugging Face or AI credentials are required to load and browse it.
 
 Install Git, PHP 8.5+ with the extensions above, Composer, Docker with Compose,
@@ -32,7 +33,7 @@ download that URL to a file and read it before running `bash install.sh`.
 The installer clones into the chosen directory and generates a private `.env.local`
 with editable API-key placeholders from `.env.local.example`. It
 starts PostgreSQL, Elasticsearch and Imagor, installs Composer dependencies,
-loads the four saved records, builds both search indexes, reports processing
+loads six image references (four with saved results, two raw), builds both search indexes, reports processing
 readiness, starts Symfony with `symfony server:start -d`, and opens the site with
 `symfony open:local`. It then prints commands for refreshing the Hugging Face
 listing, rebuilding search, and checking processing configuration. The demo has
@@ -459,3 +460,57 @@ its search page; adding this service does not change the search backend.
 Database files live in `var/postgres`, or the host directory supplied through
 `POSTGRES_DATA_DIR`. No database volume or disk-size limit is declared. The
 Symfony CLI service-ignore label prevents automatic DATABASE_URL overrides.
+
+## Repeated local installations
+
+From the previous checkout, run `bin/stop` before starting another fresh install.
+It requests consumer shutdown, stops Symfony, and runs Compose down for that
+checkout. Database files and volumes are retained. It does not stop unrelated
+projects or the Podman VM. For an older checkout without the script:
+
+```bash
+symfony server:stop
+docker compose --profile standalone --profile search down
+```
+
+The installer checks ports 5544, 8088 and 19200 before installing dependencies.
+An existing service in the same Compose project is reused; a different service
+produces an explanation instead of a Podman proxy error. Stop services before
+deleting a test checkout. If it is already gone, use `docker compose -p OLD_PROJECT
+--profile standalone --profile search down` from another MemorialAtlas checkout,
+substituting its Compose project name. Use
+`docker ps --format '{{.Names}} {{.Ports}}'` to identify it. Image-layer corruption
+(the `readlink ... overlay: invalid argument` error) is different from a port
+conflict; `podman system check --quick` diagnoses that. Stopping services alone
+does not repair damaged image storage.
+
+## Populate raw photographs
+
+`bin/load-data` imports the public Hugging Face listing without fetching originals.
+Records without saved results remain visible with their photographs, and pending
+records are queued in Symfony Messenger using the existing application database.
+Repeated imports preserve reviewed data and do not enqueue the same pending record
+again. No Redis, RabbitMQ, or additional database server is required.
+
+The local site shows a banner with the next steps while records await processing:
+
+```bash
+# Fill in the processing settings in .env.local first.
+php bin/console app:processing:status
+php bin/console messenger:consume processing -vv
+```
+
+The consumer refuses to start on pending work if required settings are missing,
+leaving messages queued. Public HF references do not need S3 credentials;
+local uploads do. Imagor with `/meta` and OCR support, TypeSafe/Jev, and the
+configured extraction provider are required. The stock thumbnail container is
+not the OCR service. Actual inference starts when you run the configured consumer
+and may incur provider charges. Photos with saved review results are skipped.
+New extracted data is saved and search is updated after each record; refresh the
+page to see it. This checks configuration presence, not credential validity.
+
+Transient processing errors are retried three times. Inspect failures with
+`php bin/console messenger:failed:show` and, after fixing their cause, retry with
+`php bin/console messenger:failed:retry`. Review completed records before treating
+AI proposals as facts. Production visitors see a plain pending-data notice;
+configuration commands are shown locally and to signed-in administrators.

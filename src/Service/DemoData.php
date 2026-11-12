@@ -18,6 +18,7 @@ final readonly class DemoData
         #[Autowire('%env(AWS_S3_ACCESS_ID)%')] private string $accessKey,
         #[Autowire('%env(AWS_S3_ACCESS_SECRET)%')] private string $secret,
         #[Autowire('%env(DEMO_MANIFEST_URL)%')] private string $manifestUrl,
+        private ProcessingQueue $queue,
     ) {}
 
     private function client(): S3Client
@@ -68,24 +69,31 @@ final readonly class DemoData
         if (($data['version']??null)!==1 || empty($data['images'])) throw new \RuntimeException('Unsupported or empty demo package.');
         // A durable demo identity makes retries idempotent without overwriting reviewed records.
         $existing=$this->em->getConnection()->fetchOne("SELECT id FROM item WHERE ai_results->>'demoKey' = ?",[$data['key']]);
-        if ($existing) return $this->em->find(Item::class,(int)$existing);
+        if ($existing) {
+            $item = $this->em->find(Item::class,(int)$existing);
+            $this->queue->enqueue($item);
+            return $item;
+        }
+        $data['item'] = ($data['item'] ?? []) + ['title'=>'Unprocessed gravestone', 'description'=>null, 'locationContext'=>null, 'recordType'=>'gravestone', 'marking'=>'draft', 'aiResults'=>[]];
         $item=new Item($data['item']['title']);
         foreach (['description','locationContext','recordType','marking','aiResults'] as $field) $item->$field=$data['item'][$field];
         $item->aiResults['demoKey']=$data['key'];
-        if ($data['cemetery']) {
+        if ($data['cemetery'] ?? null) {
             $cemetery=$this->em->getRepository(Cemetery::class)->findOneBy($data['cemetery']) ?? new Cemetery();
             $cemetery->name=$data['cemetery']['name']; $cemetery->locality=$data['cemetery']['locality'];
             $this->em->persist($cemetery); $item->cemetery=$cemetery;
         }
         foreach ($data['images'] as $image) {
+            $image += ['originalName'=>($image['sha256'] ?? 'photo').'.jpg', 'mimeType'=>'image/jpeg', 'source'=>'Public dataset', 'donor'=>null, 'description'=>null, 'ocrText'=>null, 'latitude'=>null, 'longitude'=>null, 'marking'=>'uploaded', 'aiResults'=>[], 'imageMetadata'=>[]];
             if (!preg_match('/^[a-f0-9]{64}$/D',$image['sha256']) || !str_starts_with($image['url'] ?? '', 'https://')) throw new \RuntimeException('Invalid demo image reference.');
             $media=new Image($item, count($item->media), $image['originalName'], substr($image['sha256'],0,2).'/'.$image['sha256'], $image['mimeType'], $image['sha256']);
             $media->sourceUrl=$image['url'];
             foreach (['source','donor','description','ocrText','latitude','longitude','marking','aiResults','imageMetadata'] as $field) $media->$field=$image[$field];
             // Retain provider receipts as originally recorded; source IDs are provenance, not local foreign keys.
-            $media->aiResults['demoSourceMediaId']=$image['id'];
+            if (isset($image['id'])) $media->aiResults['demoSourceMediaId']=$image['id'];
         }
         $this->em->persist($item); $this->em->flush();
+        $this->queue->enqueue($item);
         return $item;
     }
 }

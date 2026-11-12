@@ -3,7 +3,7 @@ doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
         # Shared servers may install Timescale; its internal sequences are not app schema.
-        schema_filter: '~^(?!_timescaledb_)~'
+        schema_filter: '~^(?!_timescaledb_|messenger_messages$)~'
 
         # IMPORTANT: You MUST configure your server version,
         # either here or in the DATABASE_URL env var (see .env file)
