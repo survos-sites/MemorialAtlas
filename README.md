@@ -99,9 +99,14 @@ Create a separate cemetery for the Sperryville visit once its name is known. Mul
 
 By default, each image becomes one record. `--images-per-item=N` groups consecutive filenames, not visually detected graves. `--context='Your field notes'` adds user-supplied context. SHA-256 prevents duplicate imports. `--limit` selects before duplicate detection; repeated trials use the same files. `--only=filename` is repeatable. Use `--one-item` for mixed photos/audio.
 
-## TombReader samples
+## Other datasets: TombReader
 
 [TombReader](https://www.let.rug.nl/bos/tombreader/) by Johan Bos, University of Groningen, supplies photographs and reference annotations under CC BY-NC 4.0. Preserve attribution and the noncommercial restriction. Reference annotations are evidence for comparison, not guaranteed truth.
+
+TombReader is an optional Dutch-language comparison dataset, separate from the
+Sperryville newcomer demo. Its samples are not included on the live MemorialAtlas
+site. Import them into a separate development database or collection, with their
+own source attribution and cemetery context.
 
 Import a directory of JPEGs obtained separately with permission. The app does not require Harvest. Dataset acquisition, reference annotation storage, normalization, and folio publication belong in Harvest and are not part of this demo repository.
 
@@ -112,7 +117,9 @@ symfony console app:import \
   --images-per-item=1 --process
 ```
 
-For another machine, download and extract the official archive into your own data directory and substitute the extracted `in` directory above. Do not assign these Dutch samples to a local Virginia cemetery. The three samples have been processed through the live pipeline into review drafts. Their current OCR triggered conservative image escalation; a fast text classification alone does not establish OCR accuracy.
+For another machine, download and extract the official archive into your own data directory and substitute the extracted `in` directory above. Do not assign these Dutch samples to a local Virginia cemetery. Earlier experiments processed three samples into review drafts. Their OCR
+triggered conservative image escalation; a fast text classification alone does
+not establish OCR accuracy.
 
 ## Data model
 
@@ -164,7 +171,8 @@ The projection is a foundation for RAG, not an implemented RAG feature. Embeddin
 
 ## Existing Washington collection
 
-The 58 local photographs in var/datasets/tombstones belong to **Odd Fellows / First Baptist Cemetery, Washington, VA**, as supplied by the photographer. Their source label is **Local cemetery photographs**. All 58 have S3 receipts and completed processing; four took the text-only Jev route. The final church-sign photo is classified as place_reference/context. TombReader has a separate source and donor, with cemetery unassigned.
+The 58 local photographs in var/datasets/tombstones belong to **Odd Fellows / First Baptist Cemetery, Washington, VA**, as supplied by the photographer. Their source label is **Local cemetery photographs**. All 58 have S3 receipts and completed processing; four took the text-only Jev route. The church-sign context photo and the three Dutch TombReader samples have been
+removed from the public collection. Local experimental copies may still exist.
 
 The earlier SQLite database contains existing S3 upload, OCR and catalog receipts. Preserve it. To migrate those receipts into a newly populated PostgreSQL database:
 
