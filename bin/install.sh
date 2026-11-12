@@ -49,12 +49,16 @@ main() {
         docker info >/dev/null 2>&1 || { echo 'Start Docker, then rerun this installer.' >&2; return 1; }
         local secret
         secret=$(php -r 'echo bin2hex(random_bytes(32));')
-        (umask 077; printf '%s\n' \
-            '# MemorialAtlas installer: managed local services' \
+        (umask 077
+        {
+            printf '%s\n' '# MemorialAtlas installer: managed local services'
+            sed '/^APP_SECRET=/d; /^DATABASE_URL=/d; /^ELASTICSEARCH_DSN=/d; /^UX_IMAGE_DSN=/d' .env.local.example
+            printf '\n%s\n' \
             "APP_SECRET=$secret" \
             'DATABASE_URL="postgresql://app:app@127.0.0.1:5544/memorialatlas?serverVersion=18&charset=utf8"' \
             'ELASTICSEARCH_DSN=elasticsearch://127.0.0.1:19200' \
-            'UX_IMAGE_DSN="imagor://127.0.0.1:8088?secure=false"' > .env.local)
+            'UX_IMAGE_DSN="imagor://127.0.0.1:8088?secure=false"'
+        } > .env.local)
     fi
     if (( !existing )) && grep -q '^# MemorialAtlas installer: managed local services$' .env.local; then
         managed=1
@@ -69,9 +73,29 @@ main() {
     bin/load-data
     php bin/console elastic:index:rebuild --no-interaction
     php bin/console app:processing:status
-    printf '\nMemorialAtlas is ready in %s. Open the address printed by Symfony.\n' "$PWD"
-    echo 'The saved demo needs no API keys. Processing configuration belongs in .env.local; see README.md.'
     symfony server:start -d
+    if ! symfony open:local; then
+        echo 'The server is running. Open the local URL printed above in your browser.'
+    fi
+    printf '\nMemorialAtlas is ready in %s.\n' "$PWD"
+    cat <<'NEXT'
+
+The Hugging Face demo is already loaded; no API keys were needed.
+After startup, from the project directory:
+
+  bin/load-data                                  # Fetch the public HF listing again; preserve existing records
+  php bin/console elastic:index:rebuild --no-interaction
+  php bin/console app:processing:status           # Check pending photos and missing configuration
+
+For another compatible public dataset, set DEMO_MANIFEST_URL in .env.local
+before running bin/load-data. Originals stay on Hugging Face; thumbnails load on demand.
+
+.env.local includes empty API-key and storage settings copied from .env.local.example.
+Edit those to process new photographs; the saved demo works without them.
+The stock Imagor container makes thumbnails; OCR needs the /meta tooling in README.md.
+NEXT
+    printf '\nTo return here later: cd %q\n' "$PWD"
+
 }
 
 # Parse the whole script before executing commands that might read stdin.

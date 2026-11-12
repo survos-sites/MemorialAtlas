@@ -19,22 +19,32 @@ Install Git, PHP 8.5+ with the extensions above, Composer, Docker with Compose,
 and the [Symfony CLI](https://symfony.com/download) first. Start Docker, then run:
 
 ```bash
-wget -qO- https://raw.githubusercontent.com/survos-sites/MemorialAtlas/main/bin/install.sh | bash
+install_dir="$HOME/sites/MemorialAtlas-$(date +%Y%m%d-%H%M%S)"
+(set -o pipefail; curl -fsSL https://raw.githubusercontent.com/survos-sites/MemorialAtlas/main/bin/install.sh |
+  bash -s -- --dir "$install_dir") && cd "$install_dir"
 ```
 
-Or use `curl -fsSL` in place of `wget -qO-`. To inspect the installer first,
+The final `cd` runs in your terminal, so you finish in the new checkout. A piped
+installer runs in a child shell and cannot change its parent shell’s directory.
+You can use `wget -qO-` in place of `curl -fsSL`. To inspect the installer first,
 download that URL to a file and read it before running `bash install.sh`.
 
-The installer clones into `./MemorialAtlas`, generates a private `.env.local`,
+The installer clones into the chosen directory and generates a private `.env.local`
+with editable API-key placeholders from `.env.local.example`. It
 starts PostgreSQL, Elasticsearch and Imagor, installs Composer dependencies,
 loads the four saved records, builds both search indexes, reports processing
-readiness, and ends with `symfony server:start -d`. No AI calls are made.
+readiness, starts Symfony with `symfony server:start -d`, and opens the site with
+`symfony open:local`. It then prints commands for refreshing the Hugging Face
+listing, rebuilding search, and checking processing configuration. The demo has
+already been imported; refreshing is optional. No AI calls are made.
 The first download of container images can take several minutes.
 
 From an existing checkout, run `bash bin/install.sh`. To choose a destination:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/survos-sites/MemorialAtlas/main/bin/install.sh | bash -s -- --dir ~/sites/MemorialAtlas
+install_dir="$HOME/sites/MemorialAtlas"
+(set -o pipefail; curl -fsSL https://raw.githubusercontent.com/survos-sites/MemorialAtlas/main/bin/install.sh |
+  bash -s -- --dir "$install_dir") && cd "$install_dir"
 ```
 
 Existing `.env.local` files are preserved. Unless created by this installer,
@@ -46,8 +56,9 @@ changes and does not pull Git updates or overwrite credentials.
 Saved OCR and claims are usable immediately. Unprocessed photographs retain their
 status and show an “Awaiting processing” badge; failed photos show “Processing
 needs retry.” Run `php bin/console app:processing:status` to see counts and missing
-configuration. To process your own photos, add the S3, Imagor `/meta`, TypeSafe and
-selected AI provider settings from `.env.local.example` to `.env.local`. The stock
+configuration. To process your own photos, fill in the S3, Imagor `/meta`, TypeSafe and
+selected AI provider placeholders in `.env.local`. Existing configuration files
+are preserved; older installations can copy missing names from `.env.local.example`. The stock
 thumbnail container does not supply OCR. No vault or API-key prompt is needed for
 the saved demo, and the installer never starts paid processing.
 
