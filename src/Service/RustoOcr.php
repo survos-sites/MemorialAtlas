@@ -17,7 +17,14 @@ final class RustoOcr
     public function __construct(
         private readonly HttpClientInterface $http,
         #[Autowire(env: 'default:rusto_ocr_default:RUSTO_OCR_URL')] private readonly string $baseUrl,
+        #[Autowire(env: 'default::RUSTO_OCR_KEY')] private readonly ?string $apiKey = null,
     ) {
+    }
+
+    /** @return array<string, string> */
+    private function auth(): array
+    {
+        return $this->apiKey ? ['Authorization' => 'Bearer '.$this->apiKey] : [];
     }
 
     public function baseUrl(): string
@@ -28,7 +35,7 @@ final class RustoOcr
     /** @return list<string> model names the service offers; throws when it is unreachable */
     public function models(): array
     {
-        $data = $this->http->request('GET', $this->baseUrl().'/v1/models', ['timeout' => 5])->toArray()['data'] ?? [];
+        $data = $this->http->request('GET', $this->baseUrl().'/v1/models', ['headers' => $this->auth(), 'timeout' => 5])->toArray()['data'] ?? [];
 
         return array_values(array_map(static fn (array $m): string => (string) $m['id'], $data));
     }
@@ -39,6 +46,7 @@ final class RustoOcr
         $started = hrtime(true);
         try {
             $page = $this->http->request('POST', $this->baseUrl().'/v1/ocr', [
+                'headers' => $this->auth(),
                 'json' => [
                     'model' => $model,
                     'document' => ['type' => 'image_url', 'image_url' => sprintf('data:%s;base64,%s', $mimeType, base64_encode($imageBytes))],
