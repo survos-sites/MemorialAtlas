@@ -2,7 +2,11 @@
 
 *From gravestone photographs to a searchable record of remembrance.*
 
-MemorialAtlas is the cemetery-focused hackathon app in the Scanfony repository, built with Symfony, Doctrine and PostgreSQL.
+MemorialAtlas is a cemetery-focused project for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon/), built with Symfony, Doctrine and PostgreSQL.
+
+[Live site: MemorialAtlas.org](https://memorialatlas.org) · [Public API documentation](https://memorialatlas.org/api/docs)
+
+Production runs as the Dokku app `memorialatlas` on `fsn1`. The deployment remote is `dokku@fsn1:memorialatlas`.
 
 ## Setup
 
