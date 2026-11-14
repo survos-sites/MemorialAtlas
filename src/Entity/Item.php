@@ -61,6 +61,10 @@ class Item
     #[ORM\Column(type: 'json', options: ['jsonb' => true])]
     public array $aiResults = [];
 
+    /** @var list<string> Symbols seen on the stone and "scripture", for filtering; written by SymbolFinder */
+    #[ORM\Column(type: 'json', options: ['jsonb' => true, 'default' => '[]'])]
+    public array $tags = [];
+
     #[ORM\Column(type: 'text', nullable: true)]
     public ?string $processingError = null;
 

@@ -7,7 +7,7 @@ namespace App\Mcp;
 use App\Decision\ImageQuestions as Q;
 use App\Entity\{Image, Item};
 use App\Image\ImagePreset;
-use App\Service\{ImageCleaner, ImageDelivery};
+use App\Service\{ImageCleaner, ImageDelivery, SymbolFinder};
 use Doctrine\ORM\EntityManagerInterface;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Schema\ToolAnnotations;
@@ -26,7 +26,7 @@ final readonly class MemorialTools
     ) {}
 
     /**
-     * Search memorial records by name, inscription text or description.
+     * Search memorial records by name, inscription text, description or a symbol on the stone (for example guitar, hockey, army).
      *
      * @param string $query Words to look for, for example a surname or a year
      * @param int    $limit Maximum number of records (1 to 50)
@@ -38,7 +38,8 @@ final readonly class MemorialTools
     {
         $ids = $this->em->getConnection()->fetchFirstColumn(
             'SELECT i.id FROM item i LEFT JOIN media m ON m.item_id = i.id
-             WHERE i.title ILIKE :q OR i.description ILIKE :q OR m.ocr_text ILIKE :q
+             WHERE i.title ILIKE :q OR i.description ILIKE :q OR m.ocr_text ILIKE :q OR m.description ILIKE :q
+                OR (m.ai_results::jsonb -> \'symbols\')::text ILIKE :q
              GROUP BY i.id ORDER BY i.id LIMIT :limit',
             ['q' => '%'.addcslashes(trim($query), '%_\\').'%', 'limit' => max(1, min(50, $limit))],
         );
@@ -65,6 +66,7 @@ final readonly class MemorialTools
             'proposedPeople' => $record['people'] ?? [],
             'uncertainties' => $record['uncertainties'] ?? [],
             'sameMarkerAs' => $item->aiResults['sameMarker']['sameAs'] ?? [],
+            'tags' => $item->tags,
             'extractedBy' => isset($item->aiResults['catalog']) ? ($item->aiResults['catalog']['provider'] ?? null).' '.($item->aiResults['catalog']['model'] ?? null) : null,
             'note' => 'AI proposals for human review. Not a verified burial record.',
             'photos' => array_values(array_map(fn (Image $image) => $this->photo($image), array_filter($item->media->toArray(), static fn ($m) => $m instanceof Image))),
@@ -130,6 +132,9 @@ final readonly class MemorialTools
             'originalUrl' => $image->imageUrl === null ? null : $this->images->detail($image),
             'ocrText' => $image->ocrText,
             'jevRoute' => $decision['route'] ?? null,
+            'description' => $image->description,
+            'symbols' => $image->aiResults[SymbolFinder::RESULT]['items'] ?? null,
+            'scripture' => $image->aiResults[SymbolFinder::RESULT]['scripture'] ?? null,
             'aiCleanedView' => $cleaned === null ? null : [
                 'url' => $this->images->cleaned($image, ImagePreset::Detail),
                 'model' => $cleaned['model'],

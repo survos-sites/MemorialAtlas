@@ -22,7 +22,7 @@ ai:
             tools:
                 - service: 'App\Mcp\MemorialTools'
                   name: 'search_memorials'
-                  description: 'Search memorial records by name, inscription text or description. Returns record ids, titles and links.'
+                  description: 'Search memorial records by name, inscription text, photo description or a symbol on the stone (for example guitar, hockey, army). Returns record ids, titles and links.'
                   method: 'search'
                 - service: 'App\Mcp\MemorialTools'
                   name: 'get_memorial'

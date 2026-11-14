@@ -34,6 +34,7 @@ final readonly class ItemProcessor
         #[Autowire('%env(SCANFONY_EXTRACTION_MODEL)%')] private string $extractionModel,
         #[Autowire('%env(bool:SCANFONY_VISION_ENABLED)%')] private bool $visionEnabled,
         private ?\Symfony\Contracts\HttpClient\HttpClientInterface $http = null,
+        private ?SymbolFinder $symbols = null,
     ) {}
 
     /**
@@ -121,6 +122,13 @@ final readonly class ItemProcessor
                     // The cleaned view is decoration; a failure must not block the record.
                     $media->aiResults['cleanedViewError'] = mb_substr($error->getMessage(), 0, 500);
                     $progress('Cleaned view skipped: '.$error->getMessage());
+                }
+                try {
+                    $this->symbols?->find($media, $progress);
+                    unset($media->aiResults['symbolsError']);
+                } catch (\Throwable $error) {
+                    $media->aiResults['symbolsError'] = mb_substr($error->getMessage(), 0, 500);
+                    $progress('Symbols skipped: '.$error->getMessage());
                 }
                 $this->em->flush();
                 $this->mediaWorkflow->apply($media, MediaWorkflow::FINISH);
