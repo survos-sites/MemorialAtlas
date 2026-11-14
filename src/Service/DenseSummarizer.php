@@ -58,13 +58,15 @@ final class DenseSummarizer
     }
 
     /** @return array{inputTokens: ?int, outputTokens: ?int} */
-    public function summarize(Item $item): array
+    public function summarize(Item $item, bool $refresh = false): array
     {
         $images = array_values(array_filter($item->media->toArray(), static fn ($m): bool => $m instanceof Image && $m->imageUrl !== null));
         if ($images === []) return ['inputTokens' => null, 'outputTokens' => null];
         $evidence = self::evidence($item);
-        $hash = hash('sha256', json_encode([$evidence, array_map(static fn (Image $i): string => $i->sha256, $images), self::PROMPT, self::VERSION, $this->platformName, $this->model], JSON_THROW_ON_ERROR));
-        if (($item->aiResults[self::RESULT]['inputHash'] ?? null) === $hash) return ['inputTokens' => null, 'outputTokens' => null];
+        // Keyed on the photos and the model only: the photos do not change, so a stored check is kept
+        // when a reading or correction changes. Pass --refresh for a new paid check.
+        $hash = hash('sha256', json_encode([array_map(static fn (Image $i): string => $i->sha256, $images), self::VERSION, $this->platformName, $this->model], JSON_THROW_ON_ERROR));
+        if (!$refresh && ($item->aiResults[self::RESULT]['photoHash'] ?? $item->aiResults[self::RESULT]['inputHash'] ?? null) !== null) return ['inputTokens' => null, 'outputTokens' => null];
 
         $content = [json_encode($evidence, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)];
         foreach ($images as $image) $content[] = new ImageUrl('data:image/jpeg;base64,'.base64_encode($this->decision->decisionJpeg($image->imageUrl)));
@@ -75,7 +77,7 @@ final class DenseSummarizer
         $raw = $result->getRawResult()?->getData() ?? [];
         // Gemini reports usageMetadata; OpenAI-compatible APIs report usage.
         $usage = $raw['usageMetadata'] ?? ['promptTokenCount' => $raw['usage']['prompt_tokens'] ?? null, 'candidatesTokenCount' => $raw['usage']['completion_tokens'] ?? null];
-        $item->aiResults[self::RESULT] = ['inputHash' => $hash, 'platform' => $this->platformName, 'model' => $this->model, 'summary' => trim($answer->summary),
+        $item->aiResults[self::RESULT] = ['photoHash' => $hash, 'evidenceHash' => hash('sha256', json_encode($evidence, JSON_THROW_ON_ERROR)), 'platform' => $this->platformName, 'model' => $this->model, 'summary' => trim($answer->summary),
             'disagreements' => array_map(static fn (ReadingDisagreement $d): array => ['field' => $d->field, 'reading' => $d->reading, 'photoShows' => $d->photoShows], $answer->disagreements),
             'usage' => $usage];
         $item->denseSummary = Remembrance::denseSummary($item);
@@ -85,7 +87,8 @@ final class DenseSummarizer
     }
 
     #[AsCommand('app:dense-summary', 'Check each record against its photos with a high-quality vision model and write its dense summary')]
-    public function __invoke(SymfonyStyle $io, #[Option('Only these record ids, comma separated')] ?string $ids = null, #[Option('At most this many records')] ?int $limit = null): int
+    public function __invoke(SymfonyStyle $io, #[Option('Only these record ids, comma separated')] ?string $ids = null, #[Option('At most this many records')] ?int $limit = null,
+        #[Option('Check again even when a stored check exists (costs a model call per record)')] bool $refresh = false): int
     {
         $criteria = ['marking' => ['review', 'complete']];
         if ($ids !== null) $criteria['id'] = array_map('intval', explode(',', $ids));
@@ -93,7 +96,7 @@ final class DenseSummarizer
         [$in, $out, $done] = [0, 0, 0];
         foreach ($items as $item) {
             try {
-                $usage = $this->summarize($item);
+                $usage = $this->summarize($item, $refresh);
             } catch (\Throwable $e) {
                 $io->warning(sprintf('Record %d: %s', $item->id, mb_substr($e->getMessage(), 0, 300)));
                 continue;
