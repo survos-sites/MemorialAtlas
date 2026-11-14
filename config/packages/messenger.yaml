@@ -1,6 +1,7 @@
 messenger:
     failure_transport: failed
     transports:
+        sync: 'sync://'
         processing:
             dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
             options:

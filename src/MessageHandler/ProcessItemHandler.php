@@ -15,7 +15,7 @@ use Symfony\Component\Messenger\Exception\RecoverableMessageHandlingException;
 #[AsMessageHandler]
 final readonly class ProcessItemHandler
 {
-    public function __construct(private EntityManagerInterface $em, private ItemProcessor $processor, private ProcessingStatus $status, private ElasticIndexService $index, private LockFactory $locks, private LoggerInterface $logger) {}
+    public function __construct(private EntityManagerInterface $em, private ItemProcessor $processor, private ProcessingStatus $status, private ElasticIndexService $index, private LockFactory $locks, private LoggerInterface $logger, private \App\Service\ImageCorrection $corrections) {}
 
     public function __invoke(ProcessItem $message): void
     {
@@ -25,10 +25,39 @@ final readonly class ProcessItemHandler
             $item = $this->em->find(Item::class, $message->itemId);
             if ($item === null) return;
             $this->em->refresh($item);
+            $correction = $message->correction ?? $item->aiResults['processingPolicy']['correction'] ?? null;
+            $correction ??= true;
+            if (($message->correctionImageId ?? null) !== null) {
+                if (!$correction) return;
+                $image = $this->em->find(Image::class, $message->correctionImageId);
+                if ($image === null || $image->item->id !== $item->id || $message->corners === null) {
+                    throw new \InvalidArgumentException('Correction must identify a photograph of this item and four corners.');
+                }
+                if (isset($image->imageMetadata['correctionCorners']) && $image->imageMetadata['correctionCorners'] !== $message->corners) return;
+                try {
+                    \App\Service\PerspectiveCorrector::enabled($correction);
+                    $image->imageMetadata['correctionStatus'] = 'processing';
+                    $this->em->flush();
+                    $id = $this->corrections->create($image, $message->corners);
+                    $this->em->flush();
+                    if ($this->corrections->get($image, $id)['readings'] === []) {
+                        $this->corrections->recognize($image, $id);
+                    }
+                    $image->imageMetadata['correctionStatus'] = 'complete';
+                    unset($image->imageMetadata['correctionError']);
+                    $this->em->flush();
+                } catch (\Throwable $error) {
+                    $image->imageMetadata['correctionStatus'] = 'failed';
+                    $image->imageMetadata['correctionError'] = $error->getMessage();
+                    $this->em->flush();
+                    throw $error;
+                }
+                return;
+            }
             if (!in_array($item->marking, ['review', 'complete'], true)) {
                 $missing = $this->status->missingRequirements();
                 if ($missing) throw new \RuntimeException('Missing processing configuration: '.implode(', ', $missing));
-                $this->processor->process($item, fn (string $message) => $this->logger->info($message));
+                $this->processor->process($item, fn (string $message) => $this->logger->info($message), correction: $correction);
             }
             $this->index->indexIds(Item::class, [$item->id]);
             $ids = [];

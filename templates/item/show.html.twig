@@ -1,12 +1,18 @@
 {% extends 'base.html.twig' %}
 {% block title %}{{ item.title }} · MemorialAtlas{% endblock %}
+{% block resource_hints %}
+    {% if photoPreload %}
+        <link rel="preconnect" href="{{ memorial_image_origin() }}">
+        <link rel="preload" as="image" href="{{ photoPreload }}" fetchpriority="high">
+    {% endif %}
+{% endblock %}
 {% block body %}
 {% include '_processing_banner.html.twig' with {pendingCount: item.marking in ['draft','ready','processing','failed'] ? 1 : 0} %}
 <p><a href="{{ path('home') }}">← Home</a></p>
 {% set images = item.media|filter(m => m.kind == 'image') %}
 <section class="item-overview">
     {% if images|length %}{% set photo = images|first %}
-        <figure class="item-photo"><a href="{{ path('media_file', {id:photo.id}) }}"><twig:ux:image :src="photo.thumbnailSource" width="1200" alt="{{ item.title }}" /></a><figcaption>Original photograph · {{ photo.originalName }} · <a href="{{ path('media_download', {id:photo.id}) }}">Download full size</a></figcaption></figure>
+        <figure class="item-photo"><a href="{{ path('media_file', {id:photo.id}) }}"><img src="{{ photoPreload }}" loading="eager" fetchpriority="high" alt="{{ item.title }}"></a><figcaption>Original photograph · {{ photo.originalName }} · <a href="{{ path('media_download', {id:photo.id}) }}">Download full size</a></figcaption></figure>
     {% endif %}
     <div class="item-description">
         <span class="badge">{{ item.marking }}</span><h1>{{ item.title }}</h1>
@@ -32,9 +38,9 @@
 <details><summary>Extraction evidence and source references</summary><pre>{{ facts|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre></details>
 </div></section>{% endif %}
 <h2>Source photographs and recordings</h2>
-<div class="gallery">{% for media in item.media %}
+<div class="source-media">{% for media in item.media %}
     {% if media.kind == 'image' %}<article class="card" id="media-{{ media.id }}">
-        <a href="{{ path('media_file', {id:media.id}) }}"><twig:ux:image :src="media.thumbnailSource" width="600" alt="{{ media.originalName }}" /></a>
+        {% include 'media/_ocr_photo.html.twig' with {media: media} only %}
         <div class="body"><span class="badge">Photo {{ loop.index }}</span>{% if media.marking != 'processed' %} <span class="badge">{{ media.marking == 'failed' ? 'Processing needs retry' : 'Awaiting processing' }}</span>{% endif %}<p>{{ media.originalName }} · <a href="{{ path('media_download', {id:media.id}) }}">Full size</a></p>{% if media.latitude is not null %}<p class="muted">Camera GPS: {{ media.latitude }}, {{ media.longitude }}</p>{% endif %}</div>
     </article>{% else %}{% include 'media/_audio_show.html.twig' with {media:media} only %}{% endif %}
 {% endfor %}</div>

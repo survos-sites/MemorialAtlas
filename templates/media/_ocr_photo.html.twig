@@ -1,0 +1,64 @@
+{# Imagor returns regions in the processed image's width/height coordinate space. #}
+{% set correction = media.imageMetadata.activeCorrection is defined ? media.imageMetadata.perspectiveCorrections[media.imageMetadata.activeCorrection] : null %}
+{% set reading = correction and correction.readings|length ? correction.readings|last : null %}
+{% set raw = correction ? null : media.aiResults.ocr.raw ?? null %}
+{% if reading %}
+    {% set regions = [] %}
+    {% for line in reading.lines %}
+        {% set regions = regions|merge([{box: line.polygon|map(p => [p.x, p.y]), text: line.text, score: line.confidence}]) %}
+    {% endfor %}
+    {% set raw = {regions: regions, width: correction.frame.width, height: correction.frame.height, coordinate_space: 'processed_image'} %}
+{% endif %}
+{% set ocrText = correction ? (reading ? reading.text : null) : media.ocrText %}
+{% set hasBoxes = raw and raw.regions is defined and raw.regions|length and raw.width is defined and raw.height is defined and raw.width > 0 and raw.height > 0 and raw.coordinate_space is defined and raw.coordinate_space == 'processed_image' %}
+<div class="ocr-viewer ocr-comparison {{ correction ? 'has-correction' : '' }}" data-controller="ocr-viewer">
+    {% if correction %}
+        <figure class="correction-original"><h3>Original photograph</h3><div class="ocr-photo"><img src="{{ memorial_correction(media, correction, 'original') }}" alt="Original {{ media.originalName }}" loading="lazy">
+        <svg class="correction-points" viewBox="0 0 {{ correction.parentFrame.width }} {{ correction.parentFrame.height }}" aria-label="Saved perspective correction points">
+            <polygon points="{% for point in correction.frame.perspective.sourceCorners %}{{ point.x }},{{ point.y }} {% endfor %}"/>
+            {% for point in correction.frame.perspective.sourceCorners %}<circle cx="{{ point.x }}" cy="{{ point.y }}" r="18"/><text x="{{ point.x }}" y="{{ point.y }}" text-anchor="middle" dominant-baseline="central" font-size="24">{{ loop.index }}</text>{% endfor %}
+        </svg></div><figcaption><a href="{{ path('image_correction', {id:media.id}) }}">Adjust points 1–4</a> · <a href="{{ path('media_download', {id:media.id}) }}">Full-size original</a></figcaption></figure>
+    {% endif %}
+    <div class="ocr-photo-column">
+        <h3>{{ correction ? 'Processed image' : 'Original photograph' }}</h3>
+        <div class="ocr-photo">
+            <img src="{{ correction ? memorial_correction(media, correction, 'corrected') : memorial_detail(media) }}" loading="lazy" alt="{{ media.originalName }}">
+            {% if hasBoxes %}
+                <svg class="ocr-overlay" data-ocr-viewer-target="overlay" viewBox="0 0 {{ raw.width }} {{ raw.height }}" aria-label="Detected inscription lines">
+                    {% for region in raw.regions %}
+                        <polygon points="{% for point in region.box %}{{ point[0] }},{{ point[1] }} {% endfor %}" tabindex="0" role="button" aria-label="Line {{ loop.index }}: {{ region.text }}" data-ocr-viewer-target="region" data-line="{{ loop.index0 }}" data-action="pointerenter->ocr-viewer#highlight pointerleave->ocr-viewer#clear focus->ocr-viewer#highlight blur->ocr-viewer#clear click->ocr-viewer#select keydown.enter->ocr-viewer#select keydown.space->ocr-viewer#select"><title>{{ region.text }}</title></polygon>
+                    {% endfor %}
+                </svg>
+            {% endif %}
+        </div>
+        {% if correction %}<p class="muted ocr-note">Perspective corrected · {{ correction.frame.width }} × {{ correction.frame.height }} px</p>{% endif %}
+        {% if hasBoxes %}<label class="ocr-toggle"><input type="checkbox" role="switch" checked data-action="change->ocr-viewer#toggle"><span class="ocr-switch-track" aria-hidden="true"></span> Show text boxes</label>{% endif %}
+    </div>
+    <div class="ocr-transcription">
+        <h3>Inscription · OCR</h3>
+        {% if hasBoxes %}
+            <svg class="ocr-layout" viewBox="0 0 {{ raw.width }} {{ raw.height }}" aria-label="OCR transcription in its photographed layout">
+                {% for region in raw.regions %}
+                    {% set xs = region.box|map(p => p[0])|sort %}
+                    {% set ys = region.box|map(p => p[1])|sort %}
+                    {% set left = xs|first %}{% set top = ys|first %}
+                    {% set width = (xs|last) - left %}{% set height = (ys|last) - top %}
+                    <g class="ocr-layout-line" data-text="{{ region.text|e('html_attr') }}" data-box="{{ region.box|json_encode|e('html_attr') }}" tabindex="0" role="button" aria-label="Transcription line {{ loop.index }}: {{ region.text }}" data-ocr-viewer-target="line" data-line="{{ loop.index0 }}" data-action="pointerenter->ocr-viewer#highlight pointerleave->ocr-viewer#clear focus->ocr-viewer#highlight blur->ocr-viewer#clear click->ocr-viewer#highlight keydown.enter->ocr-viewer#highlight keydown.space->ocr-viewer#select">
+                        <title>{{ region.text }}{% if region.score is defined and region.score is not null %} · {{ (region.score * 100)|round }}% OCR confidence{% endif %}</title>
+                        <rect x="{{ left }}" y="{{ top }}" width="{{ width }}" height="{{ height }}" rx="4"/>
+                        <text x="{{ left + width / 2 }}" y="{{ top + height / 2 }}" font-size="{{ height * 0.65 }}" text-anchor="middle" dominant-baseline="central">{{ region.text }}</text>
+                    </g>
+                {% endfor %}
+            </svg>
+            <p class="muted ocr-note">{{ reading and reading.geometry is defined and reading.geometry == 'blocks' ? 'Text follows detected block positions; line spacing within each block is approximate.' : 'Text follows the detected line positions and angles.' }} Select text to highlight its box.</p>
+        {% elseif ocrText %}
+            <div class="ocr-text">{{ ocrText }}</div>
+            <p class="muted">Text boxes are not available for this reading.</p>
+        {% else %}
+            <p class="muted">No OCR reading recorded yet.</p>
+        {% endif %}
+        {% if ocrText %}<p class="muted ocr-note">Machine transcription, not a verified inscription. Spelling and punctuation are preserved.</p>{% endif %}
+    </div>
+</div>
+
+<p class="body"><a href="{{ path('image_correction', {id:media.id}) }}">Select corners / correct photograph</a>{% if media.imageMetadata.correctionStatus is defined %} · Correction: {{ media.imageMetadata.correctionStatus }}{% endif %}{% if correction and not reading %} · The corrected image is saved; OCR is pending or needs retry.{% endif %}</p>

@@ -1,0 +1,22 @@
+<?php
+declare(strict_types=1);
+require dirname(__DIR__).'/vendor/autoload.php';
+$http = Symfony\Component\HttpClient\HttpClient::create(['proxy' => 'http://127.0.0.1:7080']);
+$check = static function (bool $ok, string $message): void { if (!$ok) throw new RuntimeException($message); };
+$page = static fn (string $path) => new Symfony\Component\DomCrawler\Crawler($http->request('GET', 'https://scanfony.wip'.$path)->getContent());
+$detail = $page('/items/62');
+$hero = $detail->filter('.item-photo img');
+$check($hero->attr('loading') === 'eager', 'The detail photograph must load eagerly.');
+$check($hero->attr('fetchpriority') === 'high', 'The detail photograph must have high priority.');
+$preload = $detail->filter('link[rel="preload"][as="image"]');
+$check($preload->count() === 1, 'Preload exactly the main photograph.');
+$check($preload->attr('href') === $hero->attr('src'), 'Preload exactly the displayed detail preset.');
+$check(!$hero->getNode(0)->hasAttribute('srcset') && !$preload->getNode(0)->hasAttribute('imagesrcset'), 'Do not generate custom responsive sizes.');
+$check(str_starts_with($hero->attr('src'), 'http://127.0.0.1:8088/unsafe/fit-in/1600x1600/filters:quality(82):format(webp)/'), 'Dev must use the stock local detail preset.');
+$check(str_contains($hero->attr('src'), 'format(webp)'), 'Use a WebP rendition.');
+$search = $page('/search');
+$images = $search->filter('.ux-search-hits img');
+$check($images->count() === 12, 'Initial HTML must contain the first 12 result images.');
+foreach ($images as $i => $image) $check($image->getAttribute('loading') === ($i < 3 ? 'eager' : 'lazy'), 'Only the first row loads eagerly.');
+$check($search->filter('link[rel="preconnect"]')->count() > 0, 'Connect to the image origin early.');
+echo "Image loading: eager first row, priority detail image, matching fixed-preset preload passed.\n";

@@ -32,6 +32,7 @@ final class ImportCommand extends Command
             ->addOption('context', null, InputOption::VALUE_REQUIRED, 'Shared user-supplied location/capture context')
             ->addOption('only', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Select exact filenames, repeat for a sample set')
             ->addOption('text-only', null, InputOption::VALUE_NONE, 'Use OCR and text decisions only; never send images to Jev or vision')
+            ->addOption('no-correction', null, InputOption::VALUE_NONE, 'Skip perspective correction and the OpenCV requirement')
             ->addOption('process', null, InputOption::VALUE_NONE, 'Publish images, run metadata and AI, then save a review draft')
             ->addOption('dry-run', null, InputOption::VALUE_NONE);
     }
@@ -39,6 +40,9 @@ final class ImportCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        if ($input->getOption('process') && !$input->getOption('dry-run')) {
+            \App\Service\PerspectiveCorrector::enabled(!$input->getOption('no-correction'));
+        }
         $directory = $input->getArgument('directory');
         $perItem = filter_var($input->getOption('images-per-item'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         $limit = $input->getOption('limit');
@@ -176,7 +180,7 @@ final class ImportCommand extends Command
             if ($input->getOption('process')) {
                 $io->section('Item '.$item->id.': '.$item->title);
                 try {
-                    $this->processor->process($item, static fn (string $step) => $io->writeln($step), $input->getOption('text-only') ? false : null);
+                    $this->processor->process($item, static fn (string $step) => $io->writeln($step), $input->getOption('text-only') ? false : null, correction: !$input->getOption('no-correction'));
                 } catch (\Throwable $error) {
                     ++$failed;
                     $io->error($error->getMessage());

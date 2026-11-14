@@ -97,7 +97,7 @@ label so Docker cannot silently replace this explicit connection.
 ## Image processing
 
 1. Preserve original bytes locally and upload to S3 under `scanfony/originals/{sha256}`.
-2. Ask Imagor `/meta` for metadata and RustO OCR. Imagor owns EXIF extraction; the app maps its capture date and GPS into optional image fields. GPS is the camera position, not a surveyed grave location.
+2. Ask Imagor `/meta` for image metadata. Hosted Mistral supplies OCR by default. Imagor owns EXIF extraction; the app maps its capture date and GPS into optional image fields. GPS is the camera position, not a surveyed grave location.
 3. Ask hosted Jev (`jev-1.14.0`) typed questions about OCR: image type, subject versus context, single versus shared memorial, and text usability.
 4. Use text when all routing answers pass the conservative thresholds. Otherwise ask Jev about the image and request a generative visual description. Image questions also cover flowers and associated markers.
 5. Generate a structured catalog draft from the evidence and stop at human review.
@@ -106,7 +106,7 @@ Jev decisions retain probabilities, confidence, model, timing and token usage. T
 
 Image requests use TypeSafe's experimental images API. The app prepares baseline JPEGs within its 280–1568 pixel dimension limits. See [TypeSafe image documentation](https://docs.typesafe.ai/images). The current Symfony TypeSafe bridge does not implement this assets request format, so the app uses Symfony HttpClient with typed questions and response validation.
 
-`SCANFONY_META_OCR=1` requests Imagor OCR. Requested OCR missing from the response is an error. `SCANFONY_OCR_ENABLED=1` enables Mistral fallback when no OCR was obtained. `SCANFONY_VISION_PLATFORM` and `SCANFONY_VISION_MODEL` select the generative provider/model (default Mistral). It must support images and structured output. Hugging Face is not an active inference backend.
+`SCANFONY_META_OCR=0` is the hackathon default: no custom OCR service is needed. Optional `SCANFONY_META_OCR=1` requests our Imagor/RustO OCR. Requested OCR missing from the response is an error. `SCANFONY_OCR_ENABLED=1` enables hosted Mistral OCR when no saved reading exists. `SCANFONY_VISION_PLATFORM` and `SCANFONY_VISION_MODEL` select the generative provider/model (default Mistral). It must support images and structured output. Hugging Face is not an active inference backend.
 
 Workflow decisions live in the app, with no AI workflow bundle dependency:
 
@@ -387,9 +387,9 @@ MISTRAL_RUSTO_CHAT_MODEL=
 ```
 
 The current local server supports **OCR only**, with models `tiny` and `small`.
-To use it instead of hosted fallback OCR, set `SCANFONY_OCR_PLATFORM=mistral_rusto`
-and `SCANFONY_OCR_MODEL=tiny`. Imagor metadata OCR still has priority; set
-`SCANFONY_META_OCR=0` to test the selected OCR platform on fresh photographs.
+To use it instead of hosted Mistral OCR, set `SCANFONY_OCR_PLATFORM=mistral_rusto`
+and `SCANFONY_OCR_MODEL=tiny`. Optional Imagor metadata OCR takes priority only when explicitly enabled. Keep
+`SCANFONY_META_OCR=0` to use the selected OCR platform on fresh photographs.
 Existing OCR receipts are reused. Hosted OCR remains the default.
 
 When the endpoint gains chat support, set `MISTRAL_RUSTO_CHAT_MODEL` to its actual
@@ -438,6 +438,30 @@ Cross-origin reads are public. Writes are disabled. Internal storage paths,
 donor details, errors and raw AI request payloads are excluded.
 
 Run `php tests/public-api.php` against the local server to check the contract.
+
+### Browser image presets
+
+Browser images use only `thumb` (fit inside 400×400, WebP quality 80) and
+`detail` (fit inside 1600×1600, WebP quality 82). `ImageDelivery` uses the
+Symfony UX Imagor bridge to generate these URLs. Templates do not generate
+arbitrary dimensions or responsive intermediate sizes. The detail preload and
+main image share the same URL. Full-size downloads and AI processing are separate.
+
+Development and tests use `LOCAL_IMAGOR_DSN`, defaulting to stock Imagor on
+localhost:8088, even when `UX_IMAGE_DSN` contains production credentials.
+Local originals under `var/media` take precedence over their published S3 copy.
+Public HTTPS sources remain available through Imagor's configured allowlist.
+
+Production uses `UX_IMAGE_DSN`, which must configure signed HTTPS on
+imagor.survos.com (sha256 signer, 40-character signature). Store the signing
+key in deployment secrets, not the repository. The server's stored `thumb`
+preset matches this app; `detail` matches its `large` transform. Persistent
+production detail caching requires enabling `large` on that server separately.
+
+After changing image providers or presets, refresh stored search thumbnail URLs:
+`php bin/console elastic:index:populate items` and
+`php bin/console elastic:index:populate images`.
+The blank-search result cache expires within 60 seconds.
 
 ### Thumbnail and optional database services
 
@@ -524,3 +548,109 @@ is stopped, it prints the appropriate startup instructions and exits, including 
 reruns. Once you start the runtime, it can start this checkout's Compose services.
 Local wrappers use `symfony console`. The production search worker falls back to
 `php bin/console` when the Symfony CLI is absent from the Dokku PHP buildpack.
+
+### Correct a stone face with PHP OpenCV
+
+On a record, use **Select corners / correct photograph** (admin login required).
+Select top-left, top-right, bottom-right, bottom-left on the flat face, or enter
+percentage coordinates. The request sends `ProcessItem` to the existing
+`processing` transport. `ProcessItemHandler` performs correction and OCR without
+rerunning the reviewed catalog. No new queue or workflow is added.
+
+The handler snapshots the same oriented `detail` rendition used by the editor,
+uses native `CV\getPerspectiveTransform()` and `CV\warpPerspective()`, and saves
+an immutable JPEG no larger than 1600 pixels on its long side. Output proportions
+are estimated from the selected edges. The original full-size file remains intact.
+Hosted Mistral reads the corrected JPEG with `mistral-ocr-latest` and `include_blocks`.
+Its dimensions must match before boxes are accepted. Blocks retain their provider
+geometry; line spacing inside a multiline block is approximate. The raw receipt
+is retained with the reading. Our Mistral-compatible RustO endpoint is optional
+comparison tooling, not a hackathon installation requirement.
+The page displays original and corrected frames side by side; only the corrected
+frame gets the new boxes. The old OCR and catalog remain as historical evidence.
+
+For one image, reuse saved corners and bypass the queue with the same handler:
+
+```bash
+php bin/console app:image:correct 119 --sync
+# Or supply four [x,y] pairs normalized to 0..1:
+php bin/console app:image:correct 119 --sync \
+  --corners='[[0.06,0.20],[0.79,0.15],[0.73,0.83],[0.18,0.84]]'
+```
+
+Omit `--sync` to queue the request. The normal worker remains
+`php bin/console messenger:consume processing`. Restart existing long-running
+workers after installing this code. A failed OCR call leaves the derivative saved;
+rerunning the same selection retries OCR. Successful identical corrections reuse
+stored evidence. Changed selections keep earlier corrections in image metadata.
+
+Correction is default-on (`?bool $correction`, then `$correction ??= true`).
+If OpenCV is missing, processing reports: “Install the OpenCV extension or run
+this with --no-correction.” `app:import ... --process --no-correction` skips the
+step and records the policy; import without processing does not require OpenCV.
+Images without selected corners are not automatically rectified. The existing
+item/media workflows still govern general AI processing; correction adds no states.
+
+Correction assets live under `var/media/corrections`; persist that directory with
+other media in production. Browsers still use the UX Imagor `detail` preset for
+both views. The source-file route provides immutable assets to hosted Imagor.
+Production requires PHP OpenCV in the worker process and the configured hosted
+OCR endpoint/key. These changes do not install the extension on production.
+
+`StoneCorrectionExport` maps a stored reading to the Stone contract's JSON shape.
+The caller must supply an explicit folio page reference and durable image source;
+application IDs are never assumed to equal folio IDs. Archive both parent and
+corrected raster and retain the parent frame manifest when publishing evidence.
+The application does not depend on the unpublished contract package. The
+`tests/correction-evidence.php /path/to/mono/lib/stone-contract` integration check
+hydrates a real saved reading into its typed classes and verifies raster hashes.
+
+## Future development
+
+### AI-assisted photograph preparation
+
+A vision model could propose a crop, rotation, or four-corner perspective
+correction as structured parameters, with a reason and an indication of
+uncertainty. PHP OpenCV would validate and apply those parameters through the
+existing image preparation service. The model would choose an adjustment; it
+would not redraw the photograph or reconstruct missing inscription text.
+
+The same service could later be exposed as a `prepare_gravestone_photo` AI tool.
+Its inputs would identify the source frame and requested adjustments. Its output
+would identify the immutable derivative, dimensions, applied transform, and
+parent frame, preserving compatibility with the Stone contract. OCR would run
+on that exact derivative, so its coordinates remain tied to the recorded image.
+
+An agent could inspect the result and propose another adjustment or request
+human review when uncertain. This is a future extension: the current message
+handler continues to call the service directly with user-selected corners, and
+requires neither an agent nor a separate queue. Evaluate automatic adjustments
+against reviewed photographs before enabling them by default.
+
+### Further ideas
+
+These are optional future experiments, not implemented features or setup requirements.
+
+**Bonus: approximate font matching.** Correct size and position already make the
+OCR transcription useful; matching the font face is a cosmetic enhancement.
+Render the same inscription word in a small set of candidate fonts and ask a
+vision model, potentially Jev, to select the closest visual sample, including a
+“none close enough” option. Compare rendered letter shapes rather than asking
+for a font name from memory. Keep the neutral serif fallback, preserve natural
+letter proportions, and allow a manual override. Cache the selected font as
+presentation metadata, separate from the OCR evidence.
+
+**Visible symbols with Jev.** Evaluate whether focused Jev image questions can
+identify common marker symbols without a frontier-model call. Start with a
+provisional vocabulary of twelve motifs: cross, Star of David, crescent, angel,
+dove, flower, tree, heart, praying hands, open book, guitar, and musical note.
+This is a starting set to test against the collection, not a claim about coverage.
+
+Ask independent presence questions for each motif, since a marker can contain
+several symbols. Retain per-symbol probabilities and distinguish no symbols,
+unclear imagery, and an unlisted symbol. Evaluate on reviewed photographs before
+choosing thresholds or expanding the vocabulary. A later localization step could
+attach a box to each detected motif in the same source-frame coordinate system
+used by the Stone contract. Record visible shapes as reviewable observations;
+do not turn a symbol into an assertion about the person's religion, occupation,
+or affiliations. Store the model and image reference with each observation.

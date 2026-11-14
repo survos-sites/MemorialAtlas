@@ -55,19 +55,23 @@ final class HomeController extends AbstractController
     }
 
     #[Route('/items/{id}', name: 'item_show', requirements: ['id' => '\d+'])]
-    public function show(Item $item): Response
+    public function show(Item $item, \App\Service\ImageDelivery $images): Response
     {
-        return $this->render('item/show.html.twig', ['item' => $item]);
+        $photoPreload = null;
+        foreach ($item->media as $media) {
+            if ($media instanceof Image) {
+                $photoPreload = $images->detail($media);
+                break;
+            }
+        }
+        return $this->render('item/show.html.twig', ['item' => $item, 'photoPreload' => $photoPreload]);
     }
 
     #[Route('/media/{id}', name: 'media_file', requirements: ['id' => '\d+'])]
-    public function media(Media $media, MediaStorage $storage, \Survos\ImagorBundle\Service\ImagorUrlBuilder $imagor): Response
+    public function media(Media $media, MediaStorage $storage, \App\Service\ImageDelivery $images): Response
     {
-        if ($media instanceof Image && str_starts_with($media->sourceUrl ?? '', 'https://')) {
-            return $this->redirect($media->sourceUrl);
-        }
-        if ($media instanceof Image && $media->sourceUrl !== null) {
-            return $this->redirect($imagor->preset($media->sourceUrl, 'large'));
+        if ($media instanceof Image) {
+            return $this->redirect($images->detail($media));
         }
         $response = new BinaryFileResponse($storage->path($media));
         $response->headers->set('Content-Type', $media->mimeType);

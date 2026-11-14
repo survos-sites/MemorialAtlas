@@ -20,6 +20,7 @@ final readonly class ItemProcessor
     public function __construct(
         private EntityManagerInterface $em,
         private PhotoMetadata $metadata,
+        private ImageCorrection $corrections,
         private ItemWorkflow $items,
         private MediaWorkflow $mediaWorkflow,
         #[AutowireLocator(['mistral_rusto' => new Autowire(service: 'ai.platform.mistral_rusto'), 'mistral' => new Autowire(service: 'ai.platform.mistral'), 'openai' => new Autowire(service: 'ai.platform.openai'), 'ollama' => new Autowire(service: 'ai.platform.ollama')])] private ContainerInterface $platforms,
@@ -33,14 +34,16 @@ final readonly class ItemProcessor
         #[Autowire('%env(bool:SCANFONY_VISION_ENABLED)%')] private bool $visionEnabled,
     ) {}
 
-    public function process(Item $item, callable $progress, ?bool $visionEnabled = null): void
+    public function process(Item $item, callable $progress, ?bool $visionEnabled = null, ?bool $correction = null): void
     {
         if (in_array($item->marking, ['review', 'complete'], true)) {
             $progress('Already processed; keeping the reviewed draft.');
             return;
         }
+        $correction ??= $item->aiResults['processingPolicy']['correction'] ?? true;
+        PerspectiveCorrector::enabled($correction);
         $visionEnabled ??= $item->aiResults['processingPolicy']['visionEnabled'] ?? $this->visionEnabled;
-        $item->aiResults['processingPolicy'] = ['visionEnabled'=>$visionEnabled];
+        $item->aiResults['processingPolicy'] = ['visionEnabled'=>$visionEnabled, 'correction'=>$correction];
         $extraction = $this->platforms->get($this->extractionPlatform);
         $vision = $visionEnabled ? $this->platforms->get($this->visionPlatform) : null;
         foreach ($item->media as $media) {
@@ -60,6 +63,15 @@ final readonly class ItemProcessor
                 $progress($media->originalName.': S3 + Imagor metadata');
                 $this->metadata->prepare($media);
                 $this->em->flush();
+                if ($correction && isset($media->imageMetadata['correctionCorners'])) {
+                    $progress('OpenCV: correct the selected inscription area');
+                    $correctionId = $this->corrections->create($media, $media->imageMetadata['correctionCorners']);
+                    $this->em->flush();
+                    if ($this->corrections->get($media, $correctionId)['readings'] === []) {
+                        $this->corrections->recognize($media, $correctionId);
+                        $this->em->flush();
+                    }
+                }
                 if ($this->ocrEnabled && $media->ocrText === null) {
                     $progress('Mistral OCR: supporting inscription evidence');
                     $result = $this->platforms->get($this->ocrPlatform)->invoke($this->ocrModel, new ImageUrl($media->imageUrl))->getResult();

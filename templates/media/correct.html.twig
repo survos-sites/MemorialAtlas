@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+{% block title %}Correct photograph · MemorialAtlas{% endblock %}
+{% block body %}
+<p><a href="{{ path('item_show', {id: media.item.id}) }}#media-{{ media.id }}">← Back to record</a></p>
+<h1>Correct the marker photograph</h1>
+<p>Select an enclosing quadrilateral for the whole front face, with a small margin: top-left, top-right, bottom-right, bottom-left. For a curved top, place the upper edge above the curve, not across it. The original stays unchanged. Output proportions are estimated from the selected edges.</p>
+{% if not opencv %}<p role="alert">Install the OpenCV extension or run this with --no-correction.</p>{% endif %}
+<div data-controller="perspective" data-perspective-url-value="{{ path('image_correction_save', {id: media.id}) }}" data-perspective-corners-value="{{ (media.imageMetadata.correctionCorners ?? [])|json_encode|e('html_attr') }}" data-perspective-token-value="{{ csrf_token('correct-' ~ media.id) }}">
+    <div class="corner-photo" data-action="click->perspective#select pointermove->perspective#move pointerup->perspective#stop pointercancel->perspective#stop">
+        <img src="{{ memorial_detail(media) }}" alt="{{ media.originalName }}" data-perspective-target="image">
+        <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"><polygon data-perspective-target="polygon" points=""></polygon></svg>
+        {% for name in ['Top-left', 'Top-right', 'Bottom-right', 'Bottom-left'] %}
+        <button type="button" class="corner-handle" hidden aria-label="Move {{ name }} corner" data-perspective-target="handle" data-index="{{ loop.index0 }}" data-action="pointerdown->perspective#start keydown->perspective#nudge">{{ loop.index }}</button>
+        {% endfor %}
+    </div>
+    <fieldset><legend>Corner positions (%)</legend><p class="muted">Drag a numbered point, use its arrow keys, or enter positions below. Saved points are loaded automatically.</p>
+    {% for name in ['Top-left', 'Top-right', 'Bottom-right', 'Bottom-left'] %}
+        <div class="corner-inputs"><strong>{{ loop.index }}. {{ name }}</strong>
+        {% for axis in ['x', 'y'] %}<label>{{ axis|upper }} <input type="number" min="0" max="100" step="0.1" required aria-label="{{ name }} {{ axis }}" data-perspective-target="coordinate" data-action="input->perspective#draw"></label>{% endfor %}</div>
+    {% endfor %}
+    </fieldset>
+    <p data-perspective-target="status" role="status">Select top-left.</p>
+    <button type="button" data-action="perspective#reset">Reset corners</button>
+    <button type="button" data-perspective-target="submit" data-action="perspective#save" {{ not opencv ? 'disabled' : '' }}>Correct and read inscription</button>
+</div>
+{% endblock %}

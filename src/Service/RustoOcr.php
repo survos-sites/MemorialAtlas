@@ -83,6 +83,22 @@ final class RustoOcr
         }
     }
 
+    /** Full receipt for a known, already oriented raster. */
+    public function recognizePage(string $bytes, string $mimeType, string $model): array
+    {
+        $data = $this->http->request('POST', $this->baseUrl().'/v1/ocr', [
+            'headers' => $this->auth(),
+            'json' => ['model' => $model, 'autorotate' => false, 'document' => [
+                'type' => 'image_url', 'image_url' => sprintf('data:%s;base64,%s', $mimeType, base64_encode($bytes)),
+            ]],
+            'timeout' => 180,
+        ])->toArray();
+        if (!isset($data['pages'][0]['dimensions'], $data['pages'][0]['lines'], $data['pages'][0]['markdown'], $data['pages'][0]['orientation_corrected'])) {
+            throw new \RuntimeException('OCR response is missing its page geometry or transcription.');
+        }
+        return $data['pages'][0];
+    }
+
     private function since(int $started): int
     {
         return (int) round((hrtime(true) - $started) / 1e6);

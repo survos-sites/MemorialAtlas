@@ -1,6 +1,7 @@
 {% extends 'base.html.twig' %}
 {% block title %}Search memorials · MemorialAtlas{% endblock %}
 {% block javascripts %}{{ importmap(['app','search']) }}{% endblock %}
+{% block resource_hints %}<link rel="preconnect" href="{{ memorial_image_origin() }}">{% endblock %}
 {% block body %}
 {% include '_processing_banner.html.twig' %}
 <p>Memorials · <a href="{{ path('image_search') }}">Photographs</a></p>

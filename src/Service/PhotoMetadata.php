@@ -46,7 +46,7 @@ final readonly class PhotoMetadata
             if ($requestOcr && !is_string($meta['ocr']['text'] ?? null)) throw new \RuntimeException('Imagor OCR was requested but no text was returned. Check the RustO build or disable SCANFONY_META_OCR.');
             $media->imageMetadata['imagor'] = $meta;
         }
-        if ($media->ocrText === null && isset($media->imageMetadata['imagor']['ocr'])) {
+        if ($this->metaOcr && $media->ocrText === null && isset($media->imageMetadata['imagor']['ocr'])) {
             $media->ocrText = $media->imageMetadata['imagor']['ocr']['text'];
             $media->aiResults['ocr'] = ['provider'=>'imagor', 'raw'=>$media->imageMetadata['imagor']['ocr']];
         }

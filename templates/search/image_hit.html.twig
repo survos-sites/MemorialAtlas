@@ -1,5 +1,5 @@
 <article class="card">
-    <a href="{{ path('item_show', {id:hit.itemId}) }}"><img loading="lazy" src="{{ hit.thumbnailUrl ?? path('media_file', {id:hit.id}) }}" alt="{{ hit.title }}"></a>
+    <a href="{{ path('item_show', {id:hit.itemId}) }}"><img loading="{{ loop.index <= 3 ? 'eager' : 'lazy' }}" src="{{ hit.thumbnailUrl ?? path('media_file', {id:hit.id}) }}" alt="{{ hit.title }}"></a>
     <div class="body">
         <span class="badge">{{ hit.reviewStatus == 'review' ? 'Ready to review' : hit.reviewStatus }}</span>
         <p class="muted">{{ hit.source }}</p>

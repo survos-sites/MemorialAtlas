@@ -1,8 +1,23 @@
 ux_image:
-    provider: '%env(resolve:default::UX_IMAGE_DSN)%'
+    provider: '%env(resolve:UX_IMAGE_DSN)%'
     presets:
         thumb:
-            width: 360
-            height: 360
+            width: 400
+            height: 400
             fit: contain
+            quality: 80
             format: webp
+        detail:
+            width: 1600
+            height: 1600
+            fit: contain
+            quality: 82
+            format: webp
+
+when@dev:
+    ux_image:
+        provider: '%env(resolve:LOCAL_IMAGOR_DSN)%'
+
+when@test:
+    ux_image:
+        provider: '%env(resolve:LOCAL_IMAGOR_DSN)%'

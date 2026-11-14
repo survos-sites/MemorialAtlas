@@ -45,7 +45,7 @@ final readonly class ProcessingStatus
             $io->note('Browsing saved results needs no AI keys. Before processing additional photos, configure these in .env.local:');
             $io->listing($missing);
         }
-        $io->note('The stock Imagor container creates thumbnails. Processing requires the separate Imagor /meta OCR tooling described in README.md. This checks configuration presence, not service connectivity.');
+        $io->note('The stock Imagor container creates thumbnails. OCR uses hosted Mistral by default; no custom OCR service installation is required. This checks configuration presence, not service connectivity.');
         return 0;
     }
 }

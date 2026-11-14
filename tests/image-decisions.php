@@ -108,7 +108,7 @@ $catalogHttp=new MockHttpClient(static function ($method,$url,$options) use (&$c
 });
 $catalogPlatform=(new App\Service\RustoMistralPlatform($catalogHttp,'https://local-mistral.test/','test-key','custom-text',$services->get('event_dispatcher')))->create();
 $locator=new Symfony\Component\DependencyInjection\ServiceLocator(['catalog'=>static fn()=>$catalogPlatform]);
-$pipeline=new App\Service\ItemProcessor($em,$services->get(App\Service\PhotoMetadata::class),
+$pipeline=new App\Service\ItemProcessor($em,$services->get(App\Service\PhotoMetadata::class), $services->get(App\Service\ImageCorrection::class),
     $services->get(App\Workflow\ItemWorkflow::class),$workflow,$locator,
     'nonexistent-vision','mistral-ocr-latest',false,'unused-vision-model',
     'unused-ocr','catalog','custom-text',true);
@@ -117,7 +117,7 @@ $photo=new Image($record,0,'test.jpg','ignored','image/jpeg',str_repeat('c',64))
 $photo->sourceUrl='s3://test/photo.jpg'; $photo->imageMetadata=['imagor'=>['width'=>100,'height'=>100]];
 $photo->ocrText='Recorded inscription';
 $em->persist($record);$em->flush();
-$pipeline->process($record,static function(string $step):void {},false);
+$pipeline->process($record,static function(string $step):void {},false, correction: false);
 $check($record->marking==='review', 'OCR-only pipeline reaches review.');
 $check($catalogCalls===1, 'Exactly one text extraction request.');
 $check($record->aiResults['catalog']['provider']==='catalog','Extraction provenance uses its independently selected platform.');

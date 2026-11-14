@@ -46,9 +46,9 @@ final readonly class SetupStatus
     public function models(): array
     {
         return [
-            ['stage' => 'Metadata and primary OCR', 'provider' => 'Imagor / RustO', 'model' => '/meta', 'enabled' => true],
+            ['stage' => 'Image metadata', 'provider' => 'Imagor', 'model' => '/meta', 'enabled' => true],
             ['stage' => 'OCR / image decisions', 'provider' => 'TypeSafe Jev', 'model' => $this->decisionModel, 'enabled' => true],
-            ['stage' => 'Fallback OCR', 'provider' => $this->ocrPlatform, 'model' => $this->ocrModel, 'enabled' => $this->ocrEnabled],
+            ['stage' => 'Primary OCR', 'provider' => $this->ocrPlatform, 'model' => $this->ocrModel, 'enabled' => $this->ocrEnabled],
             ['stage' => 'Optional visual description', 'provider' => $this->visionPlatform, 'model' => $this->visionModel, 'enabled' => $this->visionEnabled],
             ['stage' => 'Structured catalog extraction (text)', 'provider' => $this->extractionPlatform, 'model' => $this->extractionModel, 'enabled' => true],
         ];
