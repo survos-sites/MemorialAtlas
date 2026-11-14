@@ -15,6 +15,21 @@ $check(array_keys($config['ux_image']['presets'])===['thumb','detail'], 'Only th
 $presets=new ImagePresets($config['ux_image']['presets']);
 $local=new ImageUrlGenerator(new ImagorProvider('http://127.0.0.1:8088'), presets:$presets);
 $remote=new ImageUrlGenerator(new ImagorProvider('https://imagor.survos.com','test-key',signer:'sha256',signTruncate:40),presets:$presets);
+$defaults=(new Symfony\Component\Dotenv\Dotenv())->parse(file_get_contents(dirname(__DIR__).'/.env'));
+$secret='key+with&reserved=characters%';
+$processor=new Symfony\Component\DependencyInjection\EnvVarProcessor(new Symfony\Component\DependencyInjection\Container());
+$resolve=static function(string $name) use (&$resolve,$processor,$defaults,$secret): string {
+    if (str_contains($name, ':')) {
+        [$prefix,$variable]=explode(':',$name,2);
+        return $processor->getEnv($prefix,$variable,$resolve);
+    }
+    return $name==='IMAGOR_SECRET' ? $secret : $defaults[$name];
+};
+$dsn=new Symfony\UX\Image\Provider\Dsn($resolve('resolve:UX_IMAGE_DSN'));
+$check($dsn->getHost()==='imagor.survos.com' && $dsn->getOption('sign_key')===$secret,
+    'Committed server defaults must safely resolve the separate signing secret.');
+$check($dsn->getOption('signer')==='sha256' && $dsn->getOption('sign_truncate')==='40',
+    'Default signing options must match the production image server.');
 $image=new Image(new Item('Test'),0,'test.jpg',basename(__FILE__),'image/jpeg',str_repeat('a',64));
 $image->sourceUrl='s3://test-bucket/original';
 $dev=new ImageDelivery($local,'dev',__DIR__);

@@ -266,8 +266,10 @@ alongside PostgreSQL; a Docker image or database backup alone does not contain
 correction files. Local sample corrections are not copied by deployment.
 
 Set `DEFAULT_URI=https://memorialatlas.org`, `APP_ENV=prod`, `APP_DEBUG=0`,
-`MESSENGER_TRANSPORT_DSN=doctrine://default`, and a signed `UX_IMAGE_DSN` for
-`imagor.survos.com`. Keep Mistral and Imagor credentials in Dokku config.
+`MESSENGER_TRANSPORT_DSN=doctrine://default`, and keep the public image server in the committed `.env` defaults.
+`UX_IMAGE_DSN` resolves and URL-encodes `IMAGOR_SECRET` at runtime. Keep only
+Mistral and Imagor keys in deployment secrets; do not duplicate the image server
+or the assembled DSN in Dokku config.
 `SYMFONY_TRUSTED_PROXIES` must cover the private Dokku proxy network so generated
 media URLs retain HTTPS. The application uses classic FrankenPHP request mode.
 
@@ -481,7 +483,9 @@ Public HTTPS sources remain available through Imagor's configured allowlist.
 
 Production uses `UX_IMAGE_DSN`, which must configure signed HTTPS on
 imagor.survos.com (sha256 signer, 40-character signature). Store the signing
-key in deployment secrets, not the repository. The server's stored `thumb`
+key in deployment secrets, not the repository. The public host and signing
+algorithm are committed in `.env`; `resolve:UX_IMAGE_DSN` inserts the URL-encoded
+key at runtime. The server's stored `thumb`
 preset matches this app; `detail` matches its `large` transform. Persistent
 production detail caching requires enabling `large` on that server separately.
 
