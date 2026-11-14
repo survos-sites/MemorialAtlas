@@ -24,6 +24,7 @@
         "survos/field-bundle": "^2.45",
         "survos/imagor-bundle": "^2.5",
         "survos/search-bundle": "^2.45",
+        "symfony/ai-agent": "^1.0.0-beta1",
         "symfony/ai-bundle": "^1.0.0-beta1",
         "symfony/ai-gemini-platform": "^1.0.0-beta1",
         "symfony/ai-mistral-platform": "^1.0.0-beta1",
