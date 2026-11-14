@@ -18,17 +18,21 @@ final class HomeController extends AbstractController
     #[Route('/', name: 'home')]
     public function index(EntityManagerInterface $em): Response
     {
+        $db = $em->getConnection();
+        // Prefer a gravestone that has an AI-cleaned view, so the page can show the original next to it.
+        $heroId = $db->fetchOne("SELECT m.id FROM media m JOIN item i ON i.id = m.item_id WHERE i.record_type = 'gravestone' AND m.kind = 'image'
+            ORDER BY (m.image_metadata::jsonb -> 'cleanedView' IS NOT NULL) DESC, (i.marking = 'review') DESC, m.id DESC LIMIT 1");
+
         return $this->render('home.html.twig', [
             'pendingCount' => $this->processingStatus->pendingCount(),
-            'heroImage' => $em->createQueryBuilder()
-                ->select('image')
-                ->from(Image::class, 'image')
-                ->join('image.item', 'item')
-                ->where('item.recordType = :recordType')
-                ->setParameter('recordType', 'gravestone')
-                ->orderBy('image.id', 'DESC')
-                ->setMaxResults(1)
-                ->getQuery()->getOneOrNullResult(),
+            'heroImage' => $heroId === false ? null : $em->find(Image::class, (int) $heroId),
+            'stats' => [
+                'photos' => (int) $db->fetchOne("SELECT COUNT(*) FROM media WHERE kind = 'image'"),
+                'records' => (int) $db->fetchOne("SELECT COUNT(*) FROM item WHERE marking IN ('review', 'complete')"),
+                'withOcr' => (int) $db->fetchOne('SELECT COUNT(*) FROM media WHERE ocr_text IS NOT NULL'),
+                'cleaned' => (int) $db->fetchOne("SELECT COUNT(*) FROM media WHERE image_metadata::jsonb -> 'cleanedView' IS NOT NULL"),
+                'cemeteries' => $db->fetchFirstColumn('SELECT name FROM cemetery ORDER BY name'),
+            ],
         ]);
     }
 

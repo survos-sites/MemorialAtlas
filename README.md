@@ -1,10 +1,34 @@
 # MemorialAtlas
 
-*From gravestone photographs to a searchable record of remembrance.*
+*Gravestone photos in, searchable records out.*
 
-MemorialAtlas is a cemetery-focused project for the [Symfony AI & MCP Hackathon](https://symfony.com/hackathon/), built with Symfony, Doctrine and PostgreSQL.
+MemorialAtlas reads phone photos of grave markers. For each marker it proposes a record: the
+names, the dates and the inscription, with what is still uncertain. A person checks every record
+against the photo, and the photo stays the evidence. It is an entry for the
+[Symfony AI & MCP Hackathon](https://symfony.com/hackathon/).
 
-[Live site: MemorialAtlas.org](https://memorialatlas.org) · [Public API documentation](https://memorialatlas.org/api/docs)
+[Live site: MemorialAtlas.org](https://memorialatlas.org) · [Public API documentation](https://memorialatlas.org/api/docs) ·
+[Photos on Hugging Face](https://huggingface.co/datasets/museado/memorialatlas-st-peters)
+
+The collection is 111 photos of headstones in St. Peter's churchyard, Virginia, taken on 13 November
+2026 during a drone flight over the same graves. It was cold and windy, and many photos are angled or
+in hard shadow, which is the normal case for field photos.
+
+What happens to each photo:
+
+1. **Read**: Mistral OCR reads the inscription.
+2. **Decide**: Jev, a TypeSafe decision model, answers fixed questions with probabilities (is this a
+   gravestone, is the OCR usable, how many people, was the camera at an angle). The answers choose the
+   next steps, so a clear photo costs less than a hard one.
+3. **Look**: when the OCR is weak, Mistral Medium describes the photo itself.
+4. **Propose**: Mistral returns a structured record, mapped to typed PHP classes, with its uncertainties.
+5. **Clean up**: for angled photos, Gemini makes a straightened copy for display. It is labelled and
+   never read by OCR or extraction, because an image model can change letters.
+6. **Search and ask**: Elasticsearch search, a read-only API, and an MCP server for AI assistants
+   (see [MCP server](#mcp-server)).
+
+Every model is a Symfony AI platform bridge, and every AI answer is stored with its model, prompt and
+input hash. Built with Symfony 8, Doctrine, PostgreSQL, Messenger, Elasticsearch and Imagor.
 
 Production runs as the Dokku app `memorialatlas` on `fsn1`. The deployment remote is `dokku@fsn1:memorialatlas`.
 

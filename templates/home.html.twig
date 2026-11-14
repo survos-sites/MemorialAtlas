@@ -1,23 +1,55 @@
 {% extends 'base.html.twig' %}
 {% block body %}
 {% include '_processing_banner.html.twig' %}
+<style>
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0}.pair img{width:100%;height:auto;display:block;border-radius:4px;background:#e6e6dd}.pair figcaption{grid-column:1/-1;font-size:.78rem;color:#6c756a;line-height:1.5}
+.label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#6c756a;margin:6px 0 0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;border-top:1px solid #d7d4cb;border-bottom:1px solid #d7d4cb;padding:20px 0;margin:8px 0 12px}.stats b{display:block;font-family:Georgia,serif;font-size:2.2rem;font-weight:400}.stats span{font-size:.8rem;color:#6c756a}
+.flow{list-style:none;padding:0;counter-reset:step;display:grid;gap:14px}.flow li{counter-increment:step;display:grid;grid-template-columns:2.2rem 1fr;gap:4px 12px}.flow li::before{content:counter(step);grid-row:span 2;font-family:Georgia,serif;font-size:1.6rem;color:#345c49}.flow strong{font-weight:600}.flow p{margin:0;font-size:.93rem;line-height:1.55}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
 <section class="hero">
     <div>
-        <span class="eyebrow">MemorialAtlas</span>
-        <h1>Lives remembered.<br>Stories connected.</h1>
-        <p>From gravestone photographs to a searchable record of remembrance.</p>
-        <p>A name, a date, “beloved father,” a shared life. Cemetery inscriptions preserve connections between people and the places they called home. MemorialAtlas helps families, researchers and communities find those details and return to the photographs behind them.</p>
-        <a class="button" href="{{ path('item_search') }}">Search the collection</a>
+        <span class="eyebrow">Symfony AI &amp; MCP Hackathon entry</span>
+        <h1>Gravestone photos in, searchable records out.</h1>
+        <p>MemorialAtlas reads phone photos of grave markers. For each marker it proposes a record: the names, the dates and the inscription, with what is still uncertain.</p>
+        <p>A person checks every record against the photo. The photo stays the evidence.</p>
+        <p><a class="button" href="{{ path('item_search') }}">Search the collection</a> &nbsp; <a href="#how">How it works ↓</a></p>
     </div>
-    {% if heroImage %}<figure><img src="{{ memorial_detail(heroImage) }}" loading="eager" fetchpriority="high" alt="A gravestone from the MemorialAtlas collection"><figcaption>Every record begins with a photograph. Every reading remains open to review.</figcaption></figure>{% endif %}
+    {% if heroImage %}{% set cleaned = memorial_cleaned(heroImage) %}
+    {% if cleaned %}
+    <figure class="pair">
+        <div><img src="{{ memorial_detail(heroImage) }}" loading="eager" fetchpriority="high" alt="Original phone photo of a gravestone, taken at an angle"><p class="label">Phone photo</p></div>
+        <div><img src="{{ cleaned }}" loading="eager" alt="The same gravestone, straightened and relit by an image model"><p class="label">AI-cleaned view</p></div>
+        <figcaption>Taken on a cold, windy afternoon. Jev judged the photo angled, and Gemini made a straightened copy for display. OCR and extraction read only the original. <a href="{{ path('item_show', {id: heroImage.item.id}) }}">See this record →</a></figcaption>
+    </figure>
+    {% else %}
+    <figure><img src="{{ memorial_detail(heroImage) }}" loading="eager" fetchpriority="high" alt="A gravestone from the collection"><figcaption>Every record begins with a photograph. <a href="{{ path('item_show', {id: heroImage.item.id}) }}">See this record →</a></figcaption></figure>
+    {% endif %}{% endif %}
 </section>
-<section style="max-width:800px">
-<h2>A camera roll is only the beginning.</h2>
-<p>A walk through a cemetery might produce hundreds of photographs: a whole headstone, a close-up of a faded date, another face of the same monument. It can be hard to tell where one memorial ends and the next begins, let alone find a particular person later.</p>
-<p>MemorialAtlas brings those pieces together. It reads inscriptions, helps identify photographs of the same marker, and organizes the text into names, dates and relationship clues that you can search.</p>
-<h2>Keep the evidence in view.</h2>
-<p>A shared surname is a clue, not proof of a family connection. A name on a stone does not always mean that person is buried there. You can compare the proposed reading with the original photograph and see what remains uncertain.</p>
-<p>Our field collection starts close to home, in Sperryville, Virginia. The aim is to help communities preserve and share the lives remembered in their cemeteries.</p>
-<p><a href="{{ path('item_search') }}">Find a name or inscription →</a> · <a href="{{ path('about') }}">How MemorialAtlas works</a></p>
+
+<section style="max-width:860px">
+<h2>The collection</h2>
+<p>{{ stats.photos }} photos of headstones in St. Peter's churchyard, Virginia, taken in about half an hour on 13 November 2026, while a drone flew over the same graves. The photos are public on <a href="https://huggingface.co/datasets/museado/memorialatlas-st-peters">Hugging Face</a>, so anyone can run the same pipeline on them.</p>
+<div class="stats">
+    <div><b>{{ stats.photos }}</b><span>photos</span></div>
+    <div><b>{{ stats.withOcr }}</b><span>read by OCR</span></div>
+    <div><b>{{ stats.records }}</b><span>records ready to review</span></div>
+    <div><b>{{ stats.cleaned }}</b><span>AI-cleaned views</span></div>
+</div>
+<p class="muted" style="font-size:.85rem">Counts come from the database when the page loads. The view from the drone is on the <a href="{{ path('drone') }}">Drone page</a>.</p>
+
+<h2 id="how">What happens to each photo</h2>
+<ol class="flow">
+    <li><strong>Read the inscription.</strong><p>Mistral OCR reads the text on the stone.</p></li>
+    <li><strong>Decide what the photo needs.</strong><p>Jev, a TypeSafe decision model, answers fixed questions with probabilities: is this a gravestone, is the OCR usable, how many people does it name, was the camera at an angle. The answers choose the next steps, so a clear photo costs less than a hard one.</p></li>
+    <li><strong>Look at the stone.</strong><p>When the OCR is weak, Mistral Medium describes the photo itself: the layout, the symbols, the letters OCR missed.</p></li>
+    <li><strong>Propose a record.</strong><p>Mistral turns the evidence into structured data, validated into a PHP object: title, people with birth and death dates, and a list of what is uncertain. A shared surname is not proof of family, and a name on a stone is not proof of burial.</p></li>
+    <li><strong>Clean up angled photos.</strong><p>If Jev judges the photo angled, Gemini makes a straightened, evenly lit copy for display. An image model can change letters, so the copy is labelled and never read by OCR or extraction.</p></li>
+    <li><strong>Search it, or ask about it.</strong><p>Records go into Elasticsearch for search, a public read-only API, and an MCP server, so an AI assistant can search the collection and quote a record with its open questions.</p></li>
+</ol>
+
+<h2>Built with Symfony AI and MCP</h2>
+<p>Each model is a Symfony AI platform bridge (Mistral, Gemini, TypeSafe), so switching a provider is a configuration change. Structured output maps model answers to typed PHP classes. A Messenger worker runs the pipeline, and every AI answer is stored with its model, prompt and input hash, so a record shows where each reading came from. The MCP server uses <code>symfony/mcp-bundle</code> and the PHP MCP SDK, with tools declared by attributes. <a href="{{ path('about') }}">More about the technology →</a></p>
 </section>
 {% endblock %}
