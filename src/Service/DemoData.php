@@ -55,13 +55,62 @@ final readonly class DemoData
         if (($data['version'] ?? null) === 2) {
             if (empty($data['records'])) throw new \RuntimeException('Empty demo collection.');
             $first = null;
+            $loaded = [];
             foreach ($data['records'] as $record) {
                 $item = $this->loadRecord($record);
+                $loaded[$record['key']] = $item;
                 $first ??= $item;
             }
+            $this->linkSameMarkers($loaded);
             return $first;
         }
         return $this->loadRecord($data);
+    }
+
+    /**
+     * Writes every processed record with its AI results as a version 2 package, so another installation
+     * loads the results without calling any model. Same-marker links are written as package keys.
+     */
+    #[AsCommand('app:demo:export', 'Write all processed records and their AI results as a version 2 demo package')]
+    public function export(SymfonyStyle $io, #[Argument('Output file')] string $path): int
+    {
+        $items = $this->em->getRepository(Item::class)->findBy(['marking' => ['review', 'complete']], ['id' => 'ASC']);
+        $keys = [];
+        foreach ($items as $item) $keys[$item->id] = $item->aiResults['demoKey'] ?? 'memorialatlas-'.$item->id;
+        $records = [];
+        foreach ($items as $item) {
+            $ai = $item->aiResults;
+            unset($ai['demoKey'], $ai['processingQueued']);
+            if (isset($ai['sameMarker'])) $ai['sameMarker'] = ['protocol' => $ai['sameMarker']['protocol'] ?? null,
+                'sameAsKeys' => array_values(array_map(static fn (int $id): string => $keys[$id], array_filter($ai['sameMarker']['sameAs'] ?? [], static fn (int $id): bool => isset($keys[$id]))))];
+            $images = [];
+            foreach ($item->media as $media) {
+                if (!$media instanceof Image || $media->sourceUrl === null) continue;
+                $images[] = ['sha256' => $media->sha256, 'url' => $media->sourceUrl, 'imageUrl' => $media->imageUrl, 'originalName' => $media->originalName,
+                    'mimeType' => $media->mimeType, 'source' => $media->source, 'donor' => $media->donor, 'description' => $media->description,
+                    'ocrText' => $media->ocrText, 'latitude' => $media->latitude, 'longitude' => $media->longitude, 'marking' => $media->marking,
+                    'aiResults' => $media->aiResults, 'imageMetadata' => $media->imageMetadata];
+            }
+            $records[] = ['version' => 1, 'key' => $keys[$item->id],
+                'cemetery' => $item->cemetery === null ? null : ['name' => $item->cemetery->name, 'locality' => $item->cemetery->locality],
+                'item' => ['title' => $item->title, 'description' => $item->description, 'locationContext' => $item->locationContext,
+                    'recordType' => $item->recordType, 'marking' => $item->marking, 'aiResults' => $ai, 'tags' => $item->tags],
+                'images' => $images];
+        }
+        file_put_contents($path, json_encode(['version' => 2, 'records' => $records], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        $io->success(sprintf('%d records written to %s (%.1f MB).', count($records), $path, filesize($path) / 1e6));
+        return 0;
+    }
+
+    /** @param array<string, Item> $loaded */
+    private function linkSameMarkers(array $loaded): void
+    {
+        foreach ($loaded as $item) {
+            $keys = $item->aiResults['sameMarker']['sameAsKeys'] ?? null;
+            if ($keys !== null) $item->aiResults['sameMarker']['sameAs'] = array_values(array_map(static fn (string $k): int => $loaded[$k]->id, array_filter($keys, static fn (string $k): bool => isset($loaded[$k]))));
+            $item->denseSummary = Remembrance::denseSummary($item);
+        }
+        $this->em->flush();
     }
 
     private function loadRecord(array $data): Item
@@ -77,6 +126,7 @@ final readonly class DemoData
         $data['item'] = ($data['item'] ?? []) + ['title'=>'Unprocessed gravestone', 'description'=>null, 'locationContext'=>null, 'recordType'=>'gravestone', 'marking'=>'draft', 'aiResults'=>[]];
         $item=new Item($data['item']['title']);
         foreach (['description','locationContext','recordType','marking','aiResults'] as $field) $item->$field=$data['item'][$field];
+        $item->tags = $data['item']['tags'] ?? [];
         $item->aiResults['demoKey']=$data['key'];
         if ($data['cemetery'] ?? null) {
             $cemetery=$this->em->getRepository(Cemetery::class)->findOneBy($data['cemetery']) ?? new Cemetery();
@@ -88,6 +138,7 @@ final readonly class DemoData
             if (!preg_match('/^[a-f0-9]{64}$/D',$image['sha256']) || !str_starts_with($image['url'] ?? '', 'https://')) throw new \RuntimeException('Invalid demo image reference.');
             $media=new Image($item, count($item->media), $image['originalName'], substr($image['sha256'],0,2).'/'.$image['sha256'], $image['mimeType'], $image['sha256']);
             $media->sourceUrl=$image['url'];
+            if (isset($image['imageUrl'])) $media->imageUrl=$image['imageUrl'];
             foreach (['source','donor','description','ocrText','latitude','longitude','marking','aiResults','imageMetadata'] as $field) $media->$field=$image[$field];
             // Retain provider receipts as originally recorded; source IDs are provenance, not local foreign keys.
             if (isset($image['id'])) $media->aiResults['demoSourceMediaId']=$image['id'];
