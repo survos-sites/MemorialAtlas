@@ -19,7 +19,7 @@ MOTION:  enter: expo.out 18-24 frames. move: power2.inOut 15-18 frames. exit: po
 SHOTS:   0-6     Hamilton photo full bleed, slow push 1.00 -> 1.06; OCR box lands on "Hamilton" at 0.6 s;
                  title "A photo of a grave" then "is not a record yet".
          6-15    ring of 22 real photos rotating (rotateY, 24 deg/s); counter 0 -> 111; lines "111 photos",
-                 "One cold, windy afternoon", "St. Peter's churchyard".
+                 "One cold, windy afternoon", "St. Peter's Church Graveyard".
          15-23   five hard photos snap in tilted, each with its problem in brass: tilted, worn, flat in the
                  grass, at an angle, upside down. Line: "Who is buried here?"
          23-28   MemorialAtlas carved in; three slots below: Read · Decide · Clean up.

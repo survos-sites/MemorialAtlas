@@ -13,32 +13,32 @@
     <div id="mon-stage" class="clip" data-start="0" data-duration="9" data-layout-allow-overflow>
       <div id="mon-pivot">
         <div id="mon-ring">
-        <div class="mon-card" style="transform: rotateY(0.00deg) translateZ(1300px)"><img src="assets/photos/m012.jpg" alt="Headstone photo, St. Peter's churchyard"></div>
-        <div class="mon-card" style="transform: rotateY(27.69deg) translateZ(1300px)"><img src="assets/photos/m014.jpg" alt="Headstone photo, St. Peter's churchyard"></div>
-        <div class="mon-card" style="transform: rotateY(55.38deg) translateZ(1300px)"><img src="assets/photos/m021.jpg" alt="Headstone photo, St. Peter's churchyard"></div>
-        <div class="mon-card" style="transform: rotateY(83.08deg) translateZ(1300px)"><img src="assets/photos/m034.jpg" alt="Headstone photo, St. Peter's churchyard"></div>
-        <div class="mon-card" style="transform: rotateY(110.77deg) translateZ(1300px)"><img src="assets/photos/m035.jpg" alt="Headstone photo, St. Peter's churchyard"></div>
-        <div class="mon-card" style="transform: rotateY(138.46deg) translateZ(1300px)"><img src="assets/photos/m038.jpg" alt="Headstone photo, St. Peter's churchyard"></div>
-        <div class="mon-card" style="transform: rotateY(166.15deg) translateZ(1300px)"><img src="assets/photos/m045.jpg" alt="Headstone photo, St. Peter's churchyard"></div>
-        <div class="mon-card" style="transform: rotateY(193.85deg) translateZ(1300px)"><img src="assets/photos/m049.jpg" alt="Headstone photo, St. Peter's churchyard"></div>
-        <div class="mon-card" style="transform: rotateY(221.54deg) translateZ(1300px)"><img src="assets/photos/m055.jpg" alt="Headstone photo, St. Peter's churchyard"></div>
-        <div class="mon-card" style="transform: rotateY(249.23deg) translateZ(1300px)"><img src="assets/photos/m065.jpg" alt="Headstone photo, St. Peter's churchyard"></div>
-        <div class="mon-card" style="transform: rotateY(276.92deg) translateZ(1300px)"><img src="assets/photos/m083.jpg" alt="Headstone photo, St. Peter's churchyard"></div>
-        <div class="mon-card" style="transform: rotateY(304.62deg) translateZ(1300px)"><img src="assets/photos/m090.jpg" alt="Headstone photo, St. Peter's churchyard"></div>
-        <div class="mon-card" style="transform: rotateY(332.31deg) translateZ(1300px)"><img src="assets/photos/m104.jpg" alt="Headstone photo, St. Peter's churchyard"></div>
+        <div class="mon-card" style="transform: rotateY(0.00deg) translateZ(1300px)"><img src="assets/photos/m012.jpg" alt="Headstone photo, St. Peter's Church Graveyard"></div>
+        <div class="mon-card" style="transform: rotateY(27.69deg) translateZ(1300px)"><img src="assets/photos/m014.jpg" alt="Headstone photo, St. Peter's Church Graveyard"></div>
+        <div class="mon-card" style="transform: rotateY(55.38deg) translateZ(1300px)"><img src="assets/photos/m021.jpg" alt="Headstone photo, St. Peter's Church Graveyard"></div>
+        <div class="mon-card" style="transform: rotateY(83.08deg) translateZ(1300px)"><img src="assets/photos/m034.jpg" alt="Headstone photo, St. Peter's Church Graveyard"></div>
+        <div class="mon-card" style="transform: rotateY(110.77deg) translateZ(1300px)"><img src="assets/photos/m035.jpg" alt="Headstone photo, St. Peter's Church Graveyard"></div>
+        <div class="mon-card" style="transform: rotateY(138.46deg) translateZ(1300px)"><img src="assets/photos/m038.jpg" alt="Headstone photo, St. Peter's Church Graveyard"></div>
+        <div class="mon-card" style="transform: rotateY(166.15deg) translateZ(1300px)"><img src="assets/photos/m045.jpg" alt="Headstone photo, St. Peter's Church Graveyard"></div>
+        <div class="mon-card" style="transform: rotateY(193.85deg) translateZ(1300px)"><img src="assets/photos/m049.jpg" alt="Headstone photo, St. Peter's Church Graveyard"></div>
+        <div class="mon-card" style="transform: rotateY(221.54deg) translateZ(1300px)"><img src="assets/photos/m055.jpg" alt="Headstone photo, St. Peter's Church Graveyard"></div>
+        <div class="mon-card" style="transform: rotateY(249.23deg) translateZ(1300px)"><img src="assets/photos/m065.jpg" alt="Headstone photo, St. Peter's Church Graveyard"></div>
+        <div class="mon-card" style="transform: rotateY(276.92deg) translateZ(1300px)"><img src="assets/photos/m083.jpg" alt="Headstone photo, St. Peter's Church Graveyard"></div>
+        <div class="mon-card" style="transform: rotateY(304.62deg) translateZ(1300px)"><img src="assets/photos/m090.jpg" alt="Headstone photo, St. Peter's Church Graveyard"></div>
+        <div class="mon-card" style="transform: rotateY(332.31deg) translateZ(1300px)"><img src="assets/photos/m104.jpg" alt="Headstone photo, St. Peter's Church Graveyard"></div>
         </div>
       </div>
     </div>
     <div id="mon-l1" class="mon-line clip" data-start="0.3" data-duration="3.2"><span id="mon-count">0</span> PHOTOS</div>
     <div id="mon-l2" class="mon-line clip" data-start="3.6" data-duration="2.7">One cold, windy afternoon</div>
-    <div id="mon-l3" class="mon-line clip" data-start="6.4" data-duration="2.6">St. Peter's churchyard</div>
+    <div id="mon-l3" class="mon-line clip" data-start="6.4" data-duration="2.6">St. Peter's Church Graveyard</div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
     tl.fromTo('#mon-ring', { rotationY: 40 }, { rotationY: -180, duration: 9, ease: 'none' }, 0);
     tl.fromTo('#mon-stage', { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0);
     const counter = { v: 0 };
-    tl.fromTo(counter, { v: 0 }, { v: 111, duration: 1.6, ease: 'power3.out', onUpdate: () => { document.querySelector('#mon-count').textContent = Math.round(counter.v); } }, 0.4);
+    tl.fromTo(counter, { v: 0 }, { v: 107, duration: 1.6, ease: 'power3.out', onUpdate: () => { document.querySelector('#mon-count').textContent = Math.round(counter.v); } }, 0.4);
     for (const [id, at] of [['#mon-l1', 0.3], ['#mon-l2', 3.6], ['#mon-l3', 6.4]]) {
       tl.fromTo(id, { clipPath: 'inset(0 50% 0 50%)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0%)', filter: 'blur(0px)', duration: 0.6, ease: 'expo.out' }, at);
     }

@@ -5,40 +5,71 @@
     .rs-head small { display: block; margin-top: 16px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 40px; letter-spacing: 0; text-transform: none; color: #b9b6ae; }
     #rs-site { position: absolute; left: 270px; top: 215px; width: 1380px; height: 853px; transform-origin: 50% 0; }
     #rs-site img { width: 100%; height: 100%; display: block; border-radius: 8px; box-shadow: 0 22px 50px rgba(0,0,0,.6); }
-    #rs-term { position: absolute; left: 80px; top: 250px; width: 1760px; height: 740px; background: #0d1110; border: 2px solid #3a4541; border-radius: 10px; box-shadow: inset 0 4px 14px rgba(0,0,0,.8); padding: 44px 52px; }
-    .rs-l { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 38px; line-height: 1.55; color: #ece9e2; white-space: pre; }
-    .rs-cmd { color: #d2a24a; }
-    .rs-dim { color: #8f9893; }
-    .rs-gap { height: 26px; }
+    #rs-chat { position: absolute; left: 180px; top: 212px; width: 1560px; height: 852px; background: #0d1110; border: 2px solid #3a4541; border-radius: 18px; box-shadow: 0 24px 60px rgba(0,0,0,.65), inset 0 3px 12px rgba(0,0,0,.8); }
+    #rs-bar { position: absolute; left: 0; top: 0; width: 100%; height: 64px; border-bottom: 2px solid #232b29; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 28px; line-height: 64px; color: #8f9893; padding-left: 36px; }
+    #rs-bar b { color: #d2a24a; }
+    #rs-q { position: absolute; right: 44px; top: 100px; padding: 20px 34px; background: #d2a24a; color: #121514; border-radius: 30px 30px 6px 30px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 42px; white-space: nowrap; transform-origin: 100% 100%; }
+    #rs-tools { position: absolute; left: 44px; top: 206px; width: 1472px; display: flex; flex-wrap: wrap; gap: 14px 16px; }
+    .rs-tool { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 28px; color: #b9b6ae; border: 2px solid #3a4541; border-radius: 40px; padding: 8px 22px; background: #141a19; }
+    .rs-tool i { font-style: normal; color: #d2a24a; }
+    .rs-tool i.rs-none { color: #8f9893; }
+    #rs-a { position: absolute; left: 44px; top: 352px; width: 1472px; height: 468px; background: #1a211f; border: 2px solid #2c3532; border-radius: 30px 30px 30px 6px; }
+    .rs-thumb { position: absolute; left: 30px; width: 330px; height: 196px; object-fit: cover; border-radius: 10px; border: 4px solid #ece9e2; }
+    #rs-th1 { top: 30px; } #rs-th2 { top: 238px; }
+    #rs-text { position: absolute; left: 396px; top: 26px; width: 1050px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 38px; line-height: 1.45; color: #ece9e2; }
+    .rs-p { margin-bottom: 14px; }
+    .rs-name { font-weight: 800; color: #fff; }
+    .rs-date { color: #d2a24a; font-weight: 700; }
+    .rs-note { color: #9aa29e; font-size: 34px; }
   </style>
   <div id="root" data-composition-id="result" data-width="1920" data-height="1080">
-    <div id="rs-h1" class="rs-head clip" data-start="0" data-duration="5.9">The record<small>For a person to check, with the photo as its evidence.</small></div>
-    <div id="rs-site" class="clip" data-start="0.4" data-duration="5.5"><img src="assets/site-item.jpg" alt="MemorialAtlas item page for the Hamilton gravestone"></div>
-    <div id="rs-h2" class="rs-head clip" data-start="6.0" data-duration="6">Ask it through MCP<small>Any AI assistant can search the collection and read a record.</small></div>
-    <div id="rs-term" class="clip" data-start="6.2" data-duration="5.8">
-      <div class="rs-l rs-cmd">› search_memorials("hamilton")</div>
-      <div class="rs-l">   84  Hamilton Gravestone at St. Peter's Churchyard</div>
-      <div class="rs-l rs-dim">  111  Gravestone with surname KERICK and partial inscription</div>
-      <div class="rs-gap"></div>
-      <div class="rs-l rs-cmd">› get_memorial(84)</div>
-      <div class="rs-l">   John Patrick Hamilton   Feb. 28, 1950 – Jan. 31, 2023</div>
-      <div class="rs-l">   Catherine Hamilton      born Oct. 15, 1958</div>
-      <div class="rs-l rs-dim">   Not a verified burial record.</div>
+    <div id="rs-h1" class="rs-head clip" data-start="0" data-duration="3.4">The record<small>For a person to check, with the photo as its evidence.</small></div>
+    <div id="rs-site" class="clip" data-start="0.3" data-duration="3.1"><img src="assets/site-item.jpg" alt="MemorialAtlas item page for the Hamilton gravestone"></div>
+    <div id="rs-h2" class="rs-head clip" data-start="3.4" data-duration="8.6">Ask in plain words<small>Any AI agent can use the collection through MCP.</small></div>
+    <div id="rs-chat" class="clip" data-start="3.5" data-duration="8.5">
+      <div id="rs-bar"><b>●</b> agent · memorialatlas MCP</div>
+      <div id="rs-q"><span id="rs-q-t">Tell me about the veterans buried here.</span></div>
+      <div id="rs-tools">
+        <div class="rs-tool" id="rs-t1">search_memorials("veteran") <i class="rs-none">0</i></div>
+        <div class="rs-tool" id="rs-t2">search_memorials("navy") <i>1</i></div>
+        <div class="rs-tool" id="rs-t3">search_memorials("army") <i>3</i></div>
+        <div class="rs-tool" id="rs-t4">get_memorial(81) <i>✓</i></div>
+        <div class="rs-tool" id="rs-t5">get_memorial(86) <i>✓</i></div>
+      </div>
+      <div id="rs-a">
+        <img id="rs-th1" class="rs-thumb" src="assets/vet-perkins.jpg" alt="Flat marker of Calvet James Perkins, US Navy, World War II">
+        <img id="rs-th2" class="rs-thumb" src="assets/vet-renzy.jpg" alt="Headstone of Bernard Thomas Renzy, Captain, U.S. Army Reserves">
+        <div id="rs-text">
+          <div class="rs-p" id="rs-p1">Two stones name military service:</div>
+          <div class="rs-p" id="rs-p2"><span class="rs-name">Calvet James Perkins</span><br><span class="rs-date">YNC, U.S. Navy · World War II · born June 24, 1924</span></div>
+          <div class="rs-p" id="rs-p3"><span class="rs-name">Bernard Thomas Renzy</span><br><span class="rs-date">Captain, U.S. Army Reserves · died 2015</span></div>
+          <div class="rs-p rs-note" id="rs-p4">Three photos of the Renzy stone give three readings of his dates. A person should check.</div>
+        </div>
+      </div>
     </div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo('#rs-h1', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.7, ease: 'expo.out' }, 0.05);
-    tl.fromTo('#rs-site', { opacity: 0, y: 120 }, { opacity: 1, y: 0, duration: 0.7, ease: 'expo.out' }, 0.4);
-    tl.fromTo('#rs-site', { scale: 1 }, { scale: 1.05, duration: 4.4, ease: 'power2.inOut' }, 1.1);
-    tl.to(['#rs-h1', '#rs-site'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 5.6);
-    tl.fromTo('#rs-h2', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.7, ease: 'expo.out' }, 6.0);
-    tl.fromTo('#rs-term', { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out' }, 6.2);
-    const starts = [6.5, 7.15, 7.35, 7.55, 7.9, 8.55, 8.8, 9.1];
-    document.querySelectorAll('#rs-term > div').forEach((el, i) => {
-      tl.fromTo(el, { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: el.classList.contains('rs-cmd') ? 0.6 : 0.25, ease: el.classList.contains('rs-cmd') ? 'none' : 'power2.out' }, starts[i]);
+    tl.fromTo('#rs-h1', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.6, ease: 'expo.out' }, 0.05);
+    tl.fromTo('#rs-site', { opacity: 0, y: 120 }, { opacity: 1, y: 0, duration: 0.6, ease: 'expo.out' }, 0.3);
+    tl.fromTo('#rs-site', { scale: 1 }, { scale: 1.04, duration: 2.6, ease: 'power2.inOut' }, 0.9);
+    tl.to(['#rs-h1', '#rs-site'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 3.1);
+    tl.fromTo('#rs-h2', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.6, ease: 'expo.out' }, 3.4);
+    tl.fromTo('#rs-chat', { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.4, ease: 'expo.out' }, 3.5);
+    tl.fromTo('#rs-q', { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.25, ease: 'back.out(2)' }, 3.8);
+    tl.fromTo('#rs-q-t', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 1.0, ease: 'steps(39)' }, 3.85);
+    ['#rs-t1', '#rs-t2', '#rs-t3', '#rs-t4', '#rs-t5'].forEach((id, i) => {
+      const at = 5.0 + i * 0.28;
+      tl.fromTo(id, { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.22, ease: 'power3.out' }, at);
+      tl.fromTo(id + ' i', { opacity: 0 }, { opacity: 1, duration: 0.1, ease: 'none' }, at + 0.25);
     });
-    tl.to(['#rs-h2', '#rs-term'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 11.7);
+    tl.fromTo('#rs-a', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.35, ease: 'expo.out' }, 6.5);
+    tl.fromTo('#rs-th1', { opacity: 0, scale: 1.15, rotation: -4 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.5, ease: 'back.out(1.6)' }, 7.1);
+    tl.fromTo('#rs-th2', { opacity: 0, scale: 1.15, rotation: 4 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.5, ease: 'back.out(1.6)' }, 7.65);
+    [['#rs-p1', 6.6], ['#rs-p2', 7.1], ['#rs-p3', 7.65], ['#rs-p4', 8.3]].forEach(([id, at]) => {
+      tl.fromTo(id, { clipPath: 'inset(0 100% 0 0)', opacity: 0.4 }, { clipPath: 'inset(0 0% 0 0)', opacity: 1, duration: 0.45, ease: 'power2.out' }, at);
+    });
+    tl.to(['#rs-h2', '#rs-chat'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 11.7);
     window.__timelines["result"] = tl;
   </script>
 </template>
