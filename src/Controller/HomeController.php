@@ -74,4 +74,20 @@ final class HomeController extends AbstractController
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         return $response;
     }
+
+    /** Full-size download through imagor: no resize, EXIF rotation applied, high quality, sent as an attachment. */
+    #[Route('/media/{id}/full', name: 'media_download', requirements: ['id' => '\d+'])]
+    public function download(Media $media, MediaStorage $storage, \Survos\ImagorBundle\Service\ImagorUrlBuilder $imagor): Response
+    {
+        if ($media instanceof Image && $media->sourceUrl !== null && !str_starts_with($media->sourceUrl, 'https://')) {
+            // Characters such as "(" would break imagor's filter syntax.
+            $name = preg_replace('/[^A-Za-z0-9._-]+/', '_', $media->originalName ?: 'photo.jpg');
+
+            return $this->redirect($imagor->build($media->sourceUrl, sprintf('filters:quality(95):attachment(%s)', $name)));
+        }
+        $response = new BinaryFileResponse($storage->path($media));
+        $response->headers->set('Content-Type', $media->mimeType);
+        $response->setContentDisposition(\Symfony\Component\HttpFoundation\ResponseHeaderBag::DISPOSITION_ATTACHMENT, $media->originalName ?: 'download');
+        return $response;
+    }
 }

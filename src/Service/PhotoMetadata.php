@@ -50,6 +50,10 @@ final readonly class PhotoMetadata
             $media->ocrText = $media->imageMetadata['imagor']['ocr']['text'];
             $media->aiResults['ocr'] = ['provider'=>'imagor', 'raw'=>$media->imageMetadata['imagor']['ocr']];
         }
+        // Imagor autorotates and drops Orientation, so keep the camera's own EXIF from the original bytes.
+        if (!isset($media->imageMetadata['exif'])) {
+            $media->imageMetadata['exif'] = self::readExif($path);
+        }
         $exif = $media->imageMetadata['imagor']['exif'] ?? [];
         $media->latitude = self::coordinate(isset($exif['GPSLatitude']) ? explode(' ', $exif['GPSLatitude']) : [], $exif['GPSLatitudeRef'] ?? '', 90);
         $media->longitude = self::coordinate(isset($exif['GPSLongitude']) ? explode(' ', $exif['GPSLongitude']) : [], $exif['GPSLongitudeRef'] ?? '', 180);
@@ -59,6 +63,45 @@ final readonly class PhotoMetadata
         ];
         // The large preset keeps weathered lettering legible; the 512px observe preset is too small here.
         $media->imageUrl = $this->imagor->preset($media->sourceUrl, 'large');
+    }
+
+    /**
+     * Every readable EXIF tag of the file as written by the camera, JSON-safe: binary blobs (MakerNote,
+     * thumbnails) are dropped. Orientation is the camera's 1-8 value; Imagor reports 0 because it has
+     * already rotated the pixels. Returns [] when the file or the exif extension is unavailable.
+     *
+     * @return array<string, mixed>
+     */
+    public static function readExif(string $path): array
+    {
+        if (!function_exists('exif_read_data') || !is_file($path)) {
+            return [];
+        }
+        $raw = @exif_read_data($path, null, false);
+        if (!is_array($raw)) {
+            return [];
+        }
+        $clean = static function (mixed $value) use (&$clean): mixed {
+            if (is_array($value)) {
+                $out = [];
+                foreach ($value as $k => $v) {
+                    $v = $clean($v);
+                    if ($v !== null) $out[$k] = $v;
+                }
+                return $out ?: null;
+            }
+            if (is_string($value)) {
+                return mb_check_encoding($value, 'UTF-8') && !preg_match('/[\x00-\x08\x0E-\x1F]/', $value) ? $value : null;
+            }
+            return is_scalar($value) ? $value : null;
+        };
+        $out = [];
+        foreach ($raw as $tag => $value) {
+            if (in_array($tag, ['MakerNote', 'UserComment', 'THUMBNAIL', 'FileName', 'FileDateTime', 'FileSize', 'FileType', 'MimeType', 'SectionsFound', 'COMPUTED'], true)) continue;
+            $value = $clean($value);
+            if ($value !== null) $out[$tag] = $value;
+        }
+        return $out;
     }
 
     public static function coordinate(array $parts, string $reference, int $max): ?float

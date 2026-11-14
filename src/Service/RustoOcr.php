@@ -61,6 +61,28 @@ final class RustoOcr
         }
     }
 
+    /**
+     * Same call, but the service fetches the image itself (its OCR_ALLOWED_HOSTS must list the host), so a
+     * full-size photo does not travel through this machine's upload link.
+     *
+     * @return array{model: string, ms: int, page: array<string, mixed>, error: ?string}
+     */
+    public function recognizeUrl(string $imageUrl, string $model, ?bool $autorotate = null): array
+    {
+        $started = hrtime(true);
+        try {
+            $json = ['model' => $model, 'document' => ['type' => 'image_url', 'image_url' => $imageUrl]];
+            if ($autorotate !== null) {
+                $json['autorotate'] = $autorotate;
+            }
+            $page = $this->http->request('POST', $this->baseUrl().'/v1/ocr', ['headers' => $this->auth(), 'json' => $json, 'timeout' => 180])->toArray()['pages'][0] ?? [];
+
+            return ['model' => $model, 'ms' => $this->since($started), 'page' => $page, 'error' => null];
+        } catch (\Throwable $e) {
+            return ['model' => $model, 'ms' => $this->since($started), 'page' => [], 'error' => $e->getMessage()];
+        }
+    }
+
     private function since(int $started): int
     {
         return (int) round((hrtime(true) - $started) / 1e6);
