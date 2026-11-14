@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+{% block title %}Drone spheres · MemorialAtlas{% endblock %}
+{% block body %}
+<article style="max-width:820px">
+<span class="eyebrow">Not part of the hackathon entry</span>
+<h1>The churchyard from above</h1>
+<p>On 13 November 2026 we photographed the St. Peter's churchyard twice: close-up phone photographs of each marker, and eight 360° spheres from an Antigravity A1 drone, four in the air and four from the ground. The phone photographs are the MemorialAtlas collection. The spheres are kept here for context.</p>
+<p><a class="button" href="/drone/st-peter.html">Open the sphere viewer</a></p>
+<p class="muted">Drag to look around. The map in the corner places each sphere; click a dot to open it.</p>
+
+<h2>Why we held it back</h2>
+<p>MemorialAtlas works from photographs close enough to read an inscription. From the air the markers are a few pixels across, so the spheres add nothing to OCR, grouping or extraction.</p>
+<p>The A1 writes no GPS into its photographs or videos. The flight logs we copied from the visor are encrypted, so we have not read the flight path from them yet. Until we do, each sphere is placed at the nearest phone photograph taken around the same time, and its position on the map is an estimate.</p>
+<p>The viewer shows the camera's raw dual-fisheye images without stitching. The aerial spheres look right; the ground spheres show a seam where the two lenses meet. Proper stitching needs the manufacturer's desktop software.</p>
+
+<h2>Where it could go</h2>
+<p>A sphere shows how the markers sit in relation to each other, the church and the road, which close-ups cannot. With positions fixed and stitched images, the spheres could link to the marker records they show.</p>
+</article>
+{% endblock %}

@@ -38,6 +38,12 @@ final class HomeController extends AbstractController
         return $this->render('about.html.twig');
     }
 
+    #[Route('/drone', name: 'drone', methods: ['GET'])]
+    public function drone(): Response
+    {
+        return $this->render('drone.html.twig');
+    }
+
     #[Route('/cemeteries/{id}', name: 'cemetery_show', requirements: ['id' => '\\d+'])]
     public function cemetery(Cemetery $cemetery, EntityManagerInterface $em, \Symfony\Component\HttpFoundation\Request $request): Response
     {

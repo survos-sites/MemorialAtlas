@@ -5,6 +5,7 @@
 <span class="eyebrow">About the technology</span>
 <h1>Read. Group. Interpret.</h1>
 <p>MemorialAtlas is a focused project for the <a href="https://symfony.com/hackathon/">Symfony AI &amp; MCP Hackathon</a>. The technical challenge starts with an ordered photostream: one marker may appear in several photographs, and one photograph may contain several names. OCR alone produces fragments. We need to associate those fragments with physical markers before turning them into useful records.</p>
+<figure style="margin:28px 0"><img src="/images/tacelosky-2026-11-14.jpg" width="1600" height="737" alt="Tac Tacelosky in a Symfony wool hat, smiling, with rows of headstones on a grassy slope behind him" style="width:100%;height:auto;border-radius:5px"><figcaption class="muted" style="font-size:.8rem;margin-top:8px">Tac Tacelosky, Symfony super-fan, photographing headstones, 14 November 2026.</figcaption></figure>
 <h2>1. OCR each photograph</h2>
 <p>We preserve the original image, read its inscription with OCR, and retain available capture metadata, including latitude and longitude. Hosted Mistral OCR and a separate Mistral-compatible RustO endpoint are independently configurable. OCR text stays attached to its source photograph.</p>
 <h2>2. Does the next photo belong to the same marker?</h2>

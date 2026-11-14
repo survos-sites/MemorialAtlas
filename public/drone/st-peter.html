@@ -1,0 +1,744 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<title>A1 Raw Sphere Test</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: full-bleed sphere viewer with one floating tuning panel. */
+:root { --bg:#0e1214; --panel:#f4f6f5; --fg:#1b2226; --muted:#5b6870; --accent:#2f7d6d; --line:#d3dad8;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace; --sans: system-ui, -apple-system, "Segoe UI", sans-serif; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --panel:#1a2125; --fg:#e6ecea; --muted:#9aa8a4; --accent:#5fbfa9; --line:#2e383c; color-scheme: dark } }
+:root[data-theme="dark"] { --panel:#1a2125; --fg:#e6ecea; --muted:#9aa8a4; --accent:#5fbfa9; --line:#2e383c; color-scheme: dark }
+html, body { height:100%; }
+body { background:var(--bg); color:var(--fg); font-family:var(--sans); overflow:hidden; }
+#v { position:absolute; inset:0; }
+#p { position:absolute; z-index:100; top:calc(12px + env(safe-area-inset-top,0px)); left:max(16px, env(safe-area-inset-left,0px));
+  max-width:calc(100% - 32px); background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 12px;
+  display:grid; gap:6px; font-size:13px; box-shadow:0 4px 18px #0006; }
+#p h1 { font-size:13px; margin:0; font-weight:600; }
+#p .sub { color:var(--muted); font-size:12px; margin:0; max-width:34ch; }
+#p label { display:grid; grid-template-columns:72px minmax(0,150px) 44px; align-items:center; gap:8px; }
+#p select { font:inherit; font-size:12px; color:var(--fg); background:transparent; border:1px solid var(--line); border-radius:5px; padding:2px 4px; }
+#p .nav { display:flex; gap:6px; }
+#p input[type=range] { accent-color:var(--accent); width:100%; }
+#p output, #cfg { font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:12px; }
+#cfg { color:var(--muted); }
+#p button { justify-self:start; font:inherit; font-size:12px; padding:3px 10px; border-radius:5px; border:1px solid var(--line); background:transparent; color:var(--fg); cursor:pointer; }
+#p button:focus-visible, #p input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+#hide { position:absolute; z-index:100; top:calc(12px + env(safe-area-inset-top,0px)); right:max(16px, env(safe-area-inset-right,0px)); }
+#mapbox { position:absolute; z-index:100; right:max(16px, env(safe-area-inset-right,0px)); bottom:calc(52px + env(safe-area-inset-bottom,0px));
+  width:min(360px, calc(100% - 32px)); height:280px; display:grid; grid-template-rows:1fr auto; background:var(--panel);
+  border:1px solid var(--line); border-radius:8px; overflow:hidden; box-shadow:0 4px 18px #0006; }
+#mapbox[hidden] { display:none; }
+#map { min-height:0; }
+#mapnote { font-size:11px; color:var(--muted); padding:5px 8px; line-height:1.35; }
+#mapnote b { color:var(--fg); font-weight:600; }
+.leaflet-container { font-family:var(--sans); }
+@media (max-width:600px) { #mapbox { height:220px; } }
+.leaflet-image-layer,.leaflet-layer,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-pane,.leaflet-pane>canvas,.leaflet-pane>svg,.leaflet-tile,.leaflet-tile-container,.leaflet-zoom-box{position:absolute;left:0;top:0}.leaflet-container{overflow:hidden}.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile{-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-user-drag:none}.leaflet-tile::selection{background:0 0}.leaflet-safari .leaflet-tile{image-rendering:-webkit-optimize-contrast}.leaflet-safari .leaflet-tile-container{width:1600px;height:1600px;-webkit-transform-origin:0 0}.leaflet-marker-icon,.leaflet-marker-shadow{display:block}.leaflet-container .leaflet-overlay-pane svg{max-width:none!important;max-height:none!important}.leaflet-container .leaflet-marker-pane img,.leaflet-container .leaflet-shadow-pane img,.leaflet-container .leaflet-tile,.leaflet-container .leaflet-tile-pane img,.leaflet-container img.leaflet-image-layer{max-width:none!important;max-height:none!important;width:auto;padding:0}.leaflet-container img.leaflet-tile{mix-blend-mode:plus-lighter}.leaflet-container.leaflet-touch-zoom{-ms-touch-action:pan-x pan-y;touch-action:pan-x pan-y}.leaflet-container.leaflet-touch-drag{-ms-touch-action:pinch-zoom;touch-action:none;touch-action:pinch-zoom}.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom{-ms-touch-action:none;touch-action:none}.leaflet-container{-webkit-tap-highlight-color:transparent}.leaflet-container a{-webkit-tap-highlight-color:rgba(51,181,229,.4)}.leaflet-tile{filter:inherit;visibility:hidden}.leaflet-tile-loaded{visibility:inherit}.leaflet-zoom-box{width:0;height:0;-moz-box-sizing:border-box;box-sizing:border-box;z-index:800}.leaflet-overlay-pane svg{-moz-user-select:none}.leaflet-pane{z-index:400}.leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-shadow-pane{z-index:500}.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}.leaflet-popup-pane{z-index:700}.leaflet-map-pane canvas{z-index:100}.leaflet-map-pane svg{z-index:200}.leaflet-vml-shape{width:1px;height:1px}.lvml{behavior:url(#default#VML);display:inline-block;position:absolute}.leaflet-control{position:relative;z-index:800;pointer-events:visiblePainted;pointer-events:auto}.leaflet-bottom,.leaflet-top{position:absolute;z-index:1000;pointer-events:none}.leaflet-top{top:0}.leaflet-right{right:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}.leaflet-control{float:left;clear:both}.leaflet-right .leaflet-control{float:right}.leaflet-top .leaflet-control{margin-top:10px}.leaflet-bottom .leaflet-control{margin-bottom:10px}.leaflet-left .leaflet-control{margin-left:10px}.leaflet-right .leaflet-control{margin-right:10px}.leaflet-fade-anim .leaflet-popup{opacity:0;-webkit-transition:opacity .2s linear;-moz-transition:opacity .2s linear;transition:opacity .2s linear}.leaflet-fade-anim .leaflet-map-pane .leaflet-popup{opacity:1}.leaflet-zoom-animated{-webkit-transform-origin:0 0;-ms-transform-origin:0 0;transform-origin:0 0}svg.leaflet-zoom-animated{will-change:transform}.leaflet-zoom-anim .leaflet-zoom-animated{-webkit-transition:-webkit-transform .25s cubic-bezier(0,0,.25,1);-moz-transition:-moz-transform .25s cubic-bezier(0,0,.25,1);transition:transform .25s cubic-bezier(0,0,.25,1)}.leaflet-pan-anim .leaflet-tile,.leaflet-zoom-anim .leaflet-tile{-webkit-transition:none;-moz-transition:none;transition:none}.leaflet-zoom-anim .leaflet-zoom-hide{visibility:hidden}.leaflet-interactive{cursor:pointer}.leaflet-grab{cursor:-webkit-grab;cursor:-moz-grab;cursor:grab}.leaflet-crosshair,.leaflet-crosshair .leaflet-interactive{cursor:crosshair}.leaflet-control,.leaflet-popup-pane{cursor:auto}.leaflet-dragging .leaflet-grab,.leaflet-dragging .leaflet-grab .leaflet-interactive,.leaflet-dragging .leaflet-marker-draggable{cursor:move;cursor:-webkit-grabbing;cursor:-moz-grabbing;cursor:grabbing}.leaflet-image-layer,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-pane>svg path,.leaflet-tile-container{pointer-events:none}.leaflet-image-layer.leaflet-interactive,.leaflet-marker-icon.leaflet-interactive,.leaflet-pane>svg path.leaflet-interactive,svg.leaflet-image-layer.leaflet-interactive path{pointer-events:visiblePainted;pointer-events:auto}.leaflet-container{background:#ddd;outline-offset:1px}.leaflet-container a{color:#0078a8}.leaflet-zoom-box{border:2px dotted #38f;background:rgba(255,255,255,.5)}.leaflet-container{font-family:"Helvetica Neue",Arial,Helvetica,sans-serif;font-size:12px;font-size:.75rem;line-height:1.5}.leaflet-bar{box-shadow:0 1px 5px rgba(0,0,0,.65);border-radius:4px}.leaflet-bar a{background-color:#fff;border-bottom:1px solid #ccc;width:26px;height:26px;line-height:26px;display:block;text-align:center;text-decoration:none;color:#000}.leaflet-bar a,.leaflet-control-layers-toggle{background-position:50% 50%;background-repeat:no-repeat;display:block}.leaflet-bar a:focus,.leaflet-bar a:hover{background-color:#f4f4f4}.leaflet-bar a:first-child{border-top-left-radius:4px;border-top-right-radius:4px}.leaflet-bar a:last-child{border-bottom-left-radius:4px;border-bottom-right-radius:4px;border-bottom:none}.leaflet-bar a.leaflet-disabled{cursor:default;background-color:#f4f4f4;color:#bbb}.leaflet-touch .leaflet-bar a{width:30px;height:30px;line-height:30px}.leaflet-touch .leaflet-bar a:first-child{border-top-left-radius:2px;border-top-right-radius:2px}.leaflet-touch .leaflet-bar a:last-child{border-bottom-left-radius:2px;border-bottom-right-radius:2px}.leaflet-control-zoom-in,.leaflet-control-zoom-out{font:bold 18px 'Lucida Console',Monaco,monospace;text-indent:1px}.leaflet-touch .leaflet-control-zoom-in,.leaflet-touch .leaflet-control-zoom-out{font-size:22px}.leaflet-control-layers{box-shadow:0 1px 5px rgba(0,0,0,.4);background:#fff;border-radius:5px}.leaflet-control-layers-toggle{background-image:url(images/layers.png);width:36px;height:36px}.leaflet-retina .leaflet-control-layers-toggle{background-image:url(images/layers-2x.png);background-size:26px 26px}.leaflet-touch .leaflet-control-layers-toggle{width:44px;height:44px}.leaflet-control-layers .leaflet-control-layers-list,.leaflet-control-layers-expanded .leaflet-control-layers-toggle{display:none}.leaflet-control-layers-expanded .leaflet-control-layers-list{display:block;position:relative}.leaflet-control-layers-expanded{padding:6px 10px 6px 6px;color:#333;background:#fff}.leaflet-control-layers-scrollbar{overflow-y:scroll;overflow-x:hidden;padding-right:5px}.leaflet-control-layers-selector{margin-top:2px;position:relative;top:1px}.leaflet-control-layers label{display:block;font-size:13px;font-size:1.08333em}.leaflet-control-layers-separator{height:0;border-top:1px solid #ddd;margin:5px -10px 5px -6px}.leaflet-default-icon-path{background-image:url(images/marker-icon.png)}.leaflet-container .leaflet-control-attribution{background:#fff;background:rgba(255,255,255,.8);margin:0}.leaflet-control-attribution,.leaflet-control-scale-line{padding:0 5px;color:#333;line-height:1.4}.leaflet-control-attribution a{text-decoration:none}.leaflet-control-attribution a:focus,.leaflet-control-attribution a:hover{text-decoration:underline}.leaflet-attribution-flag{display:inline!important;vertical-align:baseline!important;width:1em;height:.6669em}.leaflet-left .leaflet-control-scale{margin-left:5px}.leaflet-bottom .leaflet-control-scale{margin-bottom:5px}.leaflet-control-scale-line{border:2px solid #777;border-top:none;line-height:1.1;padding:2px 5px 1px;white-space:nowrap;-moz-box-sizing:border-box;box-sizing:border-box;background:rgba(255,255,255,.8);text-shadow:1px 1px #fff}.leaflet-control-scale-line:not(:first-child){border-top:2px solid #777;border-bottom:none;margin-top:-2px}.leaflet-control-scale-line:not(:first-child):not(:last-child){border-bottom:2px solid #777}.leaflet-touch .leaflet-bar,.leaflet-touch .leaflet-control-attribution,.leaflet-touch .leaflet-control-layers{box-shadow:none}.leaflet-touch .leaflet-bar,.leaflet-touch .leaflet-control-layers{border:2px solid rgba(0,0,0,.2);background-clip:padding-box}.leaflet-popup{position:absolute;text-align:center;margin-bottom:20px}.leaflet-popup-content-wrapper{padding:1px;text-align:left;border-radius:12px}.leaflet-popup-content{margin:13px 24px 13px 20px;line-height:1.3;font-size:13px;font-size:1.08333em;min-height:1px}.leaflet-popup-content p{margin:17px 0;margin:1.3em 0}.leaflet-popup-tip-container{width:40px;height:20px;position:absolute;left:50%;margin-top:-1px;margin-left:-20px;overflow:hidden;pointer-events:none}.leaflet-popup-tip{width:17px;height:17px;padding:1px;margin:-10px auto 0;pointer-events:auto;-webkit-transform:rotate(45deg);-moz-transform:rotate(45deg);-ms-transform:rotate(45deg);transform:rotate(45deg)}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#fff;color:#333;box-shadow:0 3px 14px rgba(0,0,0,.4)}.leaflet-container a.leaflet-popup-close-button{position:absolute;top:0;right:0;border:none;text-align:center;width:24px;height:24px;font:16px/24px Tahoma,Verdana,sans-serif;color:#757575;text-decoration:none;background:0 0}.leaflet-container a.leaflet-popup-close-button:focus,.leaflet-container a.leaflet-popup-close-button:hover{color:#585858}.leaflet-popup-scrolled{overflow:auto}.leaflet-oldie .leaflet-popup-content-wrapper{-ms-zoom:1}.leaflet-oldie .leaflet-popup-tip{width:24px;margin:0 auto}.leaflet-oldie .leaflet-control-layers,.leaflet-oldie .leaflet-control-zoom,.leaflet-oldie .leaflet-popup-content-wrapper,.leaflet-oldie .leaflet-popup-tip{border:1px solid #999}.leaflet-div-icon{background:#fff;border:1px solid #666}.leaflet-tooltip{position:absolute;padding:6px;background-color:#fff;border:1px solid #fff;border-radius:3px;color:#222;white-space:nowrap;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.4)}.leaflet-tooltip.leaflet-interactive{cursor:pointer;pointer-events:auto}.leaflet-tooltip-bottom:before,.leaflet-tooltip-left:before,.leaflet-tooltip-right:before,.leaflet-tooltip-top:before{position:absolute;pointer-events:none;border:6px solid transparent;background:0 0;content:""}.leaflet-tooltip-bottom{margin-top:6px}.leaflet-tooltip-top{margin-top:-6px}.leaflet-tooltip-bottom:before,.leaflet-tooltip-top:before{left:50%;margin-left:-6px}.leaflet-tooltip-top:before{bottom:0;margin-bottom:-12px;border-top-color:#fff}.leaflet-tooltip-bottom:before{top:0;margin-top:-12px;margin-left:-6px;border-bottom-color:#fff}.leaflet-tooltip-left{margin-left:-6px}.leaflet-tooltip-right{margin-left:6px}.leaflet-tooltip-left:before,.leaflet-tooltip-right:before{top:50%;margin-top:-6px}.leaflet-tooltip-left:before{right:0;margin-right:-12px;border-left-color:#fff}.leaflet-tooltip-right:before{left:0;margin-left:-12px;border-right-color:#fff}@media print{.leaflet-control{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+/*!
+ * Photo Sphere Viewer 5.15.1
+ * @copyright 2014-2015 Jérémy Heleine
+ * @copyright 2015-2026 Damien "Mistic" Sorel
+ * @licence MIT (https://opensource.org/licenses/MIT)
+ */
+/* src/styles/index.scss */
+.psv-container {
+  --psv-core-loaded: true;
+  container-name: psv-container;
+  container-type: size;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  background:
+    radial-gradient(
+      #fff 0%,
+      #fdfdfd 16%,
+      #fbfbfb 33%,
+      #f8f8f8 49%,
+      #efefef 66%,
+      #dfdfdf 82%,
+      #bfbfbf 100%);
+  overflow: hidden;
+}
+.psv-container * {
+  box-sizing: content-box;
+}
+.psv-canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  transition: opacity linear 100ms;
+}
+.psv-fullscreen-emulation {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 9999;
+}
+.psv-loader-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 80;
+}
+.psv-loader {
+  --psv-loader-border: 3px;
+  --psv-loader-tickness: 10px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.7);
+  width: 150px;
+  height: 150px;
+}
+.psv-loader-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: rgba(61, 61, 61, 0.5);
+  z-index: -1;
+}
+.psv-loader-text {
+  font: 600 16px sans-serif;
+  text-align: center;
+}
+.psv-loader--undefined .psv-loader-canvas {
+  animation: psv-loader 2s cubic-bezier(0.75, 0.25, 0.25, 0.75) infinite;
+}
+@keyframes psv-loader {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.psv-navbar {
+  display: flex;
+  position: absolute;
+  z-index: 90;
+  bottom: -40px;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: rgba(61, 61, 61, 0.5);
+  transition: bottom ease-in-out 0.1s;
+  font: 16px sans-serif;
+  cursor: default;
+}
+.psv-navbar--open {
+  bottom: 0;
+}
+.psv-navbar,
+.psv-navbar * {
+  box-sizing: content-box;
+}
+.psv-button {
+  flex: 0 0 auto;
+  padding: 10px;
+  position: relative;
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+}
+.psv-button--active {
+  background: rgba(255, 255, 255, 0.2);
+}
+.psv-button--disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+.psv-button-svg {
+  width: 100%;
+  transform: scale(1);
+  transition: transform 200ms ease;
+  vertical-align: initial;
+}
+.psv-button:not(.psv-button--disabled):focus-visible {
+  outline: 2px solid #007cff;
+  outline-offset: -2px;
+}
+.psv-container:not(.psv--is-touch) .psv-button--hover-scale:not(.psv-button--disabled):hover .psv-button-svg {
+  transform: scale(1.2);
+}
+.psv-move-button + .psv-move-button {
+  margin-left: -10px;
+}
+.psv-download-button {
+  color: rgba(255, 255, 255, 0.7) !important;
+  text-decoration: none !important;
+}
+.psv-download-button::before,
+.psv-download-button::after {
+  display: none !important;
+}
+.psv-custom-button {
+  width: auto;
+  min-width: 20px;
+}
+.psv-custom-button--no-padding {
+  padding: 0;
+  height: 100%;
+}
+.psv-caption {
+  flex: 1 1 100%;
+  color: rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  text-align: center;
+  cursor: unset;
+  padding: unset;
+  height: unset;
+  width: unset;
+}
+.psv-caption-content {
+  display: inline-block;
+  padding: 10px;
+  white-space: nowrap;
+}
+.psv-zoom-range.psv-button {
+  width: 80px;
+  height: 1px;
+  margin: 10px 0;
+  padding: 9.5px 0;
+  max-width: 600px;
+}
+.psv-zoom-range-line {
+  position: relative;
+  width: 80px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+}
+.psv-zoom-range-handle {
+  position: absolute;
+  border-radius: 50%;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.7);
+  transform: scale(1);
+  transition: transform 0.3s ease;
+}
+.psv-zoom-range:not(.psv-button--disabled):hover .psv-zoom-range-line {
+  box-shadow: 0 0 2px rgba(255, 255, 255, 0.7);
+}
+.psv-zoom-range:not(.psv-button--disabled):hover .psv-zoom-range-handle {
+  transform: scale(1.3);
+}
+.psv-notification {
+  position: absolute;
+  z-index: 100;
+  bottom: -40px;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0 2em;
+  opacity: 0;
+  transition-property: opacity, bottom;
+  transition-timing-function: ease-in-out;
+  transition-duration: 200ms;
+}
+.psv-notification-content {
+  max-width: 50em;
+  background: rgba(61, 61, 61, 0.8);
+  border-radius: 4px;
+  padding: 0.5em 1em;
+  font: 14px sans-serif;
+  color: rgb(255, 255, 255);
+}
+.psv-notification--visible {
+  opacity: 100;
+  bottom: 80px;
+}
+.psv-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  z-index: 110;
+  inset: 0;
+  background:
+    radial-gradient(
+      #fff 0%,
+      #fdfdfd 16%,
+      #fbfbfb 33%,
+      #f8f8f8 49%,
+      #efefef 66%,
+      #dfdfdf 82%,
+      #bfbfbf 100%);
+  opacity: 0.8;
+  cursor: default;
+}
+.psv-overlay-image {
+  width: 100%;
+  text-align: center;
+  color: rgb(48, 48, 48);
+}
+.psv-overlay-image svg {
+  width: 50%;
+}
+@container psv-container (orientation: landscape) {
+  .psv-overlay-image svg {
+    width: 33%;
+  }
+}
+.psv-overlay-title {
+  color: black;
+  margin-top: 1em;
+  font: 30px sans-serif;
+  text-align: center;
+}
+.psv-overlay-text {
+  color: rgba(0, 0, 0, 0.8);
+  font: 20px sans-serif;
+  opacity: 0.8;
+  text-align: center;
+}
+.psv-panel {
+  position: absolute;
+  z-index: 90;
+  right: 0;
+  height: 100%;
+  width: 400px;
+  max-width: calc(100% - 9px);
+  background: rgba(10, 10, 10, 0.7);
+  transform: translate3d(100%, 0, 0);
+  opacity: 0;
+  transition-property: opacity, transform;
+  transition-timing-function: ease-in-out;
+  transition-duration: 100ms;
+  cursor: default;
+  margin-left: 9px;
+}
+.psv--has-navbar .psv-panel {
+  height: calc(100% - 40px);
+}
+.psv-panel-close-button {
+  display: none;
+  position: absolute;
+  top: -1px;
+  right: 0;
+  width: 19.2px;
+  height: 19.2px;
+  padding: 6.4px;
+  background: transparent;
+  color: #fff;
+  transition: background 300ms ease-in-out;
+  cursor: pointer;
+}
+.psv-panel-close-button svg {
+  transition: transform 300ms ease-in-out;
+}
+.psv-panel-close-button:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+.psv-panel-close-button:hover svg {
+  transform: scale(-1);
+}
+.psv-panel-resizer {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: -9px;
+  width: 9px;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  cursor: col-resize;
+}
+.psv-panel-resizer::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 5.5px;
+  margin-top: -14.5px;
+  width: 1px;
+  height: 1px;
+  box-shadow:
+    1px 0 #fff,
+    3px 0px #fff,
+    5px 0px #fff,
+    1px 2px #fff,
+    3px 2px #fff,
+    5px 2px #fff,
+    1px 4px #fff,
+    3px 4px #fff,
+    5px 4px #fff,
+    1px 6px #fff,
+    3px 6px #fff,
+    5px 6px #fff,
+    1px 8px #fff,
+    3px 8px #fff,
+    5px 8px #fff,
+    1px 10px #fff,
+    3px 10px #fff,
+    5px 10px #fff,
+    1px 12px #fff,
+    3px 12px #fff,
+    5px 12px #fff,
+    1px 14px #fff,
+    3px 14px #fff,
+    5px 14px #fff,
+    1px 16px #fff,
+    3px 16px #fff,
+    5px 16px #fff,
+    1px 18px #fff,
+    3px 18px #fff,
+    5px 18px #fff,
+    1px 20px #fff,
+    3px 20px #fff,
+    5px 20px #fff,
+    1px 22px #fff,
+    3px 22px #fff,
+    5px 22px #fff,
+    1px 24px #fff,
+    3px 24px #fff,
+    5px 24px #fff,
+    1px 26px #fff,
+    3px 26px #fff,
+    5px 26px #fff,
+    1px 28px #fff,
+    3px 28px #fff,
+    5px 28px #fff;
+  background: transparent;
+}
+.psv-panel-content {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  color: rgb(220, 220, 220);
+  font: 16px sans-serif;
+  overflow: auto;
+}
+.psv-panel-content:not(.psv-panel-content--no-margin) {
+  padding: 1em;
+}
+.psv-panel-content--no-interaction {
+  user-select: none;
+  pointer-events: none;
+}
+.psv-panel--open {
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+  transition-duration: 0.2s;
+}
+.psv-panel--open .psv-panel-close-button,
+.psv-panel--open .psv-panel-resizer {
+  display: block;
+}
+@container psv-container (max-width: 400px) {
+  .psv-panel {
+    width: 100% !important;
+    max-width: none;
+  }
+  .psv-panel-resizer {
+    display: none !important;
+  }
+}
+.psv-panel-menu {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.psv-panel-menu-title {
+  flex: none;
+  display: flex;
+  align-items: center;
+  font: 24px sans-serif;
+  margin: 24px 12px;
+}
+.psv-panel-menu-title svg {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+}
+.psv-panel-menu-list {
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+.psv-panel-menu-item {
+  min-height: 1.5em;
+  padding: 0.5em 1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  transition: background 0.1s ease-in-out;
+}
+.psv-panel-menu-item--active {
+  outline: 1px solid currentcolor;
+  outline-offset: -1px;
+}
+.psv-panel-menu-item-icon {
+  flex: none;
+  height: 1.5em;
+  width: 1.5em;
+  margin-right: 0.5em;
+}
+.psv-panel-menu-item-icon img {
+  max-width: 100%;
+  max-height: 100%;
+}
+.psv-panel-menu-item-icon {
+}
+.psv-panel-menu-item-icon svg {
+  width: 100%;
+  height: 100%;
+}
+.psv-panel-menu-item:focus-visible {
+  outline: 2px solid #007cff;
+  outline-offset: -2px;
+}
+.psv-panel-menu--stripped .psv-panel-menu-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.psv-panel-menu--stripped .psv-panel-menu-item:nth-child(odd),
+.psv-panel-menu--stripped .psv-panel-menu-item:nth-child(odd)::before {
+  background: rgba(255, 255, 255, 0.1);
+}
+.psv-panel-menu--stripped .psv-panel-menu-item:nth-child(even),
+.psv-panel-menu--stripped .psv-panel-menu-item:nth-child(even)::before {
+  background: transparent;
+}
+.psv-container:not(.psv--is-touch) .psv-panel-menu-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.psv-tooltip {
+  position: absolute;
+  z-index: 50;
+  box-sizing: border-box;
+  max-width: 200px;
+  background: rgba(61, 61, 61, 0.8);
+  border-radius: 4px;
+  opacity: 0;
+  transition-property: opacity, transform;
+  transition-timing-function: ease-in-out;
+  transition-duration: 100ms;
+  cursor: default;
+}
+.psv-tooltip-content {
+  color: rgb(255, 255, 255);
+  font: 14px sans-serif;
+  text-shadow: 0 1px #000;
+  padding: 0.5em 1em;
+}
+.psv-tooltip-arrow {
+  position: absolute;
+  height: 0;
+  width: 0;
+  border: 7px solid transparent;
+}
+.psv-tooltip--top-left,
+.psv-tooltip--top-center,
+.psv-tooltip--top-right {
+  transform: translate3d(0, 5px, 0);
+}
+.psv-tooltip--top-left .psv-tooltip-arrow,
+.psv-tooltip--top-center .psv-tooltip-arrow,
+.psv-tooltip--top-right .psv-tooltip-arrow {
+  border-top-color: rgba(61, 61, 61, 0.8);
+}
+.psv-tooltip--bottom-left,
+.psv-tooltip--bottom-center,
+.psv-tooltip--bottom-right {
+  transform: translate3d(0, -5px, 0);
+}
+.psv-tooltip--bottom-left .psv-tooltip-arrow,
+.psv-tooltip--bottom-center .psv-tooltip-arrow,
+.psv-tooltip--bottom-right .psv-tooltip-arrow {
+  border-bottom-color: rgba(61, 61, 61, 0.8);
+}
+.psv-tooltip--left-top,
+.psv-tooltip--center-left,
+.psv-tooltip--left-bottom {
+  transform: translate3d(5px, 0, 0);
+}
+.psv-tooltip--left-top .psv-tooltip-arrow,
+.psv-tooltip--center-left .psv-tooltip-arrow,
+.psv-tooltip--left-bottom .psv-tooltip-arrow {
+  border-left-color: rgba(61, 61, 61, 0.8);
+}
+.psv-tooltip--right-top,
+.psv-tooltip--center-right,
+.psv-tooltip--right-bottom {
+  transform: translate3d(-5px, 0, 0);
+}
+.psv-tooltip--right-top .psv-tooltip-arrow,
+.psv-tooltip--center-right .psv-tooltip-arrow,
+.psv-tooltip--right-bottom .psv-tooltip-arrow {
+  border-right-color: rgba(61, 61, 61, 0.8);
+}
+.psv-tooltip--left-top,
+.psv-tooltip--top-left {
+  box-shadow: -3px -3px 0 rgba(90, 90, 90, 0.7);
+}
+.psv-tooltip--top-center {
+  box-shadow: 0 -3px 0 rgba(90, 90, 90, 0.7);
+}
+.psv-tooltip--right-top,
+.psv-tooltip--top-right {
+  box-shadow: 3px -3px 0 rgba(90, 90, 90, 0.7);
+}
+.psv-tooltip--left-bottom,
+.psv-tooltip--bottom-left {
+  box-shadow: -3px 3px 0 rgba(90, 90, 90, 0.7);
+}
+.psv-tooltip--bottom-center {
+  box-shadow: 0 3px 0 rgba(90, 90, 90, 0.7);
+}
+.psv-tooltip--right-bottom,
+.psv-tooltip--bottom-right {
+  box-shadow: 3px 3px 0 rgba(90, 90, 90, 0.7);
+}
+.psv-tooltip--center-left {
+  box-shadow: -3px 0 0 rgba(90, 90, 90, 0.7);
+}
+.psv-tooltip--center-right {
+  box-shadow: 3px 0 0 rgba(90, 90, 90, 0.7);
+}
+.psv-tooltip--visible {
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+/*# sourceMappingURL=index.css.map */
+</style>
+<div id="mapbox"><div id="map" aria-label="Map of sphere positions"></div>
+  <div id="mapnote">Blue: aerial spheres. Orange: ground spheres. Grey: phone photos (GPS). Sphere spots are <b>estimates</b> from the nearest phone fix; drag a dot to correct it. <span id="pos"></span></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script type="importmap">{"imports":{
+"three":"https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
+"@photo-sphere-viewer/core":"https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5.15.1/index.module.js",
+"@photo-sphere-viewer/dual-fisheye-adapter":"https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/dual-fisheye-adapter@5.15.1/index.module.js"}}</script>
+<div id="v"></div>
+<div id="p">
+  <h1>St. Peter's, 13 Nov 2026</h1>
+  <p class="sub">Raw Antigravity A1 stills, shown unstitched with the Photo Sphere Viewer dual-fisheye adapter. Drag to look around.</p>
+  <label for="scene">still <select id="scene">
+    <option value="https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/spheres/125048_233.jpg" data-file="IMG_20261113_125048_233.insp" data-lat="38.6936045" data-lon="-78.1689035" data-kind="aerial" data-est="near the 12:55:16 phone fix (launch area)">12:50:48</option>
+    <option value="https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/spheres/125156_234.jpg" data-file="IMG_20261113_125156_234.insp" data-lat="38.6934787" data-lon="-78.1690646" data-kind="aerial" data-est="near the 12:55:16 phone fix (launch area)">12:51:56</option>
+    <option value="https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/spheres/125216_235.jpg" data-file="IMG_20261113_125216_235.insp" data-lat="38.6933529" data-lon="-78.1689035" data-kind="aerial" data-est="near the 12:55:16 phone fix (launch area)" selected>12:52:16</option>
+    <option value="https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/spheres/125304_236.jpg" data-file="IMG_20261113_125304_236.insp" data-lat="38.6934787" data-lon="-78.1687424" data-kind="aerial" data-est="near the 12:55:16 phone fix (launch area)">12:53:04</option>
+    <option value="https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/spheres/125840_238.jpg" data-file="IMG_20261113_125840_238.insp" data-lat="38.6934981" data-lon="-78.1689351" data-kind="ground" data-est="24 s after the 12:58:16 phone fix">12:58:40</option>
+    <option value="https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/spheres/125930_239.jpg" data-file="IMG_20261113_125930_239.insp" data-lat="38.6934219" data-lon="-78.1689351" data-kind="ground" data-est="74 s after the 12:58:16 phone fix">12:59:30</option>
+    <option value="https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/spheres/125945_240.jpg" data-file="IMG_20261113_125945_240.insp" data-lat="38.6934219" data-lon="-78.1688375" data-kind="ground" data-est="89 s after the 12:58:16 phone fix">12:59:45</option>
+    <option value="https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/spheres/130001_241.jpg" data-file="IMG_20261113_130001_241.insp" data-lat="38.6934981" data-lon="-78.1688375" data-kind="ground" data-est="105 s after the 12:58:16 phone fix">13:00:01</option>
+  </select><output id="n"></output></label>
+  <p class="sub" id="file"></p>
+  <div class="nav"><button id="prev" type="button">Prev</button><button id="next" type="button">Next</button><button id="maptoggle" type="button" aria-pressed="true">Map</button></div>
+  <label for="c">lens C <input id="c" type="range" min="0.80" max="1.05" step="0.002" value="0.946"><output for="c"></output></label>
+  <label for="tilt">tilt <input id="tilt" type="range" min="-180" max="180" step="1" value="90"><output for="tilt"></output></label>
+  <label for="roll">roll <input id="roll" type="range" min="-180" max="180" step="1" value="0"><output for="roll"></output></label>
+  <label for="pan">pan <input id="pan" type="range" min="-180" max="180" step="1" value="0"><output for="pan"></output></label>
+  <div id="cfg"></div>
+  <button id="reset" type="button">Reset</button>
+</div>
+<script type="module">
+import { Viewer, utils } from '@photo-sphere-viewer/core';
+import { DualFisheyeAdapter } from '@photo-sphere-viewer/dual-fisheye-adapter';
+// The stock adapter hard-codes the Theta Z1 lens factor C = 0.946; expose it as a uniform to fit the A1 lenses.
+let mesh = null;
+class A1Adapter extends DualFisheyeAdapter {
+  // PSV's loader fetches the URL, which the artifact frame refuses; an <img> may read a data: URL.
+  async loadTexture(panorama) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = typeof panorama === 'string' ? panorama : panorama.path;
+    await img.decode();
+    return { panorama, texture: utils.createSizedTexture(img) };
+  }
+  createMesh() {
+    mesh = super.createMesh();
+    const m = mesh.material;
+    m.uniforms.c = { value: +document.getElementById('c').value };
+    m.fragmentShader = m.fragmentShader.replace('const float C = 0.946;', 'uniform float c;\n#define C c');
+    m.needsUpdate = true;
+    return mesh;
+  }
+}
+A1Adapter.id = 'dual-fisheye-a1';
+const viewer = new Viewer({ container: 'v', adapter: A1Adapter, panorama: document.getElementById('scene').value,
+  navbar: ['zoom', 'move', 'fullscreen'], defaultZoomLvl: 0 });
+const ids = ['c', 'tilt', 'roll', 'pan'], $ = id => document.getElementById(id), rad = d => d * Math.PI / 180;
+const defaults = Object.fromEntries(ids.map(id => [id, $(id).value]));
+function apply() {
+  for (const id of ids) $(id).nextElementSibling.textContent = $(id).value;
+  if (mesh) mesh.material.uniforms.c.value = +$('c').value;
+  viewer.setOption('sphereCorrection', { pan: rad(+$('pan').value), tilt: rad(+$('tilt').value), roll: rad(+$('roll').value) });
+  $('cfg').textContent = `C=${$('c').value} pan=${$('pan').value} tilt=${$('tilt').value} roll=${$('roll').value}`;
+  viewer.needsUpdate();
+}
+ids.forEach(id => $(id).addEventListener('input', apply));
+$('reset').addEventListener('click', () => { ids.forEach(id => $(id).value = defaults[id]); apply(); });
+viewer.addEventListener('ready', apply, { once: true });
+function showScene() {
+  const sel = $('scene'), opt = sel.selectedOptions[0];
+  $('file').textContent = opt.dataset.file;
+  $('n').textContent = `${sel.selectedIndex + 1}/${sel.options.length}`;
+}
+function step(d) { const sel = $('scene'); sel.selectedIndex = (sel.selectedIndex + d + sel.options.length) % sel.options.length; sel.dispatchEvent(new Event('change')); }
+$('prev').addEventListener('click', () => step(-1));
+$('next').addEventListener('click', () => step(1));
+$('scene').addEventListener('change', async () => {
+  showScene();
+  await viewer.setPanorama($('scene').value, { transition: false, showLoader: true });
+  apply();
+});
+showScene();
+try { apply(); } catch (e) { /* viewer not ready yet; the ready listener applies */ }
+
+// Map: one dot per sphere; clicking a dot opens that sphere.
+const S24 = [[38.693117, -78.168239], [38.693173, -78.168205], [38.693214, -78.168028], [38.693214, -78.168269], [38.693215, -78.168031], [38.693216, -78.168157], [38.693335, -78.168214], [38.693351, -78.168462], [38.693359, -78.168579], [38.693361, -78.168478], [38.693369, -78.16822], [38.693371, -78.168243], [38.693384, -78.168401], [38.693385, -78.168427], [38.693412, -78.168381], [38.693428, -78.168386], [38.693435, -78.168383], [38.693458, -78.168226], [38.69346, -78.168886], [38.693466, -78.168518], [38.693471, -78.168898], [38.693479, -78.168893], [38.693479, -78.168903], [38.693519, -78.168368]];
+try {
+const L = window.L, sel = $('scene');
+const map = L.map('map', { zoomControl: true, attributionControl: true, maxZoom: 21 });
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 19, maxZoom: 21, attribution: 'Imagery: Esri, Maxar, Earthstar Geographics' }).addTo(map);
+map.setMinZoom(15);
+S24.forEach(p => L.circleMarker(p, { radius: 3, color: '#ddd', weight: 1, fillColor: '#888', fillOpacity: .9, interactive: false }).addTo(map));
+const store = (() => { try { return JSON.parse(localStorage.getItem('a1-pos') || '{}'); } catch { return {}; } })();
+const markers = [...sel.options].map((o, i) => {
+  const saved = store[o.dataset.file];
+  const ll = saved || [+o.dataset.lat, +o.dataset.lon];
+  const color = o.dataset.kind === 'aerial' ? '#3b82f6' : '#f59e0b';
+  const icon = () => L.divIcon({ className: '', iconSize: [22, 22], iconAnchor: [11, 11],
+    html: `<div style="width:22px;height:22px;box-sizing:border-box;border-radius:50%;background:${color};border:2px solid ${i === sel.selectedIndex ? '#fff' : '#0008'};box-shadow:0 1px 4px #0009;color:#fff;font:600 11px/18px system-ui;text-align:center">${i + 1}</div>` });
+  const m = L.marker(ll, { icon: icon(), draggable: true, keyboard: true, title: `${i + 1}. ${o.textContent} ${o.dataset.kind}` }).addTo(map);
+  m.bindTooltip(`${i + 1}. ${o.textContent} (${o.dataset.kind})<br>${saved ? 'moved by you' : 'est. ' + o.dataset.est}`);
+  m.on('click', () => { if (sel.selectedIndex !== i) { sel.selectedIndex = i; sel.dispatchEvent(new Event('change')); } });
+  m.on('dragend', () => {
+    const p = m.getLatLng(), v = [+p.lat.toFixed(7), +p.lng.toFixed(7)];
+    store[o.dataset.file] = v;
+    try { localStorage.setItem('a1-pos', JSON.stringify(store)); } catch {}
+    $('pos').textContent = `${o.dataset.file}: ${v[0]}, ${v[1]}`;
+  });
+  m.refresh = () => m.setIcon(icon());
+  return m;
+});
+sel.addEventListener('change', () => markers.forEach(m => m.refresh()));
+const fit = () => { map.invalidateSize(); map.fitBounds(L.latLngBounds([...S24, ...markers.map(m => [m.getLatLng().lat, m.getLatLng().lng])]).pad(0.25), { maxZoom: 20 }); };
+fit(); requestAnimationFrame(fit);
+$('maptoggle').addEventListener('click', () => {
+  const box = $('mapbox'); box.hidden = !box.hidden;
+  $('maptoggle').setAttribute('aria-pressed', String(!box.hidden));
+  if (!box.hidden) map.invalidateSize();
+});
+} catch (e) { $('pos').textContent = 'Map error: ' + e; }
+</script>
+</body></html>
