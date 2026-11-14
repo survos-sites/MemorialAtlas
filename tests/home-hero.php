@@ -10,6 +10,7 @@ foreach (['gravestone', 'place_reference'] as $type) {
     $item = new App\Entity\Item('Homepage selection test');
     $item->recordType = $type;
     $image = new App\Entity\Image($item, 0, 'test.jpg', 'test/hero-'.$type, 'image/jpeg', hash('sha256', random_bytes(16)));
+    $image->sourceUrl = 'https://example.org/test/hero-'.$type.'.jpg';
     $em->persist($item);
     $em->flush();
     $ids[$type] = [$item->id, $image->id];

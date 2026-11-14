@@ -59,6 +59,7 @@ $em = new Doctrine\ORM\EntityManager(
 $item = new Item('Mixed-media persistence check');
 $image = new Image($item, 0, 'photo.jpg', 'aa/image', 'image/jpeg', str_repeat('a',64));
 $image->description = 'A blue coat.';
+$image->sourceUrl = 'https://example.org/photo.jpg';
 $audio = new Audio($item, 1, 'note.webm', 'bb/audio', 'audio/webm', str_repeat('b',64));
 $audio->transcript = 'This belonged to my grandmother.';
 $cemetery = new App\Entity\Cemetery();

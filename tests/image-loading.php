@@ -3,7 +3,7 @@ declare(strict_types=1);
 require dirname(__DIR__).'/vendor/autoload.php';
 $http = Symfony\Component\HttpClient\HttpClient::create(['proxy' => 'http://127.0.0.1:7080']);
 $check = static function (bool $ok, string $message): void { if (!$ok) throw new RuntimeException($message); };
-$page = static fn (string $path) => new Symfony\Component\DomCrawler\Crawler($http->request('GET', 'https://scanfony.wip'.$path)->getContent());
+$page = static fn (string $path) => new Symfony\Component\DomCrawler\Crawler($http->request('GET', 'https://mematlas.wip'.$path)->getContent());
 $detail = $page('/items/62');
 $hero = $detail->filter('.item-photo img');
 $check($hero->attr('loading') === 'eager', 'The detail photograph must load eagerly.');

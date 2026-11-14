@@ -10,6 +10,7 @@ $em = $kernel->getContainer()->get('test.service_container')->get('doctrine')->g
 $item = new App\Entity\Item('Access test memorial');
 $image = new App\Entity\Image($item, 0, 'test.jpg', 'test/preview', 'image/jpeg', hash('sha256',random_bytes(16)));
 $image->description = 'A preview with text that exercises ea().';
+$image->sourceUrl = 'https://example.org/test.jpg';
 $em->persist($item); $em->flush();
 $itemId = $item->id; $imageId = $image->id;
 $kernel->shutdown();

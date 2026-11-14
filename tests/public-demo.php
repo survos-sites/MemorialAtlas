@@ -30,7 +30,7 @@ $demo=new App\Service\DemoData($em,$storage,$http,'','','','','https://example.o
 try {
  $item=$demo->load();
  $item->aiResults['captureGrouping']=['status'=>'proposed'];
- $services->get('twig')->render('item/show.html.twig',['item'=>$item]);
+ $services->get('twig')->render('item/show.html.twig',['item'=>$item,'photoPreload'=>null]);
  if($item->cemetery->name!=='Sperryville'||$item->media->first()->ocrText!==$image['ocrText']||is_file($storage->path($item->media->first()))||$item->media->first()->sourceUrl!==$image['url'])throw new RuntimeException('Public demo did not preserve evidence.');
  if($demo->load()->id!==$item->id||count($calls)!==2)throw new RuntimeException('Retry is not idempotent.');
  $second=$data;$second['key']='second-marker';$data=['version'=>2,'records'=>[$data,$second]];
@@ -50,7 +50,7 @@ try {
  $data=['version'=>1,'key'=>'raw-reference','images'=>[['sha256'=>hash('sha256','raw'),'url'=>'https://example.org/raw.jpg']]];
  $raw=$demo->load();$demo->load();
  if(count($bus->messages)!==1||$bus->messages[0]->itemId!==$raw->id||$raw->marking!=='draft'||$raw->media->first()->marking!=='uploaded')throw new RuntimeException('Raw references must queue once without downloading or processing.');
- $html=$services->get('twig')->render('item/show.html.twig',['item'=>$raw]);
+ $html=$services->get('twig')->render('item/show.html.twig',['item'=>$raw,'photoPreload'=>null]);
  if(!str_contains($html,'messenger:consume processing')||!str_contains($html,'waiting for transcription'))throw new RuntimeException('Missing processing banner.');
  if($status->pendingCount()!==1)throw new RuntimeException('Incorrect pending record count.');
  $reflection=new ReflectionClass(App\Service\SetupStatus::class);
