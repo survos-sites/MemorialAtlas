@@ -21,7 +21,7 @@
     <figure class="pair">
         <div><img src="{{ memorial_detail(heroImage) }}" loading="eager" fetchpriority="high" alt="Original phone photo of a gravestone, taken at an angle"><p class="label">Phone photo</p></div>
         <div><img src="{{ cleaned }}" loading="eager" alt="The same gravestone, straightened and relit by an image model"><p class="label">AI-cleaned view</p></div>
-        <figcaption>Taken on a cold, windy afternoon. Jev judged the photo angled, and Gemini made a straightened copy for display. OCR and extraction read only the original. <a href="{{ path('item_show', {id: heroImage.item.id}) }}">See this record →</a></figcaption>
+        <figcaption>Jev judged the photo angled, and Gemini made a straightened copy for display. OCR and extraction read only the original. <a href="{{ path('item_show', {id: heroImage.item.id}) }}">See this record →</a></figcaption>
     </figure>
     {% else %}
     <figure><img src="{{ memorial_detail(heroImage) }}" loading="eager" fetchpriority="high" alt="A gravestone from the collection"><figcaption>Every record begins with a photograph. <a href="{{ path('item_show', {id: heroImage.item.id}) }}">See this record →</a></figcaption></figure>
@@ -30,7 +30,7 @@
 
 <section style="max-width:860px">
 <h2>The collection</h2>
-<p>{{ stats.photos }} photos of headstones in St. Peter's Church Graveyard, Virginia, taken in about half an hour on 13 November 2026, while a drone flew over the same graves. The photos are public on <a href="https://huggingface.co/datasets/museado/memorialatlas-st-peters">Hugging Face</a>, so anyone can run the same pipeline on them.</p>
+<p>{{ stats.photos }} photos of headstones in St. Peter's Church Graveyard, Rappahannock County, Virginia, taken on 11 and 13 November 2026. The photos are public on <a href="https://huggingface.co/datasets/museado/memorialatlas-st-peters">Hugging Face</a>, so anyone can run the same pipeline on them.</p>
 <div class="stats">
     <div><b>{{ stats.photos }}</b><span>photos</span></div>
     <div><b>{{ stats.withOcr }}</b><span>read by OCR</span></div>
