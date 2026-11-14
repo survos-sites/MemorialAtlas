@@ -74,7 +74,7 @@ final readonly class ItemProcessor
                 }
                 if ($this->ocrEnabled && $media->ocrText === null) {
                     $progress('Mistral OCR: supporting inscription evidence');
-                    $result = $this->platforms->get($this->ocrPlatform)->invoke($this->ocrModel, new ImageUrl($media->imageUrl))->getResult();
+                    $result = $this->platforms->get($this->ocrPlatform)->invoke($this->ocrModel, new ImageUrl($media->imageMetadata['ocrRendition']['url'] ?? $media->imageUrl))->getResult();
                     $media->ocrText = $result->getContent()->getMarkdown();
                     $media->aiResults['ocr'] = ['provider' => $this->ocrPlatform, 'model' => $this->ocrModel, 'raw' => $result->getRawResult()?->getData()];
                     $this->em->flush();

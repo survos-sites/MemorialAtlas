@@ -22,6 +22,7 @@ final class ImportCommand extends Command
     protected function configure(): void
     {
         $this->addArgument('directory', InputArgument::REQUIRED)
+            ->addOption('intake-manifest', null, InputOption::VALUE_REQUIRED, 'SSAI local intake manifest; preserves intake identity and original checksums')
             ->addOption('manifest', null, InputOption::VALUE_REQUIRED, 'Reviewed capture manifest with ordered groups and SHA-256 checksums')
             ->addOption('images-per-item', null, InputOption::VALUE_REQUIRED, 'Number of consecutive photos per item', '1')
             ->addOption('one-item', null, InputOption::VALUE_REQUIRED, 'Group every selected file into one named item')
@@ -84,6 +85,25 @@ final class ImportCommand extends Command
                     $io->error('For mixed photos/audio use --one-item="Title" to keep the capture stream together.');
                     return Command::INVALID;
                 }
+            }
+        }
+        $intakeManifest = null;
+        $intakeImages = [];
+        if ($input->getOption('intake-manifest') !== null) {
+            if ($input->getOption('manifest') !== null || $name !== null || $only !== [] || $limit !== null || $perItem !== 1) {
+                $io->error('--intake-manifest cannot be combined with selection or grouping options.');
+                return Command::INVALID;
+            }
+            try {
+                $intakeManifest = \App\Service\IntakeManifest::load($input->getOption('intake-manifest'), $directory);
+                $files = [];
+                foreach ($intakeManifest['images'] as $record) {
+                    $files[] = new \Symfony\Component\Finder\SplFileInfo($record['path'], '', basename($record['path']));
+                    $intakeImages[$record['sha256']] = $record;
+                }
+            } catch (\Throwable $error) {
+                $io->error($error->getMessage());
+                return Command::INVALID;
             }
         }
         $grouping = null;
@@ -168,11 +188,24 @@ final class ImportCommand extends Command
                     ++$reused; continue;
                 }
                 if ($item->marking !== 'draft') throw new \RuntimeException('Cannot append media to an item already submitted.');
-                $imported = $this->storage->import($item, $file->getPathname());
+                $imported = $this->storage->import($item, $file->getPathname(), $intakeImages[hash_file('sha256', $file->getPathname())]['originalName'] ?? null);
                 foreach (['source', 'donor'] as $field) {
                     if ($input->getOption($field) !== null) $imported->$field = $input->getOption($field);
                 }
                 ++$new;
+            }
+            if ($intakeManifest !== null) {
+                foreach ($item->media as $media) {
+                    if (!$media instanceof \App\Entity\Image || !isset($intakeImages[$media->sha256])) continue;
+                    $record = $intakeImages[$media->sha256];
+                    $ref = ['provider' => 'ssai', 'tenantCode' => $intakeManifest['tenantCode'], 'intakeCode' => $intakeManifest['intakeCode'],
+                        'imageId' => $record['imageId'], 'sequence' => $record['sequence'], 'originalName' => $record['originalName'],
+                        'sha256' => $record['sha256']];
+                    $key = implode('/', [$ref['tenantCode'], $ref['intakeCode'], $ref['imageId']]);
+                    $media->imageMetadata['intakes'][$key] = $ref;
+                    $media->imageMetadata['ocrRendition'] = $this->storage->importOcrRendition($record['ocrPath'], $record['ocrSha256']);
+                }
+                if ($item->locationContext === null && is_string($intakeManifest['context'] ?? null)) $item->locationContext = $intakeManifest['context'];
             }
             if ($input->getOption('context') !== null) $item->locationContext = $input->getOption('context');
             $this->em->persist($item);

@@ -17,3 +17,6 @@
 ###< symfony/asset-mapper ###
 
 /.symfony.local.yaml
+
+# Scratch output (OCR comparisons and similar)
+/work/

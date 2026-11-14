@@ -36,6 +36,24 @@ final class MediaStorage
         return new $class($item, $position, mb_substr(basename($name ?? $path), 0, 255), $relative, $mime, $hash);
     }
 
+    public function importOcrRendition(string $path, string $sha256): array
+    {
+        if (hash_file('sha256', $path) !== $sha256 || (new \finfo(FILEINFO_MIME_TYPE))->file($path) !== 'image/jpeg') {
+            throw new \InvalidArgumentException('Invalid OCR rendition.');
+        }
+        $relative = 'ocr/'.substr($sha256, 0, 2).'/'.$sha256.'.jpg';
+        $filesystem = new Filesystem();
+        $filesystem->mkdir(dirname($this->directory.'/'.$relative));
+        $filesystem->copy($path, $this->directory.'/'.$relative);
+        return ['storagePath' => $relative, 'sha256' => $sha256];
+    }
+
+    public function renditionPath(string $relative): string
+    {
+        if (!preg_match('#^ocr/[a-f0-9]{2}/[a-f0-9]{64}\\.jpg$#D', $relative)) throw new \InvalidArgumentException('Invalid rendition path.');
+        return $this->directory.'/'.$relative;
+    }
+
     public function path(Media $media): string
     {
         return $this->directory.'/'.$media->storagePath;

@@ -28,20 +28,25 @@ final readonly class PhotoMetadata
         $path = $this->storage->path($media);
         if ($media->sourceUrl === null) {
             $key = 'scanfony/originals/'.$media->sha256;
-            $s3 = new S3Client(['endpoint' => $this->endpoint, 'region' => 'fsn1', 'pathStyleEndpoint' => true, 'accessKeyId' => $this->accessKey, 'accessKeySecret' => $this->secret]);
-            $stream = fopen($path, 'rb');
-            try {
-                $s3->putObject(['Bucket' => $this->bucket, 'Key' => $key, 'Body' => $stream, 'ContentType' => $media->mimeType])->resolve();
-            } finally {
-                fclose($stream);
-            }
-            $media->sourceUrl = 's3://'.$this->bucket.'/'.$key;
+            $media->sourceUrl = $this->upload($path, $key, $media->mimeType);
+        }
+        $rendition = $media->imageMetadata['ocrRendition'] ?? null;
+        if ($rendition !== null && $media->ocrText === null) {
+            $ocrPath = $this->storage->renditionPath($rendition['storagePath']);
+            if (!is_file($ocrPath) || hash_file('sha256', $ocrPath) !== $rendition['sha256']) throw new \RuntimeException('OCR rendition is missing or changed.');
+            $rendition['sourceUrl'] ??= $this->upload($ocrPath, 'scanfony/ocr/'.$rendition['sha256'].'.jpg', 'image/jpeg');
+            $rendition['url'] = $this->imagor->preset($rendition['sourceUrl'], 'large');
+            $media->imageMetadata['ocrRendition'] = $rendition;
         }
         $requestOcr = $this->metaOcr && $media->ocrText === null;
         if (!isset($media->imageMetadata['imagor']) || ($requestOcr && !isset($media->imageMetadata['imagor']['ocr']))) {
-            $meta = $this->http->request('GET', $this->imagor->metaUrl($media->sourceUrl, $requestOcr ? ['thumbhash', 'blurhash', 'avgcolor', 'ocr'] : ['thumbhash', 'blurhash', 'avgcolor']), ['max_duration' => 90])->toArray();
+            $meta = $this->http->request('GET', $this->imagor->metaUrl($media->sourceUrl, $requestOcr && $rendition === null ? ['thumbhash', 'blurhash', 'avgcolor', 'ocr'] : ['thumbhash', 'blurhash', 'avgcolor']), ['max_duration' => 90])->toArray();
             if (empty($meta['width']) || empty($meta['height'])) {
                 throw new \RuntimeException('Imagor did not return valid image dimensions.');
+            }
+            if ($requestOcr && $rendition !== null) {
+                $ocrMeta = $this->http->request('GET', $this->imagor->metaUrl($rendition['sourceUrl'], ['ocr']), ['max_duration' => 90])->toArray();
+                $meta['ocr'] = $ocrMeta['ocr'] ?? null;
             }
             if ($requestOcr && !is_string($meta['ocr']['text'] ?? null)) throw new \RuntimeException('Imagor OCR was requested but no text was returned. Check the RustO build or disable SCANFONY_META_OCR.');
             $media->imageMetadata['imagor'] = $meta;
@@ -58,6 +63,18 @@ final readonly class PhotoMetadata
         CaptureMetadata::apply($media, $media->imageMetadata['exif'], 'Original EXIF GPS');
         // The large preset keeps weathered lettering legible; the 512px observe preset is too small here.
         $media->imageUrl = $this->imagor->preset($media->sourceUrl, 'large');
+    }
+
+    private function upload(string $path, string $key, string $mimeType): string
+    {
+        $s3 = new S3Client(['endpoint' => $this->endpoint, 'region' => 'fsn1', 'pathStyleEndpoint' => true, 'accessKeyId' => $this->accessKey, 'accessKeySecret' => $this->secret]);
+        $stream = fopen($path, 'rb');
+        try {
+            $s3->putObject(['Bucket' => $this->bucket, 'Key' => $key, 'Body' => $stream, 'ContentType' => $mimeType])->resolve();
+        } finally {
+            fclose($stream);
+        }
+        return 's3://'.$this->bucket.'/'.$key;
     }
 
     /**
