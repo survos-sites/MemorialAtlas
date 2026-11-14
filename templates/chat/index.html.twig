@@ -41,11 +41,11 @@
         <button type="submit">Ask</button>
     </form>
     {% if not turns %}
-        <form class="chat-examples" method="post" action="{{ path('chat_ask') }}">
-            {% for example in ['Tell me about the veterans buried here.', 'Which families have more than one stone?', 'Which stones mention a profession or a hobby?', 'Which readings disagree with each other?'] %}
-                <button name="question" value="{{ example }}">{{ example }}</button>
+        <div class="chat-examples">
+            {% for example in ['Tell me about the veterans buried here.', 'Who had hobbies or interests?', 'Which stones quote scripture, and from which books?', 'Which stones were photographed more than once?'] %}
+                <button type="button" onclick="const q = document.querySelector('.chat-form input'); q.value = this.textContent; q.focus();">{{ example }}</button>
             {% endfor %}
-        </form>
+        </div>
     {% else %}
         <form method="post" action="{{ path('chat_reset') }}"><button class="chat-examples" style="background:none!important;color:#6c756a!important;padding:0!important">Start over</button></form>
     {% endif %}
