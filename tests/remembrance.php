@@ -26,6 +26,15 @@ $check(count($evidence['people']) === 2 && $evidence['people'][0]['inscription']
 $check(array_column($evidence['symbols'], 'meaning') === ['lawyer or judge', 'served in the U.S. Army'], 'The evidence includes the symbols and their common meaning.');
 $check($evidence['scripture'][0]['citation'] === 'Psalm 23:1' && str_contains($evidence['inscriptionText'], 'TOGETHER FOREVER'), 'The evidence includes scripture and the carved text.');
 
+$item->aiResults[Remembrance::RESULT] = ['line' => 'Bernard Thomas Renzy was a soldier and, it seems, a lawyer.', 'basis' => []];
+$item->aiResults['sameMarker'] = ['sameAs' => [3, 86]];
+$summary = Remembrance::denseSummary($item);
+foreach (['Bernard Thomas Renzy (Jan. 10, 1937 – Dec. 20, 2015)', 'Captain, U.S. Army Reserves', 'scales of justice (lawyer or judge)', 'Psalm 23:1', 'soldier and, it seems, a lawyer', 'Same stone as #3, #86'] as $part) {
+    $check(str_contains($summary, $part), 'The dense summary includes '.$part.'.');
+}
+$check(mb_strlen($summary) <= 700, 'The dense summary stays short, so the whole collection fits in one prompt.');
+unset($item->aiResults[Remembrance::RESULT], $item->aiResults['sameMarker']);
+
 $empty = new Item('Unread stone');
 $check(Remembrance::evidence($empty) === null, 'A record without people gets no line, and no model call.');
 
@@ -40,6 +49,11 @@ $em->flush();
 try {
     $record = $services->get(MemorialTools::class)->get($item->id);
     $check($record['rememberedAs']['line'] === $item->aiResults[Remembrance::RESULT]['line'] && $record['rememberedAs']['basis'] !== [], 'The record returns the line with its evidence.');
+    $item->denseSummary = Remembrance::denseSummary($item);
+    $em->flush();
+    $digest = $services->get(MemorialTools::class)->digest();
+    $mine = array_values(array_filter($digest['records'], static fn (array $r): bool => $r['id'] === $item->id));
+    $check(count($mine) === 1 && $mine[0]['summary'] === $item->denseSummary && str_ends_with($mine[0]['url'], '/items/'.$item->id), 'The digest lists every record with its dense summary and link.');
 } finally {
     $em->remove($em->find(Item::class, $item->id));
     $em->flush();

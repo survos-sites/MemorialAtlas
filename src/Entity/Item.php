@@ -65,6 +65,10 @@ class Item
     #[ORM\Column(type: 'json', options: ['jsonb' => true, 'default' => '[]'])]
     public array $tags = [];
 
+    /** One compact paragraph per record (people, carved words, symbols, scripture, remembrance), so an agent can read the whole collection at once */
+    #[ORM\Column(type: 'text', nullable: true)]
+    public ?string $denseSummary = null;
+
     #[ORM\Column(type: 'text', nullable: true)]
     public ?string $processingError = null;
 

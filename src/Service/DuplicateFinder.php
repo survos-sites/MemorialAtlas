@@ -110,6 +110,7 @@ final class DuplicateFinder
                 'sameAs' => array_values(array_filter(array_keys($groups), static fn (int $other): bool => $other !== $id && isset($groups[$id]) && $groups[$other] === $groups[$id]))];
             if ($result['pairs'] === [] && ($item->aiResults[self::RESULT] ?? null) === null) continue;
             $item->aiResults[self::RESULT] = $result;
+            $item->denseSummary = Remembrance::denseSummary($item);
         }
         $this->em->flush();
         $io->table(['A', 'B', 'names', 'metres', 'Jev same', ''], $rows);

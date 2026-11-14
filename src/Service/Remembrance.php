@@ -55,7 +55,44 @@ final class Remembrance
         return ['people' => $people, 'inscriptionText' => mb_substr(implode("\n", array_unique($text)), 0, 2000), 'symbols' => $symbols, 'scripture' => $scripture];
     }
 
+    /** Built by code from stored results: no model call, so it can be refreshed whenever a result changes. */
+    public static function denseSummary(Item $item): string
+    {
+        $parts = [trim(($item->id === null ? '' : '#'.$item->id.' ').$item->title).'.'];
+        $people = [];
+        foreach ($item->aiResults['catalog']['record']['people'] ?? [] as $p) {
+            if (!is_string($p['name'] ?? null) || trim($p['name']) === '') continue;
+            [$birth, $death] = [trim((string) ($p['birth'] ?? '')), trim((string) ($p['death'] ?? ''))];
+            $dates = match (true) {
+                $birth !== '' && $death !== '' => $birth.' – '.$death,
+                $birth !== '' => 'born '.$birth,
+                $death !== '' => 'died '.$death,
+                default => '',
+            };
+            $people[] = trim($p['name']).($dates === '' ? '' : ' ('.$dates.')').(trim((string) ($p['inscription'] ?? '')) === '' ? '' : ': '.trim(preg_replace('/\s+/', ' ', $p['inscription'])));
+        }
+        if ($people) $parts[] = 'People: '.implode('; ', $people).'.';
+        $symbols = $scripture = [];
+        foreach ($item->media as $media) {
+            foreach ($media->aiResults[SymbolFinder::RESULT]['items'] ?? [] as $s) $symbols[] = $s['name'].($s['meaning'] === '' ? '' : ' ('.$s['meaning'].')');
+            foreach ($media->aiResults[SymbolFinder::RESULT]['scripture'] ?? [] as $q) $scripture[] = trim($q['citation'].' "'.$q['text'].'"', ' "');
+        }
+        if ($symbols) $parts[] = 'Symbols: '.implode('; ', array_unique($symbols)).'.';
+        if ($scripture) $parts[] = 'Scripture: '.implode('; ', array_unique($scripture)).'.';
+        if (($line = $item->aiResults[self::RESULT]['line'] ?? '') !== '') $parts[] = 'Remembered: '.$line;
+        if ($same = $item->aiResults['sameMarker']['sameAs'] ?? []) $parts[] = 'Same stone as '.implode(', ', array_map(static fn (int $id): string => '#'.$id, $same)).'.';
+
+        return mb_substr(implode(' ', $parts), 0, 700);
+    }
+
     public function remember(Item $item): void
+    {
+        $this->write($item);
+        $item->denseSummary = self::denseSummary($item);
+        $this->em->flush();
+    }
+
+    private function write(Item $item): void
     {
         $evidence = self::evidence($item);
         if ($evidence === null) {

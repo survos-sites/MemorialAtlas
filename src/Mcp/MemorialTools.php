@@ -109,6 +109,23 @@ final readonly class MemorialTools
         ];
     }
 
+    /**
+     * Every record in one call, each as a dense summary: people, carved words, symbols, scripture and a one-line
+     * remembrance. Use it for questions about themes (veterans, hobbies, families, scripture) instead of keyword search.
+     *
+     * @return array<string, mixed>
+     */
+    #[McpTool(name: 'collection_digest', annotations: new ToolAnnotations(title: 'Collection digest', readOnlyHint: true, openWorldHint: false))]
+    public function digest(): array
+    {
+        $items = $this->em->getRepository(Item::class)->findBy(['marking' => ['review', 'complete']], ['id' => 'ASC']);
+
+        return [
+            'note' => 'AI readings of phone photos, for a person to check. Symbol meanings are interpretations. "Same stone as" links photos of one marker.',
+            'records' => array_map(fn (Item $item): array => ['id' => $item->id, 'url' => $this->summary($item)['url'], 'summary' => $item->denseSummary ?? $item->title], $items),
+        ];
+    }
+
     /** @return array<string, mixed> */
     private function summary(Item $item): array
     {
