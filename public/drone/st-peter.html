@@ -674,6 +674,7 @@ class A1Adapter extends DualFisheyeAdapter {
   }
 }
 A1Adapter.id = 'dual-fisheye-a1';
+{ const s = document.getElementById('scene'), h = parseInt(location.hash.slice(1), 10); if (h >= 1 && h <= s.options.length) s.selectedIndex = h - 1; }
 const viewer = new Viewer({ container: 'v', adapter: A1Adapter, panorama: document.getElementById('scene').value,
   navbar: ['zoom', 'move', 'fullscreen'], defaultZoomLvl: 0 });
 const ids = ['c', 'tilt', 'roll', 'pan'], $ = id => document.getElementById(id), rad = d => d * Math.PI / 180;

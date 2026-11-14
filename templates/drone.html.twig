@@ -7,7 +7,35 @@
 <p>On 13 November 2026 we photographed the St. Peter's churchyard twice: close-up phone photographs of each marker, and eight 360° spheres from an Antigravity A1 drone, four in the air and four from the ground. The phone photographs are the MemorialAtlas collection. The spheres are kept here for context.</p>
 <p><a class="button" href="/drone/st-peter.html">Open the sphere viewer</a></p>
 <p class="muted">Drag to look around. The map in the corner places each sphere; click a dot to open it.</p>
-<figure style="margin:28px 0;max-width:360px"><img src="/images/drone-goggles-2026-11-13.jpg" width="676" height="1200" alt="Tac Tacelosky in a tan vest, wearing white drone goggles and holding the motion controller, beside a parked car with wooded hills behind" style="width:100%;height:auto;border-radius:5px"><figcaption class="muted" style="font-size:.8rem;margin-top:8px">Tac Tacelosky flying the A1 through its goggles, 13 November 2026.</figcaption></figure>
+<style>.drone-pair{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:20px;margin:28px 0;align-items:stretch}.drone-pair figure{margin:0;display:flex;flex-direction:column}.drone-pair img{width:100%;height:auto;border-radius:5px}#drone-map{flex:1;min-height:420px;border-radius:5px}.drone-pair figcaption{font-size:.8rem;margin-top:8px}@media(max-width:700px){.drone-pair{grid-template-columns:1fr}#drone-map{min-height:340px}}</style>
+<div class="drone-pair">
+<figure><img src="/images/drone-goggles-2026-11-13.jpg" width="676" height="1200" alt="Tac Tacelosky in a tan vest, wearing white drone goggles and holding the motion controller, beside a parked car with wooded hills behind"><figcaption class="muted">Tac Tacelosky flying the A1 through its goggles, 12:58, 13 November 2026.</figcaption></figure>
+<figure><div id="drone-map" role="img" aria-label="Satellite view of St. Peter's churchyard with the eight sphere positions"></div><figcaption class="muted">Overhead view. Blue: aerial spheres. Orange: ground spheres. Red: where the goggles photo was taken. Sphere positions are estimates. Click a numbered dot to open that sphere.</figcaption></figure>
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(() => {
+  // Same positions as public/drone/st-peter.html; the A1 writes no GPS, so these are estimates.
+  const spheres = [
+    ['12:50:48', 38.6936045, -78.1689035, 'aerial'], ['12:51:56', 38.6934787, -78.1690646, 'aerial'],
+    ['12:52:16', 38.6933529, -78.1689035, 'aerial'], ['12:53:04', 38.6934787, -78.1687424, 'aerial'],
+    ['12:58:40', 38.6934981, -78.1689351, 'ground'], ['12:59:30', 38.6934219, -78.1689351, 'ground'],
+    ['12:59:45', 38.6934219, -78.1688375, 'ground'], ['13:00:01', 38.6934981, -78.1688375, 'ground'],
+  ];
+  const pilot = [38.693461, -78.168886];
+  const map = L.map('drone-map', { maxZoom: 21, scrollWheelZoom: false });
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 19, maxZoom: 21, attribution: 'Imagery: Esri, Maxar, Earthstar Geographics' }).addTo(map);
+  L.circleMarker(pilot, { radius: 7, color: '#fff', weight: 2, fillColor: '#dc2626', fillOpacity: 1 }).bindTooltip('Goggles photo, 12:58:15 (phone GPS)').addTo(map);
+  spheres.forEach(([t, lat, lon, kind], i) => {
+    const color = kind === 'aerial' ? '#3b82f6' : '#f59e0b';
+    L.marker([lat, lon], { title: `${i + 1}. ${t} ${kind}`, icon: L.divIcon({ className: '', iconSize: [22, 22], iconAnchor: [11, 11],
+      html: `<div style="width:22px;height:22px;box-sizing:border-box;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px #0009;color:#fff;font:600 11px/18px system-ui;text-align:center">${i + 1}</div>` }) })
+      .bindTooltip(`${i + 1}. ${t} (${kind})`).on('click', () => { location.href = `/drone/st-peter.html#${i + 1}`; }).addTo(map);
+  });
+  map.fitBounds(L.latLngBounds([pilot, ...spheres.map(s => [s[1], s[2]])]).pad(0.6), { maxZoom: 20 });
+})();
+</script>
 
 <h2>Why we held it back</h2>
 <p>MemorialAtlas works from photographs close enough to read an inscription. From the air the markers are a few pixels across, so the spheres add nothing to OCR, grouping or extraction.</p>
