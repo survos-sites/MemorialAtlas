@@ -485,6 +485,19 @@ key in deployment secrets, not the repository. The server's stored `thumb`
 preset matches this app; `detail` matches its `large` transform. Persistent
 production detail caching requires enabling `large` on that server separately.
 
+Cloudflare must explicitly mark the extensionless preset URLs as eligible for
+cache. The `Imagor - thumb and detail presets` cache rule in the `survos.com`
+zone matches only the exact 400×400/quality-80 and 1600×1600/quality-82 WebP
+transforms on `imagor.survos.com`, excluding `/meta/`. It respects origin cache
+headers and keeps the full URL as the cache key. The older `imgproxy.survos.com`
+rule does not apply to Imagor. Changing the image hostname requires updating this
+rule as well as DNS, TLS, the provider DSN and stored search URLs.
+
+Verification on 2026-11-14: three production thumbnails changed from `DYNAMIC`
+to `MISS` then `HIT`; six warm downloads took 145–162 ms, compared with the
+previous 2–4 seconds. A detail image returned `HIT` in 214 ms. Cold edge requests
+still contact the origin. These are individual HTTP timings, not page-load times.
+
 After changing image providers or presets, refresh stored search thumbnail URLs:
 `php bin/console elastic:index:populate items` and
 `php bin/console elastic:index:populate images`.
