@@ -442,6 +442,45 @@ the patch instead of silently sending local OCR to the hosted service. No fork
 credentials or absolute developer paths are required by this patch.
 
 
+## MCP server
+
+MemorialAtlas is also an MCP server, built with `symfony/mcp-bundle` and the PHP MCP SDK (`mcp/sdk`).
+An AI assistant can search the collection and read a marker record with its photos, OCR text and
+open questions. The tools are read-only.
+
+| Tool | What it returns |
+| --- | --- |
+| `collection_overview` | Records per cemetery, records per processing status, photos with OCR, AI-cleaned views. |
+| `search_memorials` | Records whose title, description or OCR text contains the query. |
+| `get_memorial` | One record: proposed people, uncertainties, and each photo with its OCR text, Jev route and AI-cleaned view. |
+| `list_records_to_review` | Processed records that wait for a person, with the AI's open questions. |
+
+Every record says that it is an AI proposal for review, not a verified burial record, and that an
+AI-cleaned photo can change letters. The tools are in `src/Mcp/MemorialTools.php`. They are
+declared with `#[McpTool]` attributes and configured in `config/packages/mcp.yaml`.
+
+Over STDIO, for Claude Desktop and other local clients, add this to the client configuration:
+
+```json
+{
+  "mcpServers": {
+    "memorialatlas": {
+      "command": "php",
+      "args": ["/path/to/MemorialAtlas/bin/console", "mcp:server"]
+    }
+  }
+}
+```
+
+Over HTTP, the server answers at `/mcp` on the running site. Allowed hosts are `localhost`,
+`mematlas.wip` and `memorialatlas.org`.
+
+```bash
+curl -s https://memorialatlas.org/mcp -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"1"}}}'
+```
+
 ## Public genealogy API
 
 API Platform serves an anonymous, read-only API with interactive documentation at

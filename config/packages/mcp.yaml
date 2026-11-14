@@ -1,0 +1,16 @@
+mcp:
+    servers:
+        memorialatlas:
+            name: MemorialAtlas
+            description: Gravestone photos with OCR, Jev decisions and AI-proposed marker records.
+            website_url: https://memorialatlas.org
+            instructions: >-
+                Read-only access to a collection of gravestone photographs. Records are AI proposals
+                for human review, not verified burial records. AI-cleaned photos are display copies;
+                the original photo is the evidence. Start with collection_overview or search_memorials.
+            registry: 'App\Mcp\'
+            transports:
+                stdio: true
+            http:
+                path: /mcp
+                allowed_hosts: ['localhost', 'mematlas.wip', 'memorialatlas.org']

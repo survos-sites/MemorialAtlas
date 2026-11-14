@@ -26,4 +26,5 @@ return [
     ApiPlatform\Symfony\Bundle\ApiPlatformBundle::class => ['all' => true],
     Nelmio\CorsBundle\NelmioCorsBundle::class => ['all' => true],
     Symfony\UX\Image\UXImageBundle::class => ['all' => true],
+    Symfony\AI\McpBundle\McpBundle::class => ['all' => true],
 ];

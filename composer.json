@@ -36,6 +36,7 @@
         "symfony/dotenv": "^8.2@beta",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "^8.2@beta",
+        "symfony/mcp-bundle": "^1.0.0-beta1",
         "symfony/messenger": "^8.2",
         "symfony/runtime": "^8.2@beta",
         "symfony/security-csrf": "^8.2@beta",
