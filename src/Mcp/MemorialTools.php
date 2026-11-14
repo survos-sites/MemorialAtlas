@@ -64,6 +64,7 @@ final readonly class MemorialTools
             'locationContext' => $item->locationContext,
             'proposedPeople' => $record['people'] ?? [],
             'uncertainties' => $record['uncertainties'] ?? [],
+            'sameMarkerAs' => $item->aiResults['sameMarker']['sameAs'] ?? [],
             'extractedBy' => isset($item->aiResults['catalog']) ? ($item->aiResults['catalog']['provider'] ?? null).' '.($item->aiResults['catalog']['model'] ?? null) : null,
             'note' => 'AI proposals for human review. Not a verified burial record.',
             'photos' => array_values(array_map(fn (Image $image) => $this->photo($image), array_filter($item->media->toArray(), static fn ($m) => $m instanceof Image))),

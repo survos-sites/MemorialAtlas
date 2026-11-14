@@ -17,16 +17,18 @@ final readonly class JevClient
         #[Autowire('%env(SCANFONY_JEV_MODEL)%')] public string $model,
     ) {}
 
-    public function evaluate(array $state, array $questions, ?string $jpeg = null): array
+    /** @param array<string, string> $images JPEG bytes by state field, for questions that compare several photos */
+    public function evaluate(array $state, array $questions, ?string $jpeg = null, array $images = []): array
     {
         if (trim($this->key) === '') throw new \RuntimeException('Configure TYPESAFE_API_KEY before running image decisions.');
         $body = ['model' => $this->model] + (new Evaluation($state, $questions))->jsonSerialize();
         $headers = [];
-        if ($jpeg !== null) {
+        if ($jpeg !== null) $images = ['photo' => $jpeg] + $images;
+        foreach ($images as $field => $bytes) {
             // https://docs.typesafe.ai/images: opaque asset reference and explicit experimental opt-in.
-            $ref = 'scanfony-photo-'.hash('sha256', $jpeg);
-            $body['state']['photo'] = $ref;
-            $body['assets'] = [$ref => ['type'=>'image', 'format'=>'jpg', 'data_base64'=>base64_encode($jpeg)]];
+            $ref = 'scanfony-'.$field.'-'.hash('sha256', $bytes);
+            $body['state'][$field] = $ref;
+            $body['assets'][$ref] = ['type'=>'image', 'format'=>'jpg', 'data_base64'=>base64_encode($bytes)];
             $headers['TypeSafe-Danger-Zone-Images'] = 'true';
         }
         $started = microtime(true);
@@ -54,6 +56,7 @@ final readonly class JevClient
         unset($body['assets']);
         return ['request'=>$body, 'model'=>$response['model'], 'answers'=>$response['answers'], 'usage'=>$response['usage'],
             'durationMs'=>(int)round((microtime(true)-$started)*1000), 'imageSha256'=>$jpeg === null ? null : hash('sha256',$jpeg),
+            'imageSha256s'=>array_map(static fn (string $bytes): string => hash('sha256', $bytes), $images),
             'createdAt'=>(new \DateTimeImmutable())->format(DATE_ATOM)];
     }
 }

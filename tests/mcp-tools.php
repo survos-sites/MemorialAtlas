@@ -17,6 +17,7 @@ $marker = 'Mcptest'.bin2hex(random_bytes(4));
 $item = new Item($marker.' gravestone');
 $item->marking = 'review';
 $item->aiResults['catalog']['record'] = ['people' => [['name' => $marker, 'birth' => '1900', 'death' => null, 'inscription' => null]], 'uncertainties' => ['Death date not carved.']];
+$item->aiResults['sameMarker'] = ['protocol' => 'same-marker-v2', 'pairs' => [], 'group' => 7, 'sameAs' => [7, 9]];
 $image = new Image($item, 0, 'stone.jpg', 'aa/'.$marker, 'image/jpeg', hash('sha256', $marker));
 $image->sourceUrl = 'https://example.org/'.$marker.'.jpg';
 $image->ocrText = 'IN MEMORY OF '.strtoupper($marker);
@@ -33,6 +34,7 @@ try {
     $record = $tools->get($item->id);
     $check($record['proposedPeople'][0]['name'] === $marker && $record['uncertainties'] === ['Death date not carved.'], 'The record carries proposed people and open questions.');
     $check(str_contains($record['note'], 'Not a verified burial record'), 'Every record says it is an AI proposal.');
+    $check($record['sameMarkerAs'] === [7, 9], 'The record lists other photos of the same stone.');
     $check(count($record['photos']) === 1 && $record['photos'][0]['ocrText'] === $image->ocrText && $record['photos'][0]['aiCleanedView'] === null, 'Photos list OCR and no cleaned view when none exists.');
 
     try {
