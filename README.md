@@ -10,7 +10,7 @@ against the photo, and the photo stays the evidence. It is an entry for the
 [Live site: MemorialAtlas.org](https://memorialatlas.org) · [Public API documentation](https://memorialatlas.org/api/docs) ·
 [Photos on Hugging Face](https://huggingface.co/datasets/museado/memorialatlas-st-peters)
 
-The collection is 111 photos of headstones in St. Peter's churchyard, Virginia, taken on 13 November
+The collection is 107 photos of headstones in St. Peter's Church Graveyard, Virginia, taken on 13 November
 2026 during a drone flight over the same graves. It was cold and windy, and many photos are angled or
 in hard shadow, which is the normal case for field photos.
 
