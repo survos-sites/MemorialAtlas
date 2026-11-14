@@ -1,0 +1,44 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: url(assets/granite.jpg) center / cover; }
+    .rs-head { position: absolute; left: 80px; top: 50px; width: 1760px; font-family: 'Playfair Display', serif; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #ece9e2; font-size: 76px; line-height: 1; }
+    .rs-head small { display: block; margin-top: 16px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 40px; letter-spacing: 0; text-transform: none; color: #b9b6ae; }
+    #rs-site { position: absolute; left: 270px; top: 215px; width: 1380px; height: 853px; transform-origin: 50% 0; }
+    #rs-site img { width: 100%; height: 100%; display: block; border-radius: 8px; box-shadow: 0 22px 50px rgba(0,0,0,.6); }
+    #rs-term { position: absolute; left: 80px; top: 250px; width: 1760px; height: 740px; background: #0d1110; border: 2px solid #3a4541; border-radius: 10px; box-shadow: inset 0 4px 14px rgba(0,0,0,.8); padding: 44px 52px; }
+    .rs-l { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 38px; line-height: 1.55; color: #ece9e2; white-space: pre; }
+    .rs-cmd { color: #d2a24a; }
+    .rs-dim { color: #8f9893; }
+    .rs-gap { height: 26px; }
+  </style>
+  <div id="root" data-composition-id="result" data-width="1920" data-height="1080">
+    <div id="rs-h1" class="rs-head clip" data-start="0" data-duration="5.9">The record<small>For a person to check, with the photo as its evidence.</small></div>
+    <div id="rs-site" class="clip" data-start="0.4" data-duration="5.5"><img src="assets/site-item.jpg" alt="MemorialAtlas item page for the Hamilton gravestone"></div>
+    <div id="rs-h2" class="rs-head clip" data-start="6.0" data-duration="6">Ask it through MCP<small>Any AI assistant can search the collection and read a record.</small></div>
+    <div id="rs-term" class="clip" data-start="6.2" data-duration="5.8">
+      <div class="rs-l rs-cmd">› search_memorials("hamilton")</div>
+      <div class="rs-l">   84  Hamilton Gravestone at St. Peter's Churchyard</div>
+      <div class="rs-l rs-dim">  111  Gravestone with surname KERICK and partial inscription</div>
+      <div class="rs-gap"></div>
+      <div class="rs-l rs-cmd">› get_memorial(84)</div>
+      <div class="rs-l">   John Patrick Hamilton   Feb. 28, 1950 – Jan. 31, 2023</div>
+      <div class="rs-l">   Catherine Hamilton      born Oct. 15, 1958</div>
+      <div class="rs-l rs-dim">   Not a verified burial record.</div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo('#rs-h1', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.7, ease: 'expo.out' }, 0.05);
+    tl.fromTo('#rs-site', { opacity: 0, y: 120 }, { opacity: 1, y: 0, duration: 0.7, ease: 'expo.out' }, 0.4);
+    tl.fromTo('#rs-site', { scale: 1 }, { scale: 1.05, duration: 4.4, ease: 'power2.inOut' }, 1.1);
+    tl.to(['#rs-h1', '#rs-site'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 5.6);
+    tl.fromTo('#rs-h2', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.7, ease: 'expo.out' }, 6.0);
+    tl.fromTo('#rs-term', { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out' }, 6.2);
+    const starts = [6.5, 7.15, 7.35, 7.55, 7.9, 8.55, 8.8, 9.1];
+    document.querySelectorAll('#rs-term > div').forEach((el, i) => {
+      tl.fromTo(el, { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: el.classList.contains('rs-cmd') ? 0.6 : 0.25, ease: el.classList.contains('rs-cmd') ? 'none' : 'power2.out' }, starts[i]);
+    });
+    tl.to(['#rs-h2', '#rs-term'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 11.7);
+    window.__timelines["result"] = tl;
+  </script>
+</template>

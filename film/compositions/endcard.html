@@ -1,0 +1,26 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: url(assets/granite.jpg) center / cover; }
+    #ec-name { position: absolute; left: 0; top: 300px; width: 1920px; text-align: center; font-family: 'Playfair Display', serif; font-weight: 700; letter-spacing: .01em; color: #ece9e2; font-size: 168px; line-height: 1; text-shadow: 0 2px 0 rgba(0,0,0,.6); }
+    #ec-rule { position: absolute; left: 560px; top: 500px; width: 800px; height: 6px; background: #d2a24a; transform-origin: 0 50%; }
+    #ec-steps { position: absolute; left: 0; top: 548px; width: 1920px; text-align: center; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 50px; color: #ece9e2; }
+    #ec-built { position: absolute; left: 0; top: 640px; width: 1920px; text-align: center; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 40px; color: #9aa29e; }
+    #ec-url { position: absolute; left: 0; top: 780px; width: 1920px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 64px; color: #d2a24a; }
+  </style>
+  <div id="root" data-composition-id="endcard" data-width="1920" data-height="1080">
+    <div id="ec-name" class="clip" data-start="0.1" data-duration="5.9">MemorialAtlas</div>
+    <div id="ec-rule" class="clip" data-start="0.8" data-duration="5.2"></div>
+    <div id="ec-steps" class="clip" data-start="1.2" data-duration="4.8">Read · Decide · Clean up</div>
+    <div id="ec-built" class="clip" data-start="1.7" data-duration="4.3">Built with Symfony AI and the PHP MCP SDK</div>
+    <div id="ec-url" class="clip" data-start="2.4" data-duration="3.6">memorialatlas.org</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo('#ec-name', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(8px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.9, ease: 'expo.out' }, 0.1);
+    tl.fromTo('#ec-rule', { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: 'power3.out' }, 0.8);
+    tl.fromTo('#ec-steps', { opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.3, ease: 'expo.out' }, 1.2);
+    tl.fromTo('#ec-built', { opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.3, ease: 'expo.out' }, 1.7);
+    tl.fromTo('#ec-url', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.6, ease: 'none' }, 2.4);
+    window.__timelines["endcard"] = tl;
+  </script>
+</template>

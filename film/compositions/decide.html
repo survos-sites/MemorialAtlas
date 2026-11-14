@@ -1,0 +1,121 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: url(assets/granite.jpg) center / cover; }
+    #dc-head { position: absolute; left: 80px; top: 50px; width: 1760px; }
+    #dc-head h2 { font-family: 'Playfair Display', serif; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #ece9e2; font-size: 84px; line-height: 1; }
+    #dc-head h2 span { font-family: 'JetBrains Mono', monospace; color: #d2a24a; margin-right: 28px; }
+    #dc-head p { margin-top: 14px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 40px; color: #b9b6ae; }
+    #dc-machine { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+    .dc-gate { position: absolute; top: 250px; width: 360px; height: 330px; background: #0f1413; border: 2px solid #3a4541; border-radius: 10px; box-shadow: inset 0 3px 10px rgba(0,0,0,.7); padding: 22px 24px; }
+    .dc-gate h3 { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 32px; color: #ece9e2; line-height: 1.15; height: 80px; }
+    .dc-row { margin-top: 18px; }
+    .dc-row label { display: block; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 28px; color: #9aa29e; }
+    .dc-bar { position: relative; height: 22px; margin-top: 8px; background: #1d2523; border-radius: 4px; width: 190px; display: inline-block; vertical-align: middle; }
+    .dc-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #6f7a75; border-radius: 4px; }
+    .dc-win .dc-fill { background: #d2a24a; }
+    .dc-num { display: inline-block; width: 92px; margin-left: 14px; vertical-align: middle; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 34px; color: #ece9e2; }
+    .dc-win .dc-num { color: #d2a24a; }
+    #dc-g1 { left: 240px; } #dc-g2 { left: 640px; } #dc-g3 { left: 1040px; } #dc-g4 { left: 1440px; }
+    #dc-rail { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+    .dc-groove { stroke: #0b0f0e; stroke-width: 12; stroke-linecap: round; fill: none; }
+    .dc-edge { stroke: #3a4541; stroke-width: 1.5; fill: none; }
+    .dc-socket { fill: #0b0f0e; stroke: #3a4541; stroke-width: 2; }
+    .dc-lamp { fill: #d2a24a; opacity: 0; }
+    .dc-lab { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 30px; fill: #9aa29e; text-anchor: middle; }
+    .dc-tok { position: absolute; left: 0; top: 0; }
+    .dc-tok-in { position: absolute; left: -100px; top: 600px; width: 200px; height: 113px; border-radius: 6px; overflow: hidden; border: 4px solid #ece9e2; box-shadow: 0 12px 26px rgba(0,0,0,.6); }
+    .dc-tok-in img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .dc-cap { position: absolute; left: 0; top: 808px; width: 1920px; text-align: center; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 44px; color: #ece9e2; }
+    .dc-cap b { color: #d2a24a; }
+    .dc-cap2 { top: 872px; }
+    #dc-tally { position: absolute; left: 0; top: 930px; width: 1920px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 40px; color: #ece9e2; }
+    #dc-tally b { color: #d2a24a; }
+  </style>
+  <div id="root" data-composition-id="decide" data-width="1920" data-height="1080">
+    <div id="dc-head" class="clip" data-start="0" data-duration="18"><h2><span>2</span>Decide</h2><p>Jev answers fixed questions, with probabilities. The answers choose the next step.</p></div>
+    <div id="dc-machine" class="clip" data-start="0" data-duration="18">
+      <svg id="dc-rail" viewBox="0 0 1920 1080">
+        <line class="dc-groove" x1="40" y1="656" x2="1880" y2="656"/>
+        <line class="dc-edge" x1="40" y1="663" x2="1880" y2="663"/>
+        <circle class="dc-socket" cx="420" cy="720" r="18"/><circle id="dc-l1" class="dc-lamp" cx="420" cy="720" r="11"/>
+        <circle class="dc-socket" cx="820" cy="720" r="18"/><circle id="dc-l2" class="dc-lamp" cx="820" cy="720" r="11"/>
+        <circle class="dc-socket" cx="1150" cy="720" r="18"/><circle id="dc-l3a" class="dc-lamp" cx="1150" cy="720" r="11"/><text class="dc-lab" x="1150" y="776">Text</text>
+        <circle class="dc-socket" cx="1290" cy="720" r="18"/><circle id="dc-l3b" class="dc-lamp" cx="1290" cy="720" r="11"/><text class="dc-lab" x="1290" y="776">Vision</text>
+        <circle class="dc-socket" cx="1550" cy="720" r="18"/><circle id="dc-l4a" class="dc-lamp" cx="1550" cy="720" r="11"/><text class="dc-lab" x="1550" y="776">Keep</text>
+        <circle class="dc-socket" cx="1690" cy="720" r="18"/><circle id="dc-l4b" class="dc-lamp" cx="1690" cy="720" r="11"/><text class="dc-lab" x="1690" y="776">Clean up</text>
+      </svg>
+      <div id="dc-g1" class="dc-gate"><h3>Is it a gravestone?</h3>
+        <div class="dc-row dc-win"><label>gravestone</label><span class="dc-bar"><span id="dc-f1" class="dc-fill"></span></span><span id="dc-n1" class="dc-num">0.00</span></div></div>
+      <div id="dc-g2" class="dc-gate"><h3>Is it the main subject?</h3>
+        <div class="dc-row dc-win"><label>subject</label><span class="dc-bar"><span id="dc-f2" class="dc-fill"></span></span><span id="dc-n2" class="dc-num">0.00</span></div></div>
+      <div id="dc-g3" class="dc-gate"><h3>Can we trust the OCR?</h3>
+        <div class="dc-row"><label>usable</label><span class="dc-bar"><span id="dc-f3a" class="dc-fill"></span></span><span id="dc-n3a" class="dc-num">0.00</span></div>
+        <div class="dc-row dc-win"><label>damaged</label><span class="dc-bar"><span id="dc-f3b" class="dc-fill"></span></span><span id="dc-n3b" class="dc-num">0.00</span></div></div>
+      <div id="dc-g4" class="dc-gate"><h3>Was the camera square?</h3>
+        <div class="dc-row"><label>square</label><span class="dc-bar"><span id="dc-f4a" class="dc-fill"></span></span><span id="dc-n4a" class="dc-num">0.00</span></div>
+        <div class="dc-row dc-win"><label>angled</label><span class="dc-bar"><span id="dc-f4b" class="dc-fill"></span></span><span id="dc-n4b" class="dc-num">0.00</span></div></div>
+    </div>
+    <div id="dc-tham" class="dc-tok clip" data-start="1.0" data-duration="7.8"><div class="dc-tok-in"><img src="assets/hamilton.jpg" alt="Hamilton photo"></div></div>
+    <div id="dc-tr1" class="dc-tok clip" data-start="9.6" data-duration="1.6"><div class="dc-tok-in"><img src="assets/photos/t099.jpg" alt="Trinkle photo" style="object-position: 85% 40%"></div></div>
+    <div id="dc-tr2" class="dc-tok clip" data-start="11.1" data-duration="1.6"><div class="dc-tok-in"><img src="assets/photos/m090.jpg" alt="Goodenough photo"></div></div>
+    <div id="dc-tr3" class="dc-tok clip" data-start="12.6" data-duration="1.6"><div class="dc-tok-in"><img src="assets/photos/m104.jpg" alt="Beglis photo"></div></div>
+    <div id="dc-cap1" class="dc-cap clip" data-start="5.1" data-duration="4.8">Damaged OCR: <b>Mistral Medium</b> reads the stone itself</div>
+    <div id="dc-cap2" class="dc-cap dc-cap2 clip" data-start="7.2" data-duration="2.7">Angled camera: <b>Gemini</b> cleans up a copy</div>
+    <div id="dc-cap3" class="dc-cap clip" data-start="10.0" data-duration="4.1">Each photo takes its own path</div>
+    <div id="dc-tally" class="clip" data-start="14.1" data-duration="3.9">First <b id="dc-c0">0</b> photos: <b id="dc-c1">0</b> text route · <b id="dc-c2">0</b> vision route · <b id="dc-c3">0</b> cleaned</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const T = { total: 54, text: 8, vision: 46, cleaned: 39 };
+    const setNum = (sel, obj) => () => { document.querySelector(sel).textContent = obj.v.toFixed(2); };
+    function fill(barSel, numSel, value, at) {
+      const o = { v: 0 };
+      tl.fromTo(barSel, { width: 0 }, { width: Math.round(190 * value), duration: 0.5, ease: 'power3.out' }, at);
+      tl.fromTo(o, { v: 0 }, { v: value, duration: 0.5, ease: 'power3.out', onUpdate: setNum(numSel, o) }, at);
+    }
+    function lamp(sel, at, off) {
+      tl.fromTo(sel, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: 'none' }, at);
+      if (off !== undefined) tl.to(sel, { opacity: 0, duration: 0.15, ease: 'none' }, off);
+    }
+    tl.fromTo('#dc-head', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.7, ease: 'expo.out' }, 0.1);
+    tl.fromTo('#dc-rail', { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power2.out' }, 0.4);
+    tl.fromTo('.dc-gate', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: 'expo.out', stagger: 0.1 }, 0.5);
+
+    // Hamilton: the rail runs at y 656; gates read at x 420, 820, 1220, 1620.
+    const ham = '#dc-tham .dc-tok-in';
+    tl.fromTo(ham, { x: 0, opacity: 0 }, { x: 60, opacity: 1, duration: 0.3, ease: 'expo.out' }, 1.0);
+    tl.to(ham, { x: 420, duration: 0.7, ease: 'power2.inOut' }, 1.3); fill('#dc-f1', '#dc-n1', 0.86, 2.0); lamp('#dc-l1', 2.3);
+    tl.to(ham, { x: 820, duration: 0.7, ease: 'power2.inOut' }, 2.6); fill('#dc-f2', '#dc-n2', 0.84, 3.3); lamp('#dc-l2', 3.6);
+    tl.to(ham, { x: 1220, duration: 0.7, ease: 'power2.inOut' }, 3.9); fill('#dc-f3a', '#dc-n3a', 0.24, 4.6); fill('#dc-f3b', '#dc-n3b', 0.75, 4.6); lamp('#dc-l3b', 5.05);
+    tl.to(ham, { x: 1620, duration: 0.7, ease: 'power2.inOut' }, 6.0); fill('#dc-f4a', '#dc-n4a', 0.11, 6.7); fill('#dc-f4b', '#dc-n4b', 0.89, 6.7); lamp('#dc-l4b', 7.15);
+    tl.to(ham, { x: 2050, duration: 0.5, ease: 'power3.in' }, 8.2);
+    tl.to(['#dc-cap1', '#dc-cap2'], { opacity: 0, filter: 'blur(6px)', duration: 0.2, ease: 'power3.in' }, 9.65);
+    tl.fromTo('#dc-cap1', { opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.3, ease: 'expo.out' }, 5.1);
+    tl.fromTo('#dc-cap2', { opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.3, ease: 'expo.out' }, 7.2);
+    // Hamilton's readings dim while other photos run through; lamps reset.
+    tl.to('.dc-row', { opacity: 0.25, duration: 0.3 }, 9.4);
+    ['#dc-l1', '#dc-l2', '#dc-l3b', '#dc-l4b'].forEach(s => tl.to(s, { opacity: 0, duration: 0.15 }, 9.4));
+    tl.fromTo('#dc-cap3', { opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.3, ease: 'expo.out' }, 10.0);
+
+    // Three more real photos and the routes Jev chose for them.
+    const racers = [
+      ['#dc-tr1 .dc-tok-in', 9.6, '#dc-l3a', '#dc-l4b'],   // Trinkle: text route, cleaned
+      ['#dc-tr2 .dc-tok-in', 11.1, '#dc-l3b', '#dc-l4a'],  // Goodenough: vision route, kept
+      ['#dc-tr3 .dc-tok-in', 12.6, '#dc-l3b', '#dc-l4b'],  // Beglis: vision route, cleaned
+    ];
+    racers.forEach(([sel, at, route, clean]) => {
+      tl.fromTo(sel, { x: 0, opacity: 0 }, { x: 2050, opacity: 1, duration: 1.5, ease: 'none' }, at);
+      lamp('#dc-l1', at + 0.3, at + 0.55); lamp('#dc-l2', at + 0.6, at + 0.85);
+      lamp(route, at + 0.88, at + 1.15); lamp(clean, at + 1.18, at + 1.45);
+    });
+
+    tl.to('#dc-cap3', { opacity: 0, filter: 'blur(6px)', duration: 0.2, ease: 'power3.in' }, 13.9);
+    tl.fromTo('#dc-tally', { opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.35, ease: 'expo.out' }, 14.1);
+    [['#dc-c0', T.total], ['#dc-c1', T.text], ['#dc-c2', T.vision], ['#dc-c3', T.cleaned]].forEach(([sel, n], i) => {
+      const o = { v: 0 };
+      tl.fromTo(o, { v: 0 }, { v: n, duration: 0.9, ease: 'power3.out', onUpdate: () => { document.querySelector(sel).textContent = Math.round(o.v); } }, 14.2 + i * 0.12);
+    });
+    tl.to(['#dc-head', '#dc-machine', '#dc-tally'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 17.7);
+    window.__timelines["decide"] = tl;
+  </script>
+</template>

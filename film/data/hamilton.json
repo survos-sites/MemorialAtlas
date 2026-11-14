@@ -1,0 +1,234 @@
+{
+  "ocr": {
+    "dimensions": {
+      "dpi": 200,
+      "width": 1600,
+      "height": 901
+    },
+    "blocks": [
+      {
+        "type": "header",
+        "content": "PROSIM",
+        "top_left_x": 1212,
+        "top_left_y": 0,
+        "bottom_right_x": 1240,
+        "bottom_right_y": 75
+      },
+      {
+        "type": "header",
+        "content": "VAILLANT",
+        "top_left_x": 1310,
+        "top_left_y": 25,
+        "bottom_right_x": 1408,
+        "bottom_right_y": 51
+      },
+      {
+        "type": "header",
+        "content": "RONALD EDWARD",
+        "top_left_x": 1304,
+        "top_left_y": 60,
+        "bottom_right_x": 1403,
+        "bottom_right_y": 75
+      },
+      {
+        "type": "header",
+        "content": "1849 18 1969 — 1946 8 2020",
+        "top_left_x": 1301,
+        "top_left_y": 76,
+        "bottom_right_x": 1403,
+        "bottom_right_y": 87
+      },
+      {
+        "type": "header",
+        "content": "1. 2017年1月1日",
+        "top_left_x": 1305,
+        "top_left_y": 128,
+        "bottom_right_x": 1387,
+        "bottom_right_y": 140
+      },
+      {
+        "type": "header",
+        "content": "PUBLISHED",
+        "top_left_x": 1305,
+        "top_left_y": 140,
+        "bottom_right_x": 1357,
+        "bottom_right_y": 153
+      },
+      {
+        "type": "title",
+        "content": "# Hamilton",
+        "top_left_x": 541,
+        "top_left_y": 236,
+        "bottom_right_x": 1137,
+        "bottom_right_y": 354
+      },
+      {
+        "type": "text",
+        "content": "John Patrick",
+        "top_left_x": 444,
+        "top_left_y": 448,
+        "bottom_right_x": 806,
+        "bottom_right_y": 515
+      },
+      {
+        "type": "text",
+        "content": "Feb. 28, 1950",
+        "top_left_x": 505,
+        "top_left_y": 508,
+        "bottom_right_x": 762,
+        "bottom_right_y": 553
+      },
+      {
+        "type": "text",
+        "content": "Jan. 31, 2023",
+        "top_left_x": 505,
+        "top_left_y": 555,
+        "bottom_right_x": 767,
+        "bottom_right_y": 607
+      },
+      {
+        "type": "text",
+        "content": "Catherine",
+        "top_left_x": 919,
+        "top_left_y": 424,
+        "bottom_right_x": 1185,
+        "bottom_right_y": 471
+      },
+      {
+        "type": "text",
+        "content": "Oct. 15, 1958",
+        "top_left_x": 923,
+        "top_left_y": 473,
+        "bottom_right_x": 1172,
+        "bottom_right_y": 522
+      }
+    ],
+    "text": "PROSIM\n\nVAILLANT\n\nRONALD EDWARD\n\n1849 18 1969 — 1946 8 2020\n\n1. 2017年1月1日\n\nPUBLISHED\n\n# Hamilton\n\nJohn Patrick\n\nFeb. 28, 1950\n\nJan. 31, 2023\n\nCatherine\n\nOct. 15, 1958"
+  },
+  "jevText": {
+    "role": {
+      "choice": "subject",
+      "confidence": 0.76,
+      "p": {
+        "context": 0.12,
+        "subject": 0.84,
+        "uncertain": 0.04
+      }
+    },
+    "type": {
+      "choice": "gravestone",
+      "confidence": 0.82,
+      "p": {
+        "object": 0,
+        "document": 0.12,
+        "uncertain": 0.01,
+        "gravestone": 0.86,
+        "place_reference": 0.01
+      }
+    },
+    "memorial": {
+      "choice": "multiple",
+      "confidence": 0.67,
+      "p": {
+        "one": 0.15,
+        "unclear": 0.07,
+        "multiple": 0.78
+      }
+    },
+    "textQuality": {
+      "choice": "damaged",
+      "confidence": 0.62,
+      "p": {
+        "usable": 0.24,
+        "damaged": 0.75,
+        "insufficient": 0.01
+      }
+    }
+  },
+  "jevImage": {
+    "role": {
+      "choice": "subject",
+      "confidence": 1,
+      "p": {
+        "context": 0,
+        "subject": 1,
+        "uncertain": 0
+      }
+    },
+    "type": {
+      "choice": "gravestone",
+      "confidence": 1,
+      "p": {
+        "object": 0,
+        "document": 0,
+        "uncertain": 0,
+        "gravestone": 1,
+        "place_reference": 0
+      }
+    },
+    "flowers": {
+      "choice": "present",
+      "confidence": 1,
+      "p": {
+        "absent": 0,
+        "present": 1,
+        "unclear": 0
+      }
+    },
+    "memorial": {
+      "choice": "multiple",
+      "confidence": 0.28,
+      "p": {
+        "one": 0.44,
+        "unclear": 0.04,
+        "multiple": 0.52
+      }
+    },
+    "associatedMarker": {
+      "choice": "absent",
+      "confidence": 0.96,
+      "p": {
+        "absent": 0.97,
+        "unclear": 0.01,
+        "associated": 0.02
+      }
+    }
+  },
+  "jevCleanup": {
+    "cleanup": {
+      "choice": "angled",
+      "p": {
+        "angled": 0.89,
+        "square": 0.11,
+        "unclear": 0
+      }
+    }
+  },
+  "route": "vision",
+  "record": {
+    "title": "Hamilton Gravestone at St. Peter's Churchyard",
+    "people": [
+      {
+        "name": "John Patrick Hamilton",
+        "birth": "Feb. 28, 1950",
+        "death": "Jan. 31, 2023",
+        "inscription": null
+      },
+      {
+        "name": "Catherine Hamilton",
+        "birth": "Oct. 15, 1958",
+        "death": null,
+        "inscription": null
+      }
+    ],
+    "recordType": "gravestone",
+    "description": "Gray granite gravestone with a Celtic cross on the left side. Upright with etched inscriptions. Surname 'Hamilton' at the top. Two individuals listed: John Patrick (Feb. 28, 1950 - Jan. 31, 2023) and Catherine (Oct. 15, 1958). Yellow flowers at the base. OCR text does not match visible inscriptions and is disregarded. Visual details assessed but OCR accuracy not verified.",
+    "uncertainties": [
+      "OCR text does not match visible inscriptions and is disregarded",
+      "Birth/death dates for Catherine Hamilton incomplete (only birth date provided)",
+      "Visual details assessed but OCR accuracy not verified",
+      "User-supplied cemetery location (St. Peter's, Virginia) not visually verified"
+    ]
+  },
+  "cleaned": "cleaned/5e/5e1e9c3895838df9fe7c1d38ff14f082be180bd4f4fbfce04e122f50f536b7b2.jpg"
+}

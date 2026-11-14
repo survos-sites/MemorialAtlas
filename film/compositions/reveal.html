@@ -1,0 +1,37 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: url(assets/granite.jpg) center / cover; }
+    #rev-name { position: absolute; left: 0; top: 250px; width: 1920px; text-align: center; font-family: 'Playfair Display', serif; font-weight: 700; letter-spacing: .01em; color: #ece9e2; font-size: 168px; line-height: 1; text-shadow: 0 2px 0 rgba(0,0,0,.6), 0 -1px 0 rgba(255,255,255,.08); }
+    #rev-rail { position: absolute; left: 0; top: 520px; width: 1920px; height: 300px; }
+    .rev-groove { stroke: #0b0f0e; stroke-width: 10; stroke-linecap: round; fill: none; }
+    .rev-edge { stroke: #3a4541; stroke-width: 1.5; fill: none; }
+    .rev-stop { fill: #0b0f0e; stroke: #3a4541; stroke-width: 2; }
+    .rev-lamp { fill: #d2a24a; }
+    .rev-label { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 52px; fill: #ece9e2; text-anchor: middle; }
+    .rev-num { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 34px; fill: #d2a24a; text-anchor: middle; }
+    #rev-bead { fill: #d2a24a; }
+  </style>
+  <div id="root" data-composition-id="reveal" data-width="1920" data-height="1080">
+    <div id="rev-name" class="clip" data-start="0.2" data-duration="4.8">MemorialAtlas</div>
+    <svg id="rev-rail" class="clip" data-start="0.9" data-duration="4.1" viewBox="0 0 1920 300">
+      <line class="rev-groove" x1="260" y1="80" x2="1660" y2="80"/>
+      <line class="rev-edge" x1="260" y1="86" x2="1660" y2="86"/>
+      <g><circle class="rev-stop" cx="460" cy="80" r="34"/><circle id="rev-l1" class="rev-lamp" cx="460" cy="80" r="20" opacity="0"/><text class="rev-num" x="460" y="168">1</text><text id="rev-t1" class="rev-label" x="460" y="236">Read</text></g>
+      <g><circle class="rev-stop" cx="960" cy="80" r="34"/><circle id="rev-l2" class="rev-lamp" cx="960" cy="80" r="20" opacity="0"/><text class="rev-num" x="960" y="168">2</text><text id="rev-t2" class="rev-label" x="960" y="236">Decide</text></g>
+      <g><circle class="rev-stop" cx="1460" cy="80" r="34"/><circle id="rev-l3" class="rev-lamp" cx="1460" cy="80" r="20" opacity="0"/><text class="rev-num" x="1460" y="168">3</text><text id="rev-t3" class="rev-label" x="1460" y="236">Clean up</text></g>
+      <circle id="rev-bead" cx="260" cy="80" r="13"/>
+    </svg>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo('#rev-name', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(8px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.9, ease: 'expo.out' }, 0.2);
+    tl.fromTo('#rev-rail', { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out' }, 0.9);
+    tl.fromTo('#rev-bead', { attr: { cx: 260 } }, { attr: { cx: 1660 }, duration: 2.4, ease: 'none' }, 1.2);
+    [['#rev-l1', '#rev-t1', 1.53], ['#rev-l2', '#rev-t2', 2.39], ['#rev-l3', '#rev-t3', 3.24]].forEach(([lamp, label, at]) => {
+      tl.fromTo(lamp, { opacity: 0 }, { opacity: 1, duration: 0.12, ease: 'none' }, at);
+      tl.fromTo(label, { opacity: 0.25 }, { opacity: 1, duration: 0.2, ease: 'power2.out' }, at);
+    });
+    tl.to(['#rev-name', '#rev-rail'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 4.7);
+    window.__timelines["reveal"] = tl;
+  </script>
+</template>

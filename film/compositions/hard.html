@@ -1,0 +1,31 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: url(assets/granite.jpg) center / cover; }
+    .hard-card { position: absolute; top: 250px; width: 470px; height: 352px; }
+    .hard-in { position: absolute; inset: 0; }
+    .hard-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 6px; box-shadow: 0 18px 40px rgba(0,0,0,.55); border: 6px solid #ece9e2; }
+    .hard-card p { position: absolute; top: 382px; left: 0; width: 100%; text-align: center; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 40px; color: #d2a24a; }
+    #hard-c1 { left: 60px; } #hard-c2 { left: 420px; top: 300px; } #hard-c3 { left: 780px; } #hard-c4 { left: 1100px; top: 300px; } #hard-c5 { left: 1400px; }
+    #hard-q { position: absolute; left: 0; top: 440px; width: 1920px; text-align: center; font-family: 'Playfair Display', serif; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #ece9e2; font-size: 130px; line-height: 1; }
+  </style>
+  <div id="root" data-composition-id="hard" data-width="1920" data-height="1080">
+    <div id="hard-c1" class="hard-card clip" data-start="0.2" data-duration="5.3"><div class="hard-in"><img src="assets/photos/h011.jpg" alt="Tilted photo of a grave marker"><p>Tilted</p></div></div>
+    <div id="hard-c2" class="hard-card clip" data-start="0.2" data-duration="5.3"><div class="hard-in"><img src="assets/photos/h096.jpg" alt="Upside-down photo of a grave marker"><p>Upside down</p></div></div>
+    <div id="hard-c3" class="hard-card clip" data-start="0.2" data-duration="5.3"><div class="hard-in"><img src="assets/photos/h054.jpg" alt="Bronze marker flat in the grass"><p>Flat in the grass</p></div></div>
+    <div id="hard-c4" class="hard-card clip" data-start="0.2" data-duration="5.3"><div class="hard-in"><img src="assets/photos/h081.jpg" alt="Worn grave marker"><p>Worn away</p></div></div>
+    <div id="hard-c5" class="hard-card clip" data-start="0.2" data-duration="5.3"><div class="hard-in"><img src="assets/photos/h042.jpg" alt="Grave marker photographed at an angle"><p>At an angle</p></div></div>
+    <div id="hard-q" class="clip" data-start="5.6" data-duration="2.4">Who is buried here?</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const tilt = [-9, 7, -4, 6, -7];
+    ['#hard-c1', '#hard-c2', '#hard-c3', '#hard-c4', '#hard-c5'].forEach((id, i) => {
+      tl.fromTo(id + ' .hard-in', { scale: 1.35, rotation: tilt[i] * 2.2, opacity: 0, filter: 'blur(10px)' },
+        { scale: 1, rotation: tilt[i], opacity: 1, filter: 'blur(0px)', duration: 0.55, ease: 'back.out(1.6)' }, 0.25 + i * 0.85);
+    });
+    tl.to('.hard-in', { y: 900, rotation: '+=12', duration: 0.5, ease: 'power3.in', stagger: 0.05 }, 5.0);
+    tl.fromTo('#hard-q', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.7, ease: 'expo.out' }, 5.6);
+    tl.to('#hard-q', { opacity: 0, filter: 'blur(8px)', duration: 0.25, ease: 'power3.in' }, 7.7);
+    window.__timelines["hard"] = tl;
+  </script>
+</template>
