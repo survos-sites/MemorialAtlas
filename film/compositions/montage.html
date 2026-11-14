@@ -6,7 +6,7 @@
     #mon-ring { position: absolute; inset: 0; transform-style: preserve-3d; }
     .mon-card { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 6px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,.5); }
     .mon-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .mon-line { position: absolute; left: 0; width: 1920px; top: 830px; text-align: center; font-family: 'Playfair Display', serif; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #ece9e2; font-size: 92px; line-height: 1; }
+    .mon-line { position: absolute; left: 0; width: 1920px; top: 830px; text-align: center; font-family: 'Playfair Display', serif; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #ece9e2; font-size: 84px; line-height: 1; }
     .mon-line small { display: block; margin-top: 18px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 46px; letter-spacing: .02em; text-transform: none; color: #d2a24a; }
   </style>
   <div id="root" data-composition-id="montage" data-width="1920" data-height="1080">
@@ -29,19 +29,19 @@
         </div>
       </div>
     </div>
-    <div id="mon-l1" class="mon-line clip" data-start="0.3" data-duration="3.2">Every stone, photographed</div>
-    <div id="mon-l2" class="mon-line clip" data-start="3.6" data-duration="2.7">Two days in November</div>
-    <div id="mon-l3" class="mon-line clip" data-start="6.4" data-duration="2.6">St. Peter's Church Graveyard<small>Rappahannock County, Virginia</small></div>
+    <div id="mon-l1" class="mon-line clip" data-start="0.3" data-duration="2.75">One guy and his mobile phone</div>
+    <div id="mon-l2" class="mon-line clip" data-start="3.1" data-duration="3.55">39 minutes over two days<small>And that wasn't even full speed.</small></div>
+    <div id="mon-l3" class="mon-line clip" data-start="6.7" data-duration="2.3">St. Peter's Church Graveyard<small>Rappahannock County, Virginia</small></div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
     tl.fromTo('#mon-ring', { rotationY: 40 }, { rotationY: -180, duration: 9, ease: 'none' }, 0);
     tl.fromTo('#mon-stage', { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0);
-    for (const [id, at] of [['#mon-l1', 0.3], ['#mon-l2', 3.6], ['#mon-l3', 6.4]]) {
+    for (const [id, at] of [['#mon-l1', 0.3], ['#mon-l2', 3.1], ['#mon-l3', 6.7]]) {
       tl.fromTo(id, { clipPath: 'inset(0 50% 0 50%)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0%)', filter: 'blur(0px)', duration: 0.6, ease: 'expo.out' }, at);
     }
-    tl.to('#mon-l1', { opacity: 0, filter: 'blur(8px)', duration: 0.2, ease: 'power3.in' }, 3.3);
-    tl.to('#mon-l2', { opacity: 0, filter: 'blur(8px)', duration: 0.2, ease: 'power3.in' }, 6.1);
+    tl.to('#mon-l1', { opacity: 0, filter: 'blur(8px)', duration: 0.2, ease: 'power3.in' }, 2.85);
+    tl.to('#mon-l2', { opacity: 0, filter: 'blur(8px)', duration: 0.2, ease: 'power3.in' }, 6.45);
     tl.to(['#mon-l3', '#mon-stage'], { opacity: 0, filter: 'blur(10px)', duration: 0.3, ease: 'power3.in' }, 8.65);
     window.__timelines["montage"] = tl;
   </script>
