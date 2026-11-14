@@ -9,6 +9,14 @@ ai:
             api_key: '%env(OPENAI_API_KEY)%'
         mistral:
             api_key: '%env(MISTRAL_API_KEY)%'
+        huggingface:
+            # Chat completions through the Hugging Face inference router, billed to the Hugging Face account.
+            api_key: '%env(HUGGINGFACE_API_KEY)%'
+            model_catalog:
+                models:
+                    'Qwen/Qwen3.8-27B': { class: 'Symfony\AI\Platform\Bridge\HuggingFace\Completions', capabilities: ['input-messages', 'input-text', 'input-image', 'input-multimodal', 'output-text', 'output-structured'] }
+                    'moonshotai/Kimi-K3.1-Pro': { class: 'Symfony\AI\Platform\Bridge\HuggingFace\Completions', capabilities: ['input-messages', 'input-text', 'input-image', 'input-multimodal', 'output-text', 'output-structured'] }
+                    'google/gemma-4-31B-it': { class: 'Symfony\AI\Platform\Bridge\HuggingFace\Completions', capabilities: ['input-messages', 'input-text', 'input-image', 'input-multimodal', 'output-text', 'output-structured'] }
 
     # see https://symfony.com/doc/current/ai/bundles/ai-bundle.html
     agent:

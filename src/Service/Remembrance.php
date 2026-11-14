@@ -60,7 +60,17 @@ final class Remembrance
     /** Built by code from stored results: no model call, so it can be refreshed whenever a result changes. */
     public static function denseSummary(Item $item): string
     {
-        $parts = [trim(($item->id === null ? '' : '#'.$item->id.' ').$item->title).'.'];
+        $head = trim(($item->id === null ? '' : '#'.$item->id.' ').$item->title).'.';
+        $checked = $item->aiResults[DenseSummarizer::RESULT] ?? null;
+        if (is_array($checked) && trim($checked['summary'] ?? '') !== '') {
+            // A summary checked against the photo replaces the one built from raw readings.
+            $parts = [$head, trim($checked['summary'])];
+            if ($fields = array_column($checked['disagreements'] ?? [], 'field')) $parts[] = 'Readings to check: '.implode(', ', array_unique($fields)).'.';
+            if ($same = $item->aiResults['sameMarker']['sameAs'] ?? []) $parts[] = 'Same stone as '.implode(', ', array_map(static fn (int $id): string => '#'.$id, $same)).'.';
+
+            return mb_substr(implode(' ', $parts), 0, 900);
+        }
+        $parts = [$head];
         $people = [];
         foreach ($item->aiResults['catalog']['record']['people'] ?? [] as $p) {
             if (!is_string($p['name'] ?? null) || trim($p['name']) === '') continue;

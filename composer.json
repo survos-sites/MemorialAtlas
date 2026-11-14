@@ -27,6 +27,7 @@
         "symfony/ai-agent": "^1.0.0-beta1",
         "symfony/ai-bundle": "^1.0.0-beta1",
         "symfony/ai-gemini-platform": "^1.0.0-beta1",
+        "symfony/ai-hugging-face-platform": "^1.0.0-beta1",
         "symfony/ai-mistral-platform": "^1.0.0-beta1",
         "symfony/ai-ollama-platform": "^1.0.0-beta1",
         "symfony/ai-open-ai-platform": "^1.0.0-beta1",

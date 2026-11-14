@@ -154,6 +154,15 @@
             "config/packages/ai_generic_platform.yaml"
         ]
     },
+    "symfony/ai-hugging-face-platform": {
+        "version": "1.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "0.1",
+            "ref": "68bc896a3d39a0155d55fb77635d9f7d1df66e8f"
+        }
+    },
     "symfony/ai-mistral-platform": {
         "version": "1.0",
         "recipe": {
