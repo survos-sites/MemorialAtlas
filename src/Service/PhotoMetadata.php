@@ -40,12 +40,12 @@ final readonly class PhotoMetadata
         }
         $requestOcr = $this->metaOcr && $media->ocrText === null;
         if (!isset($media->imageMetadata['imagor']) || ($requestOcr && !isset($media->imageMetadata['imagor']['ocr']))) {
-            $meta = $this->http->request('GET', $this->imagor->metaUrl($media->sourceUrl, $requestOcr && $rendition === null ? ['thumbhash', 'blurhash', 'avgcolor', 'ocr'] : ['thumbhash', 'blurhash', 'avgcolor']), ['max_duration' => 90])->toArray();
+            $meta = $this->http->request('GET', $this->imagor->metaUrl($media->sourceUrl, $requestOcr && $rendition === null ? ['thumbhash', 'blurhash', 'avgcolor', 'ocr'] : ['thumbhash', 'blurhash', 'avgcolor']), ['timeout' => 120, 'max_duration' => 180])->toArray();
             if (empty($meta['width']) || empty($meta['height'])) {
                 throw new \RuntimeException('Imagor did not return valid image dimensions.');
             }
             if ($requestOcr && $rendition !== null) {
-                $ocrMeta = $this->http->request('GET', $this->imagor->metaUrl($rendition['sourceUrl'], ['ocr']), ['max_duration' => 90])->toArray();
+                $ocrMeta = $this->http->request('GET', $this->imagor->metaUrl($rendition['sourceUrl'], ['ocr']), ['timeout' => 120, 'max_duration' => 180])->toArray();
                 $meta['ocr'] = $ocrMeta['ocr'] ?? null;
             }
             if ($requestOcr && !is_string($meta['ocr']['text'] ?? null)) throw new \RuntimeException('Imagor OCR was requested but no text was returned. Check the RustO build or disable SCANFONY_META_OCR.');
