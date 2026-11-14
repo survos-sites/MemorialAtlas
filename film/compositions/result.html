@@ -3,8 +3,12 @@
     #root { position: absolute; inset: 0; overflow: hidden; background: url(assets/granite.jpg) center / cover; }
     .rs-head { position: absolute; left: 80px; top: 50px; width: 1760px; font-family: 'Playfair Display', serif; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #ece9e2; font-size: 76px; line-height: 1; }
     .rs-head small { display: block; margin-top: 16px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 40px; letter-spacing: 0; text-transform: none; color: #b9b6ae; }
-    #rs-site { position: absolute; left: 270px; top: 215px; width: 1380px; height: 853px; transform-origin: 50% 0; }
-    #rs-site img { width: 100%; height: 100%; display: block; border-radius: 8px; box-shadow: 0 22px 50px rgba(0,0,0,.6); }
+    .rs-head span { font-family: 'JetBrains Mono', monospace; color: #d2a24a; margin-right: 28px; }
+    #rs-rem { position: absolute; left: 120px; top: 300px; width: 1680px; height: 520px; }
+    #rs-rem img { position: absolute; left: 0; top: 0; width: 760px; height: 460px; object-fit: cover; border-radius: 6px; border: 5px solid #ece9e2; box-shadow: 0 18px 40px rgba(0,0,0,.55); }
+    #rs-quote { position: absolute; left: 830px; top: 40px; width: 850px; font-family: 'Playfair Display', serif; font-style: italic; font-weight: 700; font-size: 62px; line-height: 1.25; color: #ece9e2; }
+    #rs-basis { position: absolute; left: 830px; top: 360px; width: 850px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 32px; line-height: 1.35; color: #9aa29e; }
+    #rs-basis b { color: #d2a24a; }
     #rs-chat { position: absolute; left: 180px; top: 212px; width: 1560px; height: 852px; background: #0d1110; border: 2px solid #3a4541; border-radius: 18px; box-shadow: 0 24px 60px rgba(0,0,0,.65), inset 0 3px 12px rgba(0,0,0,.8); }
     #rs-bar { position: absolute; left: 0; top: 0; width: 100%; height: 64px; border-bottom: 2px solid #232b29; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 28px; line-height: 64px; color: #8f9893; padding-left: 36px; }
     #rs-bar b { color: #d2a24a; }
@@ -23,27 +27,27 @@
     .rs-note { color: #9aa29e; font-size: 34px; }
   </style>
   <div id="root" data-composition-id="result" data-width="1920" data-height="1080">
-    <div id="rs-h1" class="rs-head clip" data-start="0" data-duration="3.4">The record<small>For a person to check, with the photo as its evidence.</small></div>
-    <div id="rs-site" class="clip" data-start="0.3" data-duration="3.1"><img src="assets/site-item.jpg" alt="MemorialAtlas item page for the Hamilton gravestone"></div>
-    <div id="rs-h2" class="rs-head clip" data-start="3.4" data-duration="8.6">Ask in plain words<small>Any AI agent can use the collection through MCP.</small></div>
-    <div id="rs-chat" class="clip" data-start="3.5" data-duration="8.5">
+    <div id="rs-h1" class="rs-head clip" data-start="0" data-duration="4.5"><span>3</span>Remember<small>One line from what is carved: the words and the symbols.</small></div>
+    <div id="rs-rem" class="clip" data-start="0.3" data-duration="4.2"><img src="assets/symbols/caduceus.jpg" alt="Caduceus and Ohio State logo on the Geneva stone"><div id="rs-quote">Edward Frank Geneva was a physician, a family man, and a physicist.</div><div id="rs-basis">From <b>“Physician, family, physicist”</b> and the <b>caduceus</b>.</div></div>
+    <div id="rs-h2" class="rs-head clip" data-start="4.5" data-duration="7.5">Ask in plain words<small>Any AI agent can use the collection through MCP.</small></div>
+    <div id="rs-chat" class="clip" data-start="4.6" data-duration="7.4">
       <div id="rs-bar"><b>●</b> agent · memorialatlas MCP</div>
-      <div id="rs-q"><span id="rs-q-t">Tell me about the veterans buried here.</span></div>
+      <div id="rs-q"><span id="rs-q-t">Who had hobbies or interests?</span></div>
       <div id="rs-tools">
-        <div class="rs-tool" id="rs-t1">search_memorials("veteran") <i class="rs-none">0</i></div>
-        <div class="rs-tool" id="rs-t2">search_memorials("navy") <i>1</i></div>
-        <div class="rs-tool" id="rs-t3">search_memorials("army") <i>3</i></div>
-        <div class="rs-tool" id="rs-t4">get_memorial(81) <i>✓</i></div>
-        <div class="rs-tool" id="rs-t5">get_memorial(86) <i>✓</i></div>
+        <div class="rs-tool" id="rs-t1">collection_digest() <i>✓</i></div>
+        <div class="rs-tool" id="rs-t2">get_memorial(9) <i>✓</i></div>
+        <div class="rs-tool" id="rs-t3">get_memorial(92) <i>✓</i></div>
+        <div class="rs-tool" id="rs-t4">get_memorial(105) <i>✓</i></div>
+        <div class="rs-tool" id="rs-t5">get_memorial(122) <i>✓</i></div>
       </div>
       <div id="rs-a">
-        <img id="rs-th1" class="rs-thumb" src="assets/vet-perkins.jpg" alt="Flat marker of Calvet James Perkins, US Navy, World War II">
-        <img id="rs-th2" class="rs-thumb" src="assets/vet-renzy.jpg" alt="Headstone of Bernard Thomas Renzy, Captain, U.S. Army Reserves">
+        <img id="rs-th1" class="rs-thumb" src="assets/symbols/strawberry.jpg" alt="Plaque for Helen Fretz Jarrett with a strawberry">
+        <img id="rs-th2" class="rs-thumb" src="assets/symbols/polo.jpg" alt="Burdick stone with a polo player">
         <div id="rs-text">
-          <div class="rs-p" id="rs-p1">Two stones name military service:</div>
-          <div class="rs-p" id="rs-p2"><span class="rs-name">Calvet James Perkins</span><br><span class="rs-date">YNC, U.S. Navy · World War II · born June 24, 1924</span></div>
-          <div class="rs-p" id="rs-p3"><span class="rs-name">Bernard Thomas Renzy</span><br><span class="rs-date">Captain, U.S. Army Reserves · died 2015</span></div>
-          <div class="rs-p rs-note" id="rs-p4">His three photos give three readings of the dates. A person should check.</div>
+          <div class="rs-p" id="rs-p1">Stones that show hobbies or interests:</div>
+          <div class="rs-p" id="rs-p2"><span class="rs-name">Helen Fretz Jarrett</span><br><span class="rs-date">“These are the best strawberries I’ve ever had!”</span></div>
+          <div class="rs-p" id="rs-p3"><span class="rs-name">Austin Levi Burdick</span><br><span class="rs-date">A polo player is carved beside his name.</span></div>
+          <div class="rs-p rs-note" id="rs-p4">Also Sarah Rose Genari, “our precious songbird.”</div>
         </div>
       </div>
     </div>
@@ -51,22 +55,23 @@
   <script>
     const tl = gsap.timeline({ paused: true });
     tl.fromTo('#rs-h1', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.6, ease: 'expo.out' }, 0.05);
-    tl.fromTo('#rs-site', { opacity: 0, y: 120 }, { opacity: 1, y: 0, duration: 0.6, ease: 'expo.out' }, 0.3);
-    tl.fromTo('#rs-site', { scale: 1 }, { scale: 1.04, duration: 2.6, ease: 'power2.inOut' }, 0.9);
-    tl.to(['#rs-h1', '#rs-site'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 3.1);
-    tl.fromTo('#rs-h2', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.6, ease: 'expo.out' }, 3.4);
-    tl.fromTo('#rs-chat', { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.4, ease: 'expo.out' }, 3.5);
-    tl.fromTo('#rs-q', { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.25, ease: 'back.out(2)' }, 3.8);
-    tl.fromTo('#rs-q-t', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 1.0, ease: 'steps(39)' }, 3.85);
+    tl.fromTo('#rs-rem img', { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.5, ease: 'expo.out' }, 0.3);
+    tl.fromTo('#rs-quote', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.7, ease: 'power2.out' }, 0.45);
+    tl.fromTo('#rs-basis', { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out' }, 1.2);
+    tl.to(['#rs-h1', '#rs-rem'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 4.2);
+    tl.fromTo('#rs-h2', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 0.6, ease: 'expo.out' }, 4.5);
+    tl.fromTo('#rs-chat', { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.4, ease: 'expo.out' }, 4.6);
+    tl.fromTo('#rs-q', { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.25, ease: 'back.out(2)' }, 4.9);
+    tl.fromTo('#rs-q-t', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 1.0, ease: 'steps(29)' }, 4.95);
     ['#rs-t1', '#rs-t2', '#rs-t3', '#rs-t4', '#rs-t5'].forEach((id, i) => {
-      const at = 5.0 + i * 0.28;
+      const at = 6.1 + i * 0.28;
       tl.fromTo(id, { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.22, ease: 'power3.out' }, at);
       tl.fromTo(id + ' i', { opacity: 0 }, { opacity: 1, duration: 0.1, ease: 'none' }, at + 0.25);
     });
-    tl.fromTo('#rs-a', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.35, ease: 'expo.out' }, 6.5);
-    tl.fromTo('#rs-th1', { opacity: 0, scale: 1.15, rotation: -4 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.5, ease: 'back.out(1.6)' }, 7.1);
-    tl.fromTo('#rs-th2', { opacity: 0, scale: 1.15, rotation: 4 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.5, ease: 'back.out(1.6)' }, 7.65);
-    [['#rs-p1', 6.6], ['#rs-p2', 7.1], ['#rs-p3', 7.65], ['#rs-p4', 7.95]].forEach(([id, at]) => {
+    tl.fromTo('#rs-a', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.35, ease: 'expo.out' }, 7.6);
+    tl.fromTo('#rs-th1', { opacity: 0, scale: 1.15, rotation: -4 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.5, ease: 'back.out(1.6)' }, 8.2);
+    tl.fromTo('#rs-th2', { opacity: 0, scale: 1.15, rotation: 4 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.5, ease: 'back.out(1.6)' }, 8.75);
+    [['#rs-p1', 7.7], ['#rs-p2', 8.2], ['#rs-p3', 8.75], ['#rs-p4', 9.05]].forEach(([id, at]) => {
       tl.fromTo(id, { clipPath: 'inset(0 100% 0 0)', opacity: 0.4 }, { clipPath: 'inset(0 0% 0 0)', opacity: 1, duration: 0.45, ease: 'power2.out' }, at);
     });
     tl.to(['#rs-h2', '#rs-chat'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 11.7);

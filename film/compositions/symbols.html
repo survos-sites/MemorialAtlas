@@ -1,0 +1,34 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: url(assets/granite.jpg) center / cover; }
+    #sy-head { position: absolute; left: 80px; top: 50px; width: 1760px; }
+    #sy-head h2 { font-family: 'Playfair Display', serif; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #ece9e2; font-size: 84px; line-height: 1; }
+    #sy-head h2 span { font-family: 'JetBrains Mono', monospace; color: #d2a24a; margin-right: 28px; }
+    #sy-head p { margin-top: 14px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 40px; color: #b9b6ae; }
+    .sy-card { position: absolute; width: 540px; }
+    .sy-in { position: relative; }
+    .sy-card img { display: block; width: 540px; height: 300px; object-fit: cover; border-radius: 6px; border: 5px solid #ece9e2; box-shadow: 0 18px 40px rgba(0,0,0,.55); }
+    .sy-card p { margin-top: 12px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 32px; color: #ece9e2; line-height: 1.2; }
+    .sy-card p b { color: #d2a24a; }
+    #sy-c1 { left: 90px; top: 220px; } #sy-c2 { left: 690px; top: 220px; } #sy-c3 { left: 1290px; top: 220px; }
+    #sy-c4 { left: 390px; top: 620px; } #sy-c5 { left: 990px; top: 620px; }
+  </style>
+  <div id="root" data-composition-id="symbols" data-width="1920" data-height="1080">
+    <div id="sy-head" class="clip" data-start="0" data-duration="7.5"><h2><span>2</span>Notice</h2><p>OCR reads letters. Jev notices what is carved, and a vision model names it.</p></div>
+    <div id="sy-c1" class="sy-card clip" data-start="0.5" data-duration="7"><div class="sy-in"><img src="assets/symbols/polo.jpg" alt="Polo player carved on the Burdick stone"><p><b>Polo player</b> · Burdick</p></div></div>
+    <div id="sy-c2" class="sy-card clip" data-start="0.5" data-duration="7"><div class="sy-in"><img src="assets/symbols/caduceus.jpg" alt="Caduceus and Ohio State logo on the Geneva stone"><p><b>Caduceus, Ohio State</b> · Geneva</p></div></div>
+    <div id="sy-c3" class="sy-card clip" data-start="0.5" data-duration="7"><div class="sy-in"><img src="assets/symbols/lacrosse.jpg" alt="Crossed lacrosse sticks on the Warzinski stone"><p><b>Lacrosse sticks</b> · Warzinski</p></div></div>
+    <div id="sy-c4" class="sy-card clip" data-start="0.5" data-duration="7"><div class="sy-in"><img src="assets/symbols/justice.jpg" alt="Scales of justice on the Renzy stone"><p><b>Scales of justice</b> · Renzy</p></div></div>
+    <div id="sy-c5" class="sy-card clip" data-start="0.5" data-duration="7"><div class="sy-in"><img src="assets/symbols/strawberry.jpg" alt="Strawberry on the Jarrett plaque"><p><b>Strawberry</b> · Jarrett</p></div></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo('#sy-head', { opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.35, ease: 'expo.out' }, 0.05);
+    ['#sy-c1', '#sy-c2', '#sy-c3', '#sy-c4', '#sy-c5'].forEach((id, i) => {
+      tl.fromTo(id + ' .sy-in', { opacity: 0, scale: 1.25, rotation: (i % 2 ? 5 : -5), filter: 'blur(8px)' },
+        { opacity: 1, scale: 1, rotation: 0, filter: 'blur(0px)', duration: 0.5, ease: 'back.out(1.5)' }, 0.6 + i * 0.7);
+    });
+    tl.to(['#sy-head', '.sy-in'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 7.2);
+    window.__timelines["symbols"] = tl;
+  </script>
+</template>
