@@ -1,6 +1,8 @@
 ai:
     # see https://symfony.com/doc/current/ai/components/platform.html
     platform:
+        gemini:
+            api_key: '%env(GEMINI_API_KEY)%'
         ollama:
             endpoint: '%env(OLLAMA_ENDPOINT)%'
         openai:
