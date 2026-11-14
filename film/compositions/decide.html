@@ -28,7 +28,7 @@
     .dc-cap { position: absolute; left: 0; top: 808px; width: 1920px; text-align: center; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 44px; color: #ece9e2; }
     .dc-cap b { color: #d2a24a; }
     .dc-cap2 { top: 872px; }
-    #dc-tally { position: absolute; left: 0; top: 930px; width: 1920px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 40px; color: #ece9e2; }
+    #dc-tally { position: absolute; left: 0; top: 930px; width: 1920px; text-align: center; font-family: 'Playfair Display', serif; font-style: italic; font-weight: 700; font-size: 52px; color: #ece9e2; }
     #dc-tally b { color: #d2a24a; }
   </style>
   <div id="root" data-composition-id="decide" data-width="1920" data-height="1080">
@@ -61,12 +61,10 @@
     <div id="dc-tr3" class="dc-tok clip" data-start="12.6" data-duration="1.6"><div class="dc-tok-in"><img src="assets/photos/m104.jpg" alt="Beglis photo"></div></div>
     <div id="dc-cap1" class="dc-cap clip" data-start="5.1" data-duration="4.8">Damaged OCR: <b>Mistral Medium</b> reads the stone itself</div>
     <div id="dc-cap2" class="dc-cap dc-cap2 clip" data-start="7.2" data-duration="2.7">Angled camera: <b>Gemini</b> cleans up a copy</div>
-    <div id="dc-cap3" class="dc-cap clip" data-start="10.0" data-duration="4.1">Each photo takes its own path</div>
-    <div id="dc-tally" class="clip" data-start="14.1" data-duration="3.9">First <b id="dc-c0">0</b> photos: <b id="dc-c1">0</b> text route · <b id="dc-c2">0</b> vision route · <b id="dc-c3">0</b> cleaned</div>
+    <div id="dc-cap3" class="dc-cap clip" data-start="10.0" data-duration="8.0">Each photo takes its own path</div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    const T = { total: 54, text: 8, vision: 46, cleaned: 39 };
     const setNum = (sel, obj) => () => { document.querySelector(sel).textContent = obj.v.toFixed(2); };
     function fill(barSel, numSel, value, at) {
       const o = { v: 0 };
@@ -109,13 +107,7 @@
       lamp(route, at + 0.88, at + 1.15); lamp(clean, at + 1.18, at + 1.45);
     });
 
-    tl.to('#dc-cap3', { opacity: 0, filter: 'blur(6px)', duration: 0.2, ease: 'power3.in' }, 13.9);
-    tl.fromTo('#dc-tally', { opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.35, ease: 'expo.out' }, 14.1);
-    [['#dc-c0', T.total], ['#dc-c1', T.text], ['#dc-c2', T.vision], ['#dc-c3', T.cleaned]].forEach(([sel, n], i) => {
-      const o = { v: 0 };
-      tl.fromTo(o, { v: 0 }, { v: n, duration: 0.9, ease: 'power3.out', onUpdate: () => { document.querySelector(sel).textContent = Math.round(o.v); } }, 14.2 + i * 0.12);
-    });
-    tl.to(['#dc-head', '#dc-machine', '#dc-tally'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 17.7);
+    tl.to(['#dc-head', '#dc-machine', '#dc-cap3'], { opacity: 0, filter: 'blur(10px)', duration: 0.25, ease: 'power3.in' }, 17.7);
     window.__timelines["decide"] = tl;
   </script>
 </template>
