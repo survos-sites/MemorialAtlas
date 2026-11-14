@@ -9,6 +9,16 @@
     {% endfor %}
     {% set raw = {regions: regions, width: correction.frame.width, height: correction.frame.height, coordinate_space: 'processed_image'} %}
 {% endif %}
+{# Mistral OCR returns block corners in the frame it was sent (pages[0].dimensions), the same detail preset shown here. #}
+{% set mistralBlocks = not correction and raw and raw.pages is defined and raw.pages|length and raw.pages[0].blocks is defined and raw.pages[0].blocks|length and raw.pages[0].dimensions is defined %}
+{% if mistralBlocks %}
+    {% set page = raw.pages[0] %}
+    {% set regions = [] %}
+    {% for block in page.blocks|filter(b => b.content is defined and b.content is not empty) %}
+        {% set regions = regions|merge([{box: [[block.top_left_x, block.top_left_y], [block.bottom_right_x, block.top_left_y], [block.bottom_right_x, block.bottom_right_y], [block.top_left_x, block.bottom_right_y]], text: block.content|trim('# '), score: null}]) %}
+    {% endfor %}
+    {% set raw = {regions: regions, width: page.dimensions.width, height: page.dimensions.height, coordinate_space: 'processed_image'} %}
+{% endif %}
 {% set ocrText = correction ? (reading ? reading.text : null) : media.ocrText %}
 {% set hasBoxes = raw and raw.regions is defined and raw.regions|length and raw.width is defined and raw.height is defined and raw.width > 0 and raw.height > 0 and raw.coordinate_space is defined and raw.coordinate_space == 'processed_image' %}
 <div class="ocr-viewer ocr-comparison {{ correction ? 'has-correction' : '' }}" data-controller="ocr-viewer">
@@ -50,7 +60,7 @@
                     </g>
                 {% endfor %}
             </svg>
-            <p class="muted ocr-note">{{ reading and reading.geometry is defined and reading.geometry == 'blocks' ? 'Text follows detected block positions; line spacing within each block is approximate.' : 'Text follows the detected line positions and angles.' }} Select text to highlight its box.</p>
+            <p class="muted ocr-note">{{ mistralBlocks or (reading and reading.geometry is defined and reading.geometry == 'blocks') ? 'Text follows detected block positions; line spacing within each block is approximate.' : 'Text follows the detected line positions and angles.' }} Select text to highlight its box.</p>
         {% elseif ocrText %}
             <div class="ocr-text">{{ ocrText }}</div>
             <p class="muted">Text boxes are not available for this reading.</p>
