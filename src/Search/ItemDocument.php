@@ -40,6 +40,7 @@ final readonly class ItemDocument
         #[Field(facet: true, widget: Widget::Select)] public array $symbolCategories = [],
         #[Field(facet: true, widget: Widget::Select)] public array $scriptureBooks = [],
         #[Field(searchable: true)] public ?string $scripture = null,
+        #[Field(searchable: true)] public ?string $rememberedAs = null,
     ) {}
 
     public static function fromItem(Item $item): self
@@ -82,6 +83,7 @@ final readonly class ItemDocument
             array_values(array_unique([...($facts['symbols'] ?? []), ...array_diff($item->tags, ['scripture'])])), $facts['themes'] ?? [], $facts['epitaph'] ?? null,
             array_values(array_unique(array_filter(array_map(static fn ($p) => isset($p['familyName']) && trim($p['familyName']) !== '' ? mb_convert_case(trim($p['familyName']), MB_CASE_TITLE, 'UTF-8') : null, $people)))),
             symbolCategories: array_values(array_unique($symbolCategories)), scriptureBooks: array_values(array_unique($scriptureBooks)),
-            scripture: $scripture === [] ? null : implode("\n", array_unique($scripture)));
+            scripture: $scripture === [] ? null : implode("\n", array_unique($scripture)),
+            rememberedAs: ($item->aiResults['remember']['line'] ?? '') ?: null);
     }
 }

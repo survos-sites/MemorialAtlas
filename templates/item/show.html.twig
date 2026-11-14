@@ -22,6 +22,10 @@
     {% endif %}
     <div class="item-description">
         <span class="badge">{{ item.marking }}</span><h1>{{ item.title }}</h1>
+        {% set remembered = item.aiResults.remember.line ?? '' %}
+        {% if remembered %}<blockquote style="margin:0 0 18px;padding:12px 18px;border-left:4px solid #c99a3e;background:#fcfaf5;font:1.25rem/1.5 Georgia,serif">{{ remembered }}<footer class="muted" style="font:.75rem system-ui,sans-serif;margin-top:6px">AI reading of what is carved{% if item.aiResults.remember.basis %}: {{ item.aiResults.remember.basis|join('; ') }}{% endif %}. Symbols are interpreted, not proven.</footer></blockquote>{% endif %}
+        {% set tags = item.tags %}
+        {% if tags %}<p>{% for tag in tags %}<span class="badge" style="margin:0 4px 4px 0">{{ tag }}</span>{% endfor %}</p>{% endif %}
         {% if item.description %}<div class="prose">{{ item.description|markdown_to_html }}</div>{% else %}<p class="muted">No description recorded yet.</p>{% endif %}
         <p class="muted">{{ item.media|length }} media files in capture order. {% if item.marking == 'review' %}Proposed inscription record. Check the photograph before accepting names and dates.{% elseif item.marking == 'draft' %}Not processed yet.{% endif %}</p>
         <a href="#ai-history">See AI evidence and decisions ↓</a>

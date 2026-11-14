@@ -35,6 +35,7 @@ final readonly class ItemProcessor
         #[Autowire('%env(bool:SCANFONY_VISION_ENABLED)%')] private bool $visionEnabled,
         private ?\Symfony\Contracts\HttpClient\HttpClientInterface $http = null,
         private ?SymbolFinder $symbols = null,
+        private ?Remembrance $remembrance = null,
     ) {}
 
     /**
@@ -156,6 +157,13 @@ final readonly class ItemProcessor
             unset($item->aiResults['catalogAttempt']);
             $this->items->apply($item, ItemWorkflow::PROPOSE);
             $this->em->flush();
+            try {
+                $this->remembrance?->remember($item);
+            } catch (\Throwable $error) {
+                // The line is a reading aid; a failure must not block the record.
+                $item->aiResults['rememberError'] = mb_substr($error->getMessage(), 0, 500);
+                $this->em->flush();
+            }
         } catch (\Throwable $error) {
             if (!$this->em->isOpen()) throw $error;
             foreach ($item->media as $media) {

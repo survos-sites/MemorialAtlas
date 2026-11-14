@@ -7,7 +7,7 @@ namespace App\Mcp;
 use App\Decision\ImageQuestions as Q;
 use App\Entity\{Image, Item};
 use App\Image\ImagePreset;
-use App\Service\{ImageCleaner, ImageDelivery, SymbolFinder};
+use App\Service\{ImageCleaner, ImageDelivery, Remembrance, SymbolFinder};
 use Doctrine\ORM\EntityManagerInterface;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Schema\ToolAnnotations;
@@ -67,6 +67,8 @@ final readonly class MemorialTools
             'uncertainties' => $record['uncertainties'] ?? [],
             'sameMarkerAs' => $item->aiResults['sameMarker']['sameAs'] ?? [],
             'tags' => $item->tags,
+            'rememberedAs' => isset($item->aiResults[Remembrance::RESULT]['line']) && $item->aiResults[Remembrance::RESULT]['line'] !== ''
+                ? ['line' => $item->aiResults[Remembrance::RESULT]['line'], 'basis' => $item->aiResults[Remembrance::RESULT]['basis'], 'note' => 'An AI reading of what is carved; symbols are interpreted, not proven.'] : null,
             'extractedBy' => isset($item->aiResults['catalog']) ? ($item->aiResults['catalog']['provider'] ?? null).' '.($item->aiResults['catalog']['model'] ?? null) : null,
             'note' => 'AI proposals for human review. Not a verified burial record.',
             'photos' => array_values(array_map(fn (Image $image) => $this->photo($image), array_filter($item->media->toArray(), static fn ($m) => $m instanceof Image))),
