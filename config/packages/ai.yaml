@@ -12,6 +12,31 @@ ai:
 
     # see https://symfony.com/doc/current/ai/bundles/ai-bundle.html
     agent:
+        # The chat page calls the MCP tool methods directly, not through MCP:
+        # https://github.com/symfony/ai/issues/2539
+        memorial_chat:
+            platform: 'ai.platform.mistral'
+            model: '%env(MEMORIAL_CHAT_MODEL)%'
+            prompt:
+                file: '%kernel.project_dir%/config/prompts/memorial-chat.md'
+            tools:
+                - service: 'App\Mcp\MemorialTools'
+                  name: 'search_memorials'
+                  description: 'Search memorial records by name, inscription text or description. Returns record ids, titles and links.'
+                  method: 'search'
+                - service: 'App\Mcp\MemorialTools'
+                  name: 'get_memorial'
+                  description: 'Read one memorial record: proposed people with dates, inscriptions, open questions, photos and other photos of the same stone.'
+                  method: 'get'
+                - service: 'App\Mcp\MemorialTools'
+                  name: 'list_records_to_review'
+                  description: 'List processed records that wait for a person to check them, with the open questions.'
+                  method: 'toReview'
+                - service: 'App\Mcp\MemorialTools'
+                  name: 'collection_overview'
+                  description: 'Count records by status and photos by AI treatment, per cemetery.'
+                  method: 'overview'
+            max_tool_calls: 12
 
     # see https://symfony.com/doc/current/ai/components/store.html
     store:

@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ask · MemorialAtlas{% endblock %}
+
+{% block body %}
+<style>
+.chat{max-width:880px;margin:0 auto}
+.chat-log{display:flex;flex-direction:column;gap:18px;margin:24px 0}
+.chat-q{align-self:flex-end;max-width:80%;background:#c99a3e;color:#1b1f1c;font-weight:600;padding:12px 18px;border-radius:18px 18px 4px 18px}
+.chat-tools{display:flex;flex-wrap:wrap;gap:8px}
+.chat-tool{font:600 .78rem ui-monospace,SFMono-Regular,Menlo,monospace;background:#e6e7de;border:1px solid #cfd2c5;border-radius:20px;padding:4px 12px;color:#3b463f}
+.chat-tool b{color:#8a6a24}.chat-tool.failed{border-color:#c9a191;color:#8c4a33}
+.chat-a{background:#fcfaf5;border:1px solid #d9d9cf;border-radius:18px 18px 18px 4px;padding:6px 22px}
+.chat-a p,.chat-a li{line-height:1.6}
+.chat-form{display:flex;gap:10px;position:sticky;bottom:0;background:#f3f0e9;padding:14px 0}
+.chat-form input{flex:1;font:inherit;padding:13px 16px;border:1px solid #c9c9bd;border-radius:4px;background:#fff}
+.chat-examples{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}
+.chat-examples button{background:#e1e8dd!important;color:#29362f!important;padding:8px 12px!important;font-size:.85rem;cursor:pointer}
+</style>
+<div class="chat">
+    <p class="eyebrow muted">Ask the collection</p>
+    <h1>Every stone tells a story</h1>
+    <p>Ask about the people buried in St. Peter's Church Graveyard. The assistant looks up the records with the same tools that the MCP server offers to other AI agents, and links each record it uses. Every record is an AI reading of a photo, for a person to check.</p>
+
+    <div class="chat-log">
+        {% for turn in turns %}
+            <div class="chat-q" id="turn-{{ loop.index0 }}">{{ turn.question }}</div>
+            {% if turn.tools %}
+                <div class="chat-tools" aria-label="Tools the assistant used">
+                    {% for call in turn.tools %}
+                        <span class="chat-tool{{ call.failed ? ' failed' }}">{{ call.name }}({% for key, value in call.arguments %}{{ value is iterable ? value|json_encode : value|json_encode }}{{ not loop.last ? ', ' }}{% endfor %}){% if call.results is not null %} <b>{{ call.results }}</b>{% elseif call.failed %} <b>failed</b>{% else %} <b>✓</b>{% endif %}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="chat-a">{{ turn.answer|markdown_to_html }}</div>
+        {% endfor %}
+    </div>
+
+    <form class="chat-form" method="post" action="{{ path('chat_ask') }}">
+        <input name="question" maxlength="500" required autofocus placeholder="Tell me about the veterans buried here" aria-label="Your question">
+        <button type="submit">Ask</button>
+    </form>
+    {% if not turns %}
+        <form class="chat-examples" method="post" action="{{ path('chat_ask') }}">
+            {% for example in ['Tell me about the veterans buried here.', 'Which families have more than one stone?', 'Which stones mention a profession or a hobby?', 'Which readings disagree with each other?'] %}
+                <button name="question" value="{{ example }}">{{ example }}</button>
+            {% endfor %}
+        </form>
+    {% else %}
+        <form method="post" action="{{ path('chat_reset') }}"><button class="chat-examples" style="background:none!important;color:#6c756a!important;padding:0!important">Start over</button></form>
+    {% endif %}
+</div>
+{% endblock %}
