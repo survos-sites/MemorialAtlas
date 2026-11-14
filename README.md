@@ -654,3 +654,40 @@ attach a box to each detected motif in the same source-frame coordinate system
 used by the Stone contract. Record visible shapes as reviewable observations;
 do not turn a symbol into an assertion about the person's religion, occupation,
 or affiliations. Store the model and image reference with each observation.
+
+### Server-side photo ingestion and deployment
+
+The intended ingestion API accepts an authenticated photo upload, optional
+cemetery selection, and optional correction points. It preserves the original,
+creates a durable capture record, and returns `202 Accepted` with a status URL.
+The existing `ProcessItem` handler then extracts EXIF, prepares the image, runs
+hosted Mistral OCR, saves reviewable evidence, and updates search. No separate
+correction queue or workstation processing dependency is needed.
+
+GPS records the camera position. Use it to suggest a cemetery from known
+boundaries or nearby candidates; do not silently assign the nearest cemetery
+when the location is missing or ambiguous. Retain the supplied or reviewed
+cemetery association. Automatic perspective correction requires a detector or
+reviewed points; the current four-corner implementation does not detect a marker
+from a photo alone. Preserve an uncorrected frame when selection needs review.
+
+The production readiness check on 2026-11-14 found these remaining requirements:
+
+- Package the OpenCV 5 PHP extension and its native libraries in the production
+  runtime. The current MemorialAtlas PHP-buildpack runtime has no OpenCV.
+  The `opencv-php` repository has a multistage FrankenPHP build example; test an
+  application runtime built for the server architecture before switching builders.
+- Run a Messenger consumer for the existing `processing` transport. The current
+  `worker` process only flushes the Elasticsearch spool.
+- Persist original and derivative media across releases. Production currently
+  mounts the search spool, but not `var/media`; local sample corrections are not
+  automatically published by a Git deployment.
+- Implement the authenticated upload/status endpoint with file validation,
+  retry-safe identity and durable queue dispatch. There is no photo-upload route
+  in the current application.
+- Rehearse upload, correction, OCR, retry and retrieval on the production runtime,
+  including a restart to verify durable media. Check the original and derivative
+  checksums and their Stone-contract frame references.
+
+These are deployment and ingestion follow-ups, not a claim that the upload API
+or automatic marker detection is already available.
