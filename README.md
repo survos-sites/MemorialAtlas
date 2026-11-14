@@ -247,7 +247,34 @@ symfony php tests/access.php # isolated app_test database, test-only password
 
 MemorialAtlas is deployed independently of Harvest. The repository contains the application, migrations, and tests; photographs, database exports, reference annotations, credentials, and generated folios stay outside Git. Import images from a directory and configure PostgreSQL, Elasticsearch, Imagor/S3, and the chosen AI providers. Harvest can supply images, but is not required at runtime.
 
-The Dokku app is `stonestory` on `fsn1`, served at https://stonestory.survos.com. The PHP buildpack uses `Procfile`, `nginx.conf`, and `app.json`; predeploy compiles assets and applies migrations. Set `DEFAULT_URI` for the public hostname and `SEARCH_INDEX_PREFIX` to isolate the search index. Mount `var/elastic-spool` persistently and run one worker to flush search updates.
+The Dokku app is `memorialatlas` on `fsn1`, served at https://memorialatlas.org.
+The multistage `Dockerfile` builds OpenCV 5.1.0 and the pinned PHP extension into
+FrankenPHP with PHP 8.5. Caddy listens on port 5000 behind Dokku's TLS proxy.
+`bin/predeploy` verifies the extension, compiles assets, applies migrations,
+creates Messenger transports and rebuilds search indexes.
+
+Run `web=1 worker=1 processing=1`: `worker` flushes the Elasticsearch spool;
+`processing` consumes the existing Doctrine-backed processing queue, including
+perspective correction and Mistral OCR. Set Dokku's restart policy to `always`
+so a consumer restarts after reaching its memory limit. No correction-only queue
+is required. Failed messages remain in the `failed` transport for inspection.
+
+Mount `/var/lib/dokku/data/storage/memorialatlas/media` at `/app/var/media`
+for web, processing and one-off commands. Keep the existing persistent
+`var/elastic-spool` mount and Elasticsearch CA certificate mount. Back up media
+alongside PostgreSQL; a Docker image or database backup alone does not contain
+correction files. Local sample corrections are not copied by deployment.
+
+Set `DEFAULT_URI=https://memorialatlas.org`, `APP_ENV=prod`, `APP_DEBUG=0`,
+`MESSENGER_TRANSPORT_DSN=doctrine://default`, and a signed `UX_IMAGE_DSN` for
+`imagor.survos.com`. Keep Mistral and Imagor credentials in Dokku config.
+`SYMFONY_TRUSTED_PROXIES` must cover the private Dokku proxy network so generated
+media URLs retain HTTPS. The application uses classic FrankenPHP request mode.
+
+Rehearse with `docker build --load -t memorialatlas:opencv .` and
+`docker run --rm memorialatlas:opencv php tests/perspective.php` before switching
+builders. Configure Dokku's Dockerfile builder and port mappings
+`http:80:5000 https:443:5000`.
 
 Before every deployment, run `symfony console doctrine:schema:validate` against local PostgreSQL. Push the tested commit to the repository, then to Dokku. Load demo data separately after migrations and run `elastic:index:rebuild images --keep-old`. Admin sign-in remains disabled until `ADMIN_PASSWORD_HASH` is configured.
 
@@ -671,23 +698,9 @@ cemetery association. Automatic perspective correction requires a detector or
 reviewed points; the current four-corner implementation does not detect a marker
 from a photo alone. Preserve an uncorrected frame when selection needs review.
 
-The production readiness check on 2026-11-14 found these remaining requirements:
-
-- Package the OpenCV 5 PHP extension and its native libraries in the production
-  runtime. The current MemorialAtlas PHP-buildpack runtime has no OpenCV.
-  The `opencv-php` repository has a multistage FrankenPHP build example; test an
-  application runtime built for the server architecture before switching builders.
-- Run a Messenger consumer for the existing `processing` transport. The current
-  `worker` process only flushes the Elasticsearch spool.
-- Persist original and derivative media across releases. Production currently
-  mounts the search spool, but not `var/media`; local sample corrections are not
-  automatically published by a Git deployment.
-- Implement the authenticated upload/status endpoint with file validation,
-  retry-safe identity and durable queue dispatch. There is no photo-upload route
-  in the current application.
-- Rehearse upload, correction, OCR, retry and retrieval on the production runtime,
-  including a restart to verify durable media. Check the original and derivative
-  checksums and their Stone-contract frame references.
-
-These are deployment and ingestion follow-ups, not a claim that the upload API
-or automatic marker detection is already available.
+The production runtime now packages OpenCV, a processing consumer and persistent
+media as described under Standalone deployment. The remaining ingestion work is
+an authenticated upload/status endpoint with file validation, retry-safe identity
+and durable queue dispatch. Rehearse upload, EXIF extraction, cemetery review,
+correction, OCR, retry and retrieval when that endpoint is added. Automatic marker
+detection and automatic cemetery assignment are not implemented.

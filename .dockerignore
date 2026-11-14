@@ -1,0 +1,12 @@
+.git
+.env.local
+.env.local.php
+.env.*.local
+vendor/
+var/
+work/
+public/assets/
+public/bundles/
+assets/vendor/
+.symfony.local.yaml
+config/secrets/**/*.decrypt.private.php
