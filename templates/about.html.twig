@@ -52,7 +52,19 @@
 })();
 </script>
 <p>MemorialAtlas works from photographs close enough to read an inscription. From the air the markers are a few pixels across, so the spheres add nothing to OCR, grouping or extraction.</p>
-<p>The A1 writes no GPS into its photographs or videos. The flight logs we copied from the visor are encrypted, so we have not read the flight path from them yet. Until we do, each sphere is placed at the nearest phone photograph taken around the same time, and its position on the map is an estimate.</p>
+<h3>Why we did not go further</h3>
+<p>To link a sphere to the markers it shows, we need to know where the drone was. We could not get that position.</p>
+<ul>
+<li>The A1 writes no GPS into its photographs. Its videos carry a metadata block, but it holds only timestamps.</li>
+<li>The goggles keep a log of the flight (FLY0045, 12:46 to 13:08). The log files are encrypted. They are diagnostic logs for the manufacturer's support team, and Antigravity Studio does not open them.</li>
+<li>The phone app can also record a flight, but it was not running while we flew.</li>
+</ul>
+<p>So each sphere on the map is placed at the nearest phone photograph taken around the same time, and its position is an estimate.</p>
+<h3>A first test with Gemini</h3>
+<p>We still tried one step. The A1's lower lens looks straight down, so we turned one aerial sphere into a flat top-down image of the churchyard. We then asked Google Gemini (Flash-Lite, through Symfony AI) to draw a box around every grave marker. The <code>app:aerial-markers</code> command does this.</p>
+<figure style="margin:28px 0;max-width:560px"><img src="/images/aerial-markers-gemini.jpg" width="1000" height="1341" alt="Top-down drone view of the St. Peter's churchyard, with a red box drawn by Gemini around each detected grave marker" style="width:100%;height:auto;border-radius:5px"><figcaption class="muted" style="font-size:.8rem;margin-top:8px">Gemini's boxes on the top-down view of sphere 3, 12:52, 13 November 2026.</figcaption></figure>
+<p>Gemini found 84 of about 100 visible markers in 14 seconds. Every box is on a real stone. It missed small flat markers and joined a few neighbouring stones into one box. Its labels for the type of marker changed from one run to the next, so only the boxes are reliable.</p>
+<p>This is a useful map of the layout, but without the drone's position and height we cannot turn the boxes into coordinates. That is where we stopped.</p>
 <p>The viewer shows the camera's raw dual-fisheye images without stitching. The aerial spheres look right; the ground spheres show a seam where the two lenses meet. Proper stitching needs the manufacturer's desktop software.</p>
 <p>A sphere shows how the markers sit in relation to each other, the church and the road, which close-ups cannot. With positions fixed and stitched images, the spheres could link to the marker records they show.</p>
 <p><a href="https://github.com/survos-sites/MemorialAtlas">Source code and setup instructions</a> · <a href="{{ path('item_search') }}">Search the collection</a></p>
