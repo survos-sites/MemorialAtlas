@@ -25,6 +25,18 @@ class Cemetery
     #[Groups(['gravestone:read'])]
     public ?string $locality = null;
 
+    #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: -90, max: 90)]
+    public ?float $latitude = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\Range(min: -180, max: 180)]
+    public ?float $longitude = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\Positive]
+    public ?int $matchingRadiusMeters = null;
+
     public function __toString(): string
     {
         return $this->name.($this->locality !== null ? ' ('.$this->locality.')' : '');

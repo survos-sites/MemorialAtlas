@@ -22,6 +22,7 @@ final class DashboardController extends AbstractDashboardController
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linkToRoute('Search photographs', 'fa fa-search', 'image_search');
+        yield MenuItem::linkToRoute('Upload photograph', 'fa fa-upload', 'photo_upload_form');
         yield MenuItem::linkToRoute('Home', 'fa fa-home', 'home');
         yield MenuItem::linkTo(CemeteryCrudController::class, 'Cemeteries', 'fa fa-map-marker-alt');
         yield MenuItem::linkTo(ItemCrudController::class, 'Memorial records', 'fa fa-landmark');

@@ -699,25 +699,50 @@ used by the Stone contract. Record visible shapes as reviewable observations;
 do not turn a symbol into an assertion about the person's religion, occupation,
 or affiliations. Store the model and image reference with each observation.
 
-### Server-side photo ingestion and deployment
+### Photo upload endpoint
 
-The intended ingestion API accepts an authenticated photo upload, optional
-cemetery selection, and optional correction points. It preserves the original,
-creates a durable capture record, and returns `202 Accepted` with a status URL.
-The existing `ProcessItem` handler then extracts EXIF, prepares the image, runs
-hosted Mistral OCR, saves reviewable evidence, and updates search. No separate
-correction queue or workstation processing dependency is needed.
+Sign in as an administrator and open `/admin/photos/upload` (also in the admin
+menu). Submit a JPEG, PNG or WebP, at most 30 MB and 60 megapixels. The endpoint
+preserves the original bytes in persistent media storage, extracts original EXIF
+GPS and orientation, creates an item and photograph, and queues the existing
+`ProcessItem` message. It returns `202 Accepted` with a `Location` header and
+`statusUrl`; `GET /admin/photos/{imageId}/status` reports processing state.
+Both routes require the administrator session. POST requires the `photo-upload`
+CSRF token from the form. This is not an anonymous upload API.
 
-GPS records the camera position. Use it to suggest a cemetery from known
-boundaries or nearby candidates; do not silently assign the nearest cemetery
-when the location is missing or ambiguous. Retain the supplied or reviewed
-cemetery association. Automatic perspective correction requires a detector or
-reviewed points; the current four-corner implementation does not detect a marker
-from a photo alone. Preserve an uncorrected frame when selection needs review.
+Multipart fields:
 
-The production runtime now packages OpenCV, a processing consumer and persistent
-media as described under Standalone deployment. The remaining ingestion work is
-an authenticated upload/status endpoint with file validation, retry-safe identity
-and durable queue dispatch. Rehearse upload, EXIF extraction, cemetery review,
-correction, OCR, retry and retrieval when that endpoint is added. Automatic marker
-detection and automatic cemetery assignment are not implemented.
+- `photo`: the file, required.
+- `token`: the form CSRF token, required.
+- `cemeteryId`: optional existing cemetery ID. Omit it for GPS matching.
+- `correction`: optional boolean (`1` or `0`), defaults to enabled.
+- `corners[0][0]` through `corners[3][1]`: optional normalized x/y pairs in
+  top-left, top-right, bottom-right, bottom-left order. Coordinates refer to the
+  autorotated detail image, as in the correction editor, not the raw sensor frame.
+
+Cemetery administration has optional latitude, longitude and matching radius
+in meters. All three are needed for automatic matching. Exactly one area must
+contain the photo's GPS position; absent GPS, no match or overlapping areas return
+422 and require an explicit cemetery selection. These circles are configured
+matching areas, not surveyed cemetery boundaries. GPS describes the camera
+position, not a verified burial location. The selected or matched association
+is retained with its method.
+
+Original file hashes prevent repeat uploads from creating another record or
+message: duplicates return 409 with a link to the existing item. The record and
+Doctrine processing queue insert share a PostgreSQL transaction. Validation
+errors create neither. Stored bytes remain available if processing fails; use
+the existing processing retry facilities rather than uploading again.
+
+The handler publishes the original to S3, prepares image metadata, runs correction
+when points are provided, and calls hosted Mistral OCR. Corrected frames and OCR
+retain the existing Stone contract structure. Without points, OCR reads the
+original; after processing, use the correction editor to select the whole marker
+and read its corrected frame. Automatic marker detection is still future work.
+No new queue or workstation processing dependency is needed.
+
+The production image includes PHP EXIF and OpenCV. The existing processing
+consumer shares persistent media storage with the web process. The outer Dokku
+Nginx request limit must permit 32 MB, matching Caddy/PHP. Run
+`php tests/photo-upload.php` against the migrated test database to check intake,
+EXIF, cemetery matching, authentication, CSRF, dispatch and duplicate handling.

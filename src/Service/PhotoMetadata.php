@@ -54,13 +54,8 @@ final readonly class PhotoMetadata
         if (!isset($media->imageMetadata['exif'])) {
             $media->imageMetadata['exif'] = self::readExif($path);
         }
-        $exif = $media->imageMetadata['imagor']['exif'] ?? [];
-        $media->latitude = self::coordinate(isset($exif['GPSLatitude']) ? explode(' ', $exif['GPSLatitude']) : [], $exif['GPSLatitudeRef'] ?? '', 90);
-        $media->longitude = self::coordinate(isset($exif['GPSLongitude']) ? explode(' ', $exif['GPSLongitude']) : [], $exif['GPSLongitudeRef'] ?? '', 180);
-        $media->imageMetadata['capture'] = [
-            'dateTimeOriginal' => $exif['DateTimeOriginal'] ?? null,
-            'coordinateSource' => $media->latitude !== null && $media->longitude !== null ? 'Imagor EXIF GPS (camera position)' : null,
-        ];
+        CaptureMetadata::apply($media, $media->imageMetadata['imagor']['exif'] ?? [], 'Imagor EXIF GPS');
+        CaptureMetadata::apply($media, $media->imageMetadata['exif'], 'Original EXIF GPS');
         // The large preset keeps weathered lettering legible; the 512px observe preset is too small here.
         $media->imageUrl = $this->imagor->preset($media->sourceUrl, 'large');
     }

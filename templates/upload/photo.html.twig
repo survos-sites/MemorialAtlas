@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+{% block title %}Upload photograph · MemorialAtlas{% endblock %}
+{% block body %}
+<h1>Upload a marker photograph</h1>
+<p>The original is preserved. GPS records the camera position. Processing runs in the background using Mistral OCR.</p>
+<form action="{{ path('photo_upload') }}" method="post" enctype="multipart/form-data" data-controller="photo-upload" data-action="submit->photo-upload#submit">
+    <input type="hidden" name="token" value="{{ csrf_token('photo-upload') }}">
+    <label>Photograph <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required></label>
+    <p class="muted">JPEG, PNG or WebP, up to 30 MB and 60 megapixels. Export HEIC as JPEG with location metadata first.</p>
+    <label>Cemetery <select name="cemeteryId">
+        <option value="">Match GPS to a configured cemetery area</option>
+        {% for cemetery in cemeteries %}<option value="{{ cemetery.id }}">{{ cemetery }}</option>{% endfor %}
+    </select></label>
+    <p class="muted">Select a cemetery if the photo has no GPS or the matching areas overlap.</p>
+    <label>Perspective correction <select name="correction"><option value="1">Enabled</option><option value="0">Disabled</option></select></label>
+    <p class="muted">Without corner points, OCR reads the original photograph. After processing, open the correction editor to select the marker’s four corners and read the corrected image.</p>
+    <button type="submit" data-photo-upload-target="button">Upload and process</button>
+    <p role="status" data-photo-upload-target="status"></p>
+    <p><a hidden data-photo-upload-target="record">View uploaded record</a></p>
+</form>
+{% endblock %}

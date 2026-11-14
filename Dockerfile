@@ -29,7 +29,7 @@ RUN git init /src/ext && cd /src/ext \
 
 FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-php${PHP_VERSION} AS base
 WORKDIR /app
-RUN install-php-extensions gd intl pcntl pdo_pgsql pdo_sqlite zip
+RUN install-php-extensions exif gd intl pcntl pdo_pgsql pdo_sqlite zip
 COPY --from=opencv /opt/opencv/lib/ /opt/opencv/lib/
 COPY --from=opencv /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
 RUN echo /opt/opencv/lib > /etc/ld.so.conf.d/opencv.conf && ldconfig && docker-php-ext-enable opencv && php --ri opencv

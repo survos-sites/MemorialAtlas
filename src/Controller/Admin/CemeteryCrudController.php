@@ -6,7 +6,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Cemetery;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Field\{IdField, TextField};
+use EasyCorp\Bundle\EasyAdminBundle\Field\{IdField, TextField, NumberField, IntegerField};
 
 final class CemeteryCrudController extends AbstractCrudController
 {
@@ -17,5 +17,8 @@ final class CemeteryCrudController extends AbstractCrudController
         yield IdField::new('id')->hideOnForm();
         yield TextField::new('name');
         yield TextField::new('locality')->setRequired(false);
+        yield NumberField::new('latitude')->setNumDecimals(7)->setRequired(false);
+        yield NumberField::new('longitude')->setNumDecimals(7)->setRequired(false);
+        yield IntegerField::new('matchingRadiusMeters')->setRequired(false)->setHelp('Optional GPS matching area around this center, in meters. Set all three fields to enable matching. Overlapping matches require an explicit cemetery selection.');
     }
 }
