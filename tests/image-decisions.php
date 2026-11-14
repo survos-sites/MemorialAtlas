@@ -108,7 +108,7 @@ $catalogHttp=new MockHttpClient(static function ($method,$url,$options) use (&$c
 });
 $catalogPlatform=(new App\Service\RustoMistralPlatform($catalogHttp,'https://local-mistral.test/','test-key','custom-text',$services->get('event_dispatcher')))->create();
 $locator=new Symfony\Component\DependencyInjection\ServiceLocator(['catalog'=>static fn()=>$catalogPlatform]);
-$pipeline=new App\Service\ItemProcessor($em,$services->get(App\Service\PhotoMetadata::class), $services->get(App\Service\ImageCorrection::class),
+$pipeline=new App\Service\ItemProcessor($em,$services->get(App\Service\PhotoMetadata::class), $services->get(App\Service\ImageCorrection::class), $services->get(App\Service\ImageCleaner::class),
     $services->get(App\Workflow\ItemWorkflow::class),$workflow,$locator,
     'nonexistent-vision','mistral-ocr-latest',false,'unused-vision-model',
     'unused-ocr','catalog','custom-text',true);

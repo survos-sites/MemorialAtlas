@@ -29,6 +29,7 @@ final readonly class ImageDocument
         #[Field(facet: true, widget: Widget::Select)] public string $ocrUsability,
         #[Field(facet: true, widget: Widget::Select)] public string $reviewStatus,
         #[Field] public ?string $thumbnailUrl = null,
+        #[Field] public bool $aiCleaned = false,
     ) {}
 
     public static function fromImage(Image $image): self

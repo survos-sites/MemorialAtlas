@@ -24,6 +24,7 @@ final class ImageExtension extends AbstractExtension
             new TwigFunction('memorial_correction', $this->correction(...)),
             new TwigFunction('memorial_thumbnail', $this->images->thumbnail(...)),
             new TwigFunction('memorial_detail', $this->images->detail(...)),
+            new TwigFunction('memorial_cleaned', fn (\App\Entity\Image $image, string $preset = 'detail') => $this->images->cleaned($image, \App\Image\ImagePreset::from($preset))),
             new TwigFunction('memorial_image_origin', $this->images->origin(...)),
         ];
     }

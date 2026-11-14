@@ -2,7 +2,7 @@
     {% if hit.imageId %}<a href="{{ path('item_show', {id:hit.id}) }}"><img loading="{{ loop.index <= 3 ? 'eager' : 'lazy' }}"{% if loop.first %} fetchpriority="high"{% endif %} width="400" height="400" src="{{ hit.thumbnailUrl ?? path('media_file', {id:hit.imageId}) }}" alt="{{ hit.title }}"></a>{% endif %}
     <div class="body">
         <span class="badge">{{ hit.imageCount }} {{ hit.imageCount == 1 ? 'photo' : 'photos' }}</span>
-        <span class="badge">{{ hit.reviewStatus == 'review' ? 'Ready to review' : hit.reviewStatus }}</span>
+        <span class="badge">{{ hit.reviewStatus == 'review' ? 'Ready to review' : hit.reviewStatus }}</span>{% if hit.aiCleaned ?? false %} <span class="badge" title="Straightened and relit by an image model for display. The original photograph is the evidence.">AI-cleaned view</span>{% endif %}
         {% if hit.markerOrientation != 'Not assessed' %}<p><span class="badge">{{ hit.markerOrientation }}</span> {{ hit.namedPeopleCount }} named · {{ hit.recordedDeathCount }} with unambiguous proposed death dates</p>{% endif %}
         {% if hit.familyName %}<p class="muted">{{ hit.familyName|join(' · ') }}</p>{% endif %}
         <h3><a href="{{ path('item_show', {id:hit.id}) }}">{{ hit.title }}</a></h3>

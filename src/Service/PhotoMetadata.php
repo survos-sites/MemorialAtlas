@@ -65,7 +65,7 @@ final readonly class PhotoMetadata
         $media->imageUrl = $this->imagor->preset($media->sourceUrl, 'large');
     }
 
-    private function upload(string $path, string $key, string $mimeType): string
+    public function upload(string $path, string $key, string $mimeType): string
     {
         $s3 = new S3Client(['endpoint' => $this->endpoint, 'region' => 'fsn1', 'pathStyleEndpoint' => true, 'accessKeyId' => $this->accessKey, 'accessKeySecret' => $this->secret]);
         $stream = fopen($path, 'rb');

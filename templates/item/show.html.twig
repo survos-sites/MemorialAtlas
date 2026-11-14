@@ -12,7 +12,13 @@
 {% set images = item.media|filter(m => m.kind == 'image') %}
 <section class="item-overview">
     {% if images|length %}{% set photo = images|first %}
-        <figure class="item-photo"><a href="{{ path('media_file', {id:photo.id}) }}"><img src="{{ photoPreload }}" loading="eager" fetchpriority="high" alt="{{ item.title }}"></a><figcaption>Original photograph · {{ photo.originalName }} · <a href="{{ path('media_download', {id:photo.id}) }}">Download full size</a></figcaption></figure>
+        {% set cleaned = memorial_cleaned(photo) %}
+        <div>
+        {% if cleaned %}{% set view = photo.imageMetadata.cleanedView %}
+        <figure class="item-photo item-photo-ai"><img src="{{ cleaned }}" loading="eager" fetchpriority="high" width="{{ view.width }}" height="{{ view.height }}" alt="AI-cleaned view of {{ item.title }}"><figcaption><span class="badge">AI-cleaned view</span> Straightened and relit by {{ view.model }} after Jev judged that the photo was taken at an angle. For display only: an image model can change letters. The original photograph below is the evidence.</figcaption></figure>
+        {% endif %}
+        <figure class="item-photo"><a href="{{ path('media_file', {id:photo.id}) }}"><img src="{{ memorial_detail(photo) }}" {% if cleaned %}loading="lazy"{% else %}loading="eager" fetchpriority="high"{% endif %} alt="{{ item.title }}"></a><figcaption>Original photograph · {{ photo.originalName }} · <a href="{{ path('media_download', {id:photo.id}) }}">Download full size</a></figcaption></figure>
+        </div>
     {% endif %}
     <div class="item-description">
         <span class="badge">{{ item.marking }}</span><h1>{{ item.title }}</h1>

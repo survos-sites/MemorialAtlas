@@ -31,6 +31,16 @@ final readonly class ImageDelivery
         return $this->generate($source, $preset);
     }
 
+    /** The AI-cleaned display copy, or null when the photo has none (or dev lacks the local copy). */
+    public function cleaned(Image $image, ImagePreset $preset): ?string
+    {
+        $view = $image->imageMetadata[ImageCleaner::KEY] ?? null;
+        if (!is_array($view)) return null;
+        if ($this->environment === 'prod') return $this->generate(substr($view['sourceUrl'], strlen('s3://')), $preset);
+
+        return is_file($this->mediaDirectory.'/'.$view['storagePath']) ? $this->generate($view['storagePath'], $preset) : null;
+    }
+
     public function storedDetail(string $storagePath, string $publicUrl): string
     {
         return $this->generate($this->environment === 'prod' ? $publicUrl : $storagePath, ImagePreset::Detail);

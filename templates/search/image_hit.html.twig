@@ -1,7 +1,7 @@
 <article class="card">
     <a href="{{ path('item_show', {id:hit.itemId}) }}"><img loading="{{ loop.index <= 3 ? 'eager' : 'lazy' }}" src="{{ hit.thumbnailUrl ?? path('media_file', {id:hit.id}) }}" alt="{{ hit.title }}"></a>
     <div class="body">
-        <span class="badge">{{ hit.reviewStatus == 'review' ? 'Ready to review' : hit.reviewStatus }}</span>
+        <span class="badge">{{ hit.reviewStatus == 'review' ? 'Ready to review' : hit.reviewStatus }}</span>{% if hit.aiCleaned ?? false %} <span class="badge" title="Straightened and relit by an image model for display. The original photograph is the evidence.">AI-cleaned view</span>{% endif %}
         <p class="muted">{{ hit.source }}</p>
         <h3><a href="{{ path('item_show', {id:hit.itemId}) }}">{{ hit.title }}</a></h3>
         {% if hit.cemetery != 'Unassigned' %}<p>{{ hit.cemetery }}</p>{% endif %}

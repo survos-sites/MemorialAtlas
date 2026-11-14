@@ -21,6 +21,7 @@ final readonly class ItemProcessor
         private EntityManagerInterface $em,
         private PhotoMetadata $metadata,
         private ImageCorrection $corrections,
+        private ImageCleaner $cleaner,
         private ItemWorkflow $items,
         private MediaWorkflow $mediaWorkflow,
         #[AutowireLocator(['mistral_rusto' => new Autowire(service: 'ai.platform.mistral_rusto'), 'mistral' => new Autowire(service: 'ai.platform.mistral'), 'openai' => new Autowire(service: 'ai.platform.openai'), 'ollama' => new Autowire(service: 'ai.platform.ollama')])] private ContainerInterface $platforms,
@@ -98,6 +99,15 @@ final readonly class ItemProcessor
                     $media->aiResults['observe'] = ['inputHash'=>$observeHash, 'provider' => $this->visionPlatform, 'model' => $this->visionModel, 'prompt' => $prompt, 'raw' => $result->getRawResult()?->getData()];
                     $this->em->flush();
                 }
+                try {
+                    $this->cleaner->clean($media, $progress);
+                    unset($media->aiResults['cleanedViewError']);
+                } catch (\Throwable $error) {
+                    // The cleaned view is decoration; a failure must not block the record.
+                    $media->aiResults['cleanedViewError'] = mb_substr($error->getMessage(), 0, 500);
+                    $progress('Cleaned view skipped: '.$error->getMessage());
+                }
+                $this->em->flush();
                 $this->mediaWorkflow->apply($media, MediaWorkflow::FINISH);
                 $this->em->flush();
             }

@@ -35,6 +35,7 @@ final readonly class ItemDocument
         #[Field(searchable: true, facet: true, widget: Widget::Select)] public array $epitaphThemes = [],
         #[Field(searchable: true)] public ?string $epitaph = null,
         #[Field(searchable: true, facet: true, widget: Widget::Select)] public array $familyName = [],
+        #[Field] public bool $aiCleaned = false,
     ) {}
 
     public static function fromItem(Item $item): self

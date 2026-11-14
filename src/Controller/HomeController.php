@@ -66,7 +66,7 @@ final class HomeController extends AbstractController
         $photoPreload = null;
         foreach ($item->media as $media) {
             if ($media instanceof Image) {
-                $photoPreload = $images->detail($media);
+                $photoPreload = $images->cleaned($media, \App\Image\ImagePreset::Detail) ?? $images->detail($media);
                 break;
             }
         }

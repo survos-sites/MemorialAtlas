@@ -21,7 +21,9 @@ final class ItemSearch extends AbstractFieldSearch implements HitTemplateSearchI
         $document = get_object_vars(ItemDocument::fromItem($item));
         foreach ($item->media as $media) {
             if ($media instanceof Image) {
-                $document['thumbnailUrl'] = $this->imagor->thumbnail($media);
+                $cleaned = $this->imagor->cleaned($media, \App\Image\ImagePreset::Thumb);
+                $document['thumbnailUrl'] = $cleaned ?? $this->imagor->thumbnail($media);
+                $document['aiCleaned'] = $cleaned !== null;
                 break;
             }
         }
