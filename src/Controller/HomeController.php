@@ -16,12 +16,12 @@ final class HomeController extends AbstractController
     public function __construct(private readonly \App\Service\ProcessingStatus $processingStatus) {}
 
     #[Route('/', name: 'home')]
-    public function index(EntityManagerInterface $em): Response
+    public function index(EntityManagerInterface $em, #[\Symfony\Component\DependencyInjection\Attribute\Autowire('%env(HOME_HERO_SHA256)%')] string $heroSha256): Response
     {
         $db = $em->getConnection();
-        // Prefer a gravestone that has an AI-cleaned view, so the page can show the original next to it.
+        // The chosen photo when it is loaded and cleaned; otherwise a gravestone with an AI-cleaned view.
         $heroId = $db->fetchOne("SELECT m.id FROM media m JOIN item i ON i.id = m.item_id WHERE i.record_type = 'gravestone' AND m.kind = 'image'
-            ORDER BY (m.image_metadata::jsonb -> 'cleanedView' IS NOT NULL) DESC, (i.marking = 'review') DESC, m.id DESC LIMIT 1");
+            ORDER BY (m.sha256 = :sha AND m.image_metadata::jsonb -> 'cleanedView' IS NOT NULL) DESC, (m.image_metadata::jsonb -> 'cleanedView' IS NOT NULL) DESC, (i.marking = 'review') DESC, m.id DESC LIMIT 1", ['sha' => $heroSha256]);
 
         return $this->render('home.html.twig', [
             'pendingCount' => $this->processingStatus->pendingCount(),
