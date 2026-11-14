@@ -20,12 +20,14 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 final class Remembrance
 {
     public const RESULT = 'remember';
-    public const VERSION = 'remember-v1';
+    public const VERSION = 'remember-v2';
 
     private const PROMPT = <<<'TXT'
         Write one sentence that remembers the people on this grave marker, in the style of "Dan Brown was a soldier, a devoted father and a football fan."
         Use only the supplied evidence: words carved for a person ("Beloved husband", "Captain, U.S. Army Reserves"), symbols with their common meaning, and scripture.
+        Include every symbol whose meaning says something about the person: a school or team, a trade, a hobby, service. Leave out purely religious or decorative symbols unless nothing else is carved.
         A symbol's meaning is a likely reading, not a fact: hedge it ("it seems", "likely") unless the carved words confirm it.
+        people[].inscription is the checked reading of each person's words; inscriptionText is raw OCR and can be wrong. When they differ, use people[].inscription.
         Do not repeat dates. Do not add anything the evidence does not show. Do not praise.
         If the evidence shows only names and dates, return an empty line.
         In basis, list the evidence each claim rests on, quoting the carved words or naming the symbol.
