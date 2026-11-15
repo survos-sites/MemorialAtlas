@@ -41,15 +41,13 @@
 
 <h2 id="how">What happens to each photo</h2>
 <ol class="flow">
-    <li><strong>Read the inscription.</strong><p>Mistral OCR reads the text on the stone.</p></li>
-    <li><strong>Decide what the photo needs.</strong><p>Jev, a TypeSafe decision model, answers fixed questions with probabilities: is this a gravestone, is the OCR usable, how many people does it name, was the camera at an angle. The answers choose the next steps, so a clear photo costs less than a hard one.</p></li>
-    <li><strong>Look at the stone.</strong><p>When the OCR is weak, Mistral Medium describes the photo itself: the layout, the symbols, the letters OCR missed.</p></li>
-    <li><strong>Propose a record.</strong><p>Mistral turns the evidence into structured data, validated into a PHP object: title, people with birth and death dates, and a list of what is uncertain. A shared surname is not proof of family, and a name on a stone is not proof of burial.</p></li>
-    <li><strong>Clean up angled photos.</strong><p>If Jev judges the photo angled, Gemini makes a straightened, evenly lit copy for display. An image model can change letters, so the copy is labelled and never read by OCR or extraction.</p></li>
-    <li><strong>Search it, or ask about it.</strong><p>Records go into Elasticsearch for search, a public read-only API, and an MCP server, so an AI assistant can search the collection and quote a record with its open questions.</p></li>
+    <li><strong>Read.</strong><p>Mistral OCR reads the text on the stone.</p></li>
+    <li><strong>Notice.</strong><p>Jev, a TypeSafe decision model, answers fixed questions with probabilities: is this a gravestone, is the OCR usable, does the photo need alignment, is there a carved symbol or a verse. The answers choose the next steps, so a clear photo costs less than a hard one. When Jev sees a symbol, Mistral names it: a polo player, a caduceus, lacrosse sticks, scales of justice. When the photo needs alignment, Gemini makes a straightened copy for display only, because an image model can change letters.</p></li>
+    <li><strong>Remember.</strong><p>Mistral proposes the record and one line about the stone, only from what is carved: "This stone remembers Fred Wesley, a Colonel and Silver Star recipient." A vision model on Hugging Face then checks every reading against the photo and lists the ones it does not support, for a person to review.</p></li>
+    <li><strong>Search it, or ask about it.</strong><p>Records go into Elasticsearch, a public read-only API and an MCP server. The <a href="{{ path('chat') }}">Ask page</a> answers questions such as "which stones show hobbies?" with the same tools, in-process.</p></li>
 </ol>
 
 <h2>Built with Symfony AI and MCP</h2>
-<p>Each model is a Symfony AI platform bridge (Mistral, Gemini, TypeSafe), so switching a provider is a configuration change. Structured output maps model answers to typed PHP classes. A Messenger worker runs the pipeline, and every AI answer is stored with its model, prompt and input hash, so a record shows where each reading came from. The MCP server uses <code>symfony/mcp-bundle</code> and the PHP MCP SDK, with tools declared by attributes. <a href="{{ path('about') }}">More about the technology →</a></p>
+<p>Each model is a Symfony AI platform bridge (Mistral, Gemini, TypeSafe, Hugging Face), so switching a provider is a configuration change. Structured output maps model answers to typed PHP classes. A Messenger worker runs the pipeline, and every AI answer is stored with its model, prompt and input hash, so a record shows where each reading came from. The MCP server uses <code>symfony/mcp-bundle</code> and the PHP MCP SDK, with tools declared by attributes. <a href="{{ path('about') }}">More about the technology →</a></p>
 </section>
 {% endblock %}
