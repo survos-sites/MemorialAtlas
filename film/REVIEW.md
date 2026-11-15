@@ -1,29 +1,34 @@
 # Review
 
-Checked against SPEC.md with `hyperframes check` (no errors) and snapshots at 1.5, 4, 7, 10, 10.5, 13,
-18.5, 21, 26.5, 33, 37, 47.5, 49.6, 50.2, 53.2, 57, 63.2, 66, 70.5, 75, 80.5 and 88.5 s.
+Checked with `hyperframes check` (passes) and stills across every scene; the final render is
+`renders/memorialatlas-90s-v8.mp4` (90 s, 1080p, −13.2 LUFS, peak −1.4 dBFS).
 
-Fixed after the first pass:
-
-- Hard photos and the cleanup pair rendered without images (zero-size wrappers).
-- The montage ring was a thin strip; cards are now 580 x 436 on a 1300 px radius, 13 photos.
-- Decide gates wrapped each probability under its bar; bars are now 190 px.
-- Captions on screen shorter than their reading time; copy shortened and Decide retimed.
-- Lamp labels under the 28 px floor; now 30 px.
-- A 3.6 s dead stretch in the cleanup pair; the OCR boxes now draw on the phone photo there.
-- "MEMORIALATLAS" in caps read as one word; the name is now set in its own mixed case.
-- Photos with the photographer's shadow removed from the montage, the hard photos and the race
-  (Kovach, Mello, Wiersberg, Mulcahy, Cameron and others). Trinkle is cropped to its right side.
+Structure: hook · montage · hard photos · reveal (Read · Notice · Remember) · 1 Read · 2 Notice
+(decisions, a short alignment beat, carved symbols) · 3 Remember (one line, then the chat) · end card.
 
 Facts on screen and their source:
 
-- OCR boxes and texts: Mistral OCR result for Hamilton (media 84), pages[0].blocks, frame 1600 x 901.
-- Gate values: Jev answers for Hamilton (gravestone 0.86, subject 0.84, damaged 0.75, angled 0.89).
-- Race routes: Trinkle text route + cleaned, Goodenough vision + kept (angled 0.69), Beglis vision + cleaned.
-- Tally: 54 processed photos at render time, 8 text route, 46 vision route, 39 cleaned views.
-- MCP lines: real search_memorials("hamilton") and get_memorial(84) output.
+- OCR boxes: Mistral OCR blocks for the Hamilton photo.
+- Gate values: Jev answers for the Hamilton photo (gravestone 0.86, subject 0.84, damaged 0.75,
+  needs alignment 0.89).
+- Montage: 172 photos and 39 minutes come from the capture times (6 minutes on 11 November,
+  33 on 13 November).
+- Symbols: names stored by the symbol step (Mistral), each checked against the photo:
+  polo player (Burdick), caduceus and Ohio State logo (Geneva), lacrosse sticks (Warzinski),
+  scales of justice (Renzy), strawberry (Jarrett).
+- Remember line: the stored `aiResults.remember` line for the White and Goodenough stone, after a
+  logged human correction of the names (WHITE over James Felix; GOODENOUGH over Joan Frances White
+  and Fred Wesley). Qwen on Hugging Face confirmed the reading against the photo.
+- Chat: real tool calls and sentences from the Ask page answering "Which stones show hobbies or
+  interests?".
 
-Sound: 59 bundled effects (no credits needed), each placed so its measured peak lands one frame after
-its action; no music bed (HeyGen not signed in). Measured, not heard.
+Corrections made on the way, all logged on the records:
 
-Open: re-render the tally when processing finishes; add a music bed after `npx hyperframes auth login`.
+- Geneva: OCR read "PHYSICIAN, FAMILY, PHYSICIST"; the stone reads "PHYSICIAN, FATHER, HUSBAND".
+- Violet Clare Fischer: the symbol step read "Violet" as a violin; removed.
+- White and Goodenough: names were merged into "James Felix Goodenough White".
+
+Rule: text on screen is copied from stored pipeline output and checked against the photo first.
+
+Sound: 60-odd bundled effects plus a HeyGen catalog music bed, placed so its own fade-out lands on
+the end card. Measured, not heard.
