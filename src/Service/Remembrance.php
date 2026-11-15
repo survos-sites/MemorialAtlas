@@ -14,16 +14,18 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
- * One line that remembers the people on a stone, from what is carved on it: roles, service, symbols, scripture.
- * "Bernard Thomas Renzy was a soldier and, it seems, a lawyer." Each claim keeps the evidence it comes from.
+ * One line about a stone, from what is carved on it: who it names, their roles and service, symbols, scripture.
+ * MemorialAtlas records stones; people are what a stone names (StoneStory builds person records on top).
+ * "This stone remembers Fred Wesley, a Colonel and Silver Star recipient." Each claim keeps its evidence.
  */
 final class Remembrance
 {
     public const RESULT = 'remember';
-    public const VERSION = 'remember-v2';
+    public const VERSION = 'remember-v3';
 
     private const PROMPT = <<<'TXT'
-        Write one sentence that remembers the people on this grave marker, in the style of "Dan Brown was a soldier, a devoted father and a football fan."
+        Write one sentence about this grave marker. The stone is the subject; the people are those it names.
+        Use the style "This stone remembers Dan Brown, a soldier, a devoted father and a football fan." For a shared stone: "This stone remembers Ann and Joe Smith, ..."
         Use only the supplied evidence: words carved for a person ("Beloved husband", "Captain, U.S. Army Reserves"), symbols with their common meaning, and scripture.
         Include every symbol whose meaning says something about the person: a school or team, a trade, a hobby, service. Leave out purely religious or decorative symbols unless nothing else is carved.
         A symbol's meaning is a likely reading, not a fact: hedge it ("it seems", "likely") unless the carved words confirm it.

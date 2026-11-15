@@ -28,7 +28,7 @@ final class DenseSummarizer
     private const PROMPT = <<<'TXT'
         You check machine readings of a grave marker against its photos, then write a dense summary.
         The evidence holds what the pipeline stored: extracted people, raw OCR, a vision description, symbols, scripture and a one-line remembrance. Any of it can be wrong.
-        Look at the photos. Write one dense paragraph (at most 90 words) about the people commemorated on the main marker: names, dates, every carved role or relationship, service, symbols with their likely meaning, and scripture with its citation.
+        Look at the photos. Write one dense paragraph (at most 90 words) about the main marker: the stone first (form, carvings, symbols with their likely meaning, scripture with its citation), then the people it names with dates and every carved role, relationship or service.
         State only what the photos show. When a word is partly hidden, give what is visible and mark the rest with [?]. Do not guess.
         If a photo shows several separate stones, it is a context photo: describe only the main marker. Stones on one plot that stand together as one memorial are one marker.
         In disagreements, list every stored reading the photos do not support, with what the photo shows instead.
