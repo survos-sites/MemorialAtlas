@@ -14,21 +14,37 @@ The collection is phone photos of headstones in St. Peter's Church Graveyard, Ra
 Virginia, taken on 11 and 13 November 2026. Many photos are angled or in hard shadow, which is the
 normal case for field photos.
 
+Each record is a stone. The people are those the stone names; person records built from stones and
+obituaries belong to [StoneStory](https://stonestory.org).
+
 What happens to each photo:
 
 1. **Read**: Mistral OCR reads the inscription.
-2. **Decide**: Jev, a TypeSafe decision model, answers fixed questions with probabilities (is this a
-   gravestone, is the OCR usable, how many people, was the camera at an angle). The answers choose the
-   next steps, so a clear photo costs less than a hard one.
-3. **Look**: when the OCR is weak, Mistral Medium describes the photo itself.
-4. **Propose**: Mistral returns a structured record, mapped to typed PHP classes, with its uncertainties.
-5. **Clean up**: for angled photos, Gemini makes a straightened copy for display. It is labelled and
-   never read by OCR or extraction, because an image model can change letters.
-6. **Search and ask**: Elasticsearch search, a read-only API, and an MCP server for AI assistants
-   (see [MCP server](#mcp-server)).
+2. **Notice**: Jev, a TypeSafe decision model, answers fixed questions with probabilities (is this a
+   gravestone, is the OCR usable, does the photo need alignment, is there a carved symbol or scripture).
+   The answers choose the next steps, so a clear photo costs less than a hard one.
+   - When the OCR is weak, Mistral Medium describes the photo itself.
+   - When Jev sees a likely symbol or scripture, Mistral names it: an instrument, a sport, a trade, a
+     military emblem, a verse with its citation and book. These become tags and search facets.
+   - When the photo needs alignment, Gemini makes a straightened copy for display. It is labelled and
+     never read by OCR or extraction, because an image model can change letters.
+   - Photos of the same stone are linked: shared names and camera GPS pick pairs, and Jev compares
+     the two photos.
+3. **Remember**: Mistral proposes the record and one line about the stone, from what is carved
+   ("This stone remembers Fred Wesley, a Colonel and Silver Star recipient."). A vision model on
+   Hugging Face (Qwen) then checks every stored reading against the photos and writes the dense
+   summary; readings the photos do not support are listed for review.
+4. **Search and ask**: Elasticsearch search, a read-only API, an MCP server for AI assistants
+   (see [MCP server](#mcp-server)), and an [Ask page](https://memorialatlas.org/chat) where an agent
+   answers with the same tool methods, in-process.
 
-Every model is a Symfony AI platform bridge, and every AI answer is stored with its model, prompt and
-input hash. Built with Symfony 8, Doctrine, PostgreSQL, Messenger, Elasticsearch and Imagor.
+Every AI result is stored with its model and input hash, and checks are kept until refreshed, so
+reloading the collection makes no model calls. The processed collection is published on Hugging Face
+as `manifest-processed.json`.
+
+Questions and ideas: [GitHub Discussions](https://github.com/survos-sites/MemorialAtlas/discussions).
+
+Every model is a Symfony AI platform bridge. Built with Symfony 8, Doctrine, PostgreSQL, Messenger, Elasticsearch and Imagor.
 
 Production runs as the Dokku app `memorialatlas` on `fsn1`. The deployment remote is `dokku@fsn1:memorialatlas`.
 
