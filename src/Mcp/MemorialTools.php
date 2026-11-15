@@ -7,7 +7,7 @@ namespace App\Mcp;
 use App\Decision\ImageQuestions as Q;
 use App\Entity\{Image, Item};
 use App\Image\ImagePreset;
-use App\Service\{ImageCleaner, ImageDelivery, Remembrance, SymbolFinder};
+use App\Service\{ImageCleaner, ImageDelivery, MemorialVectors, Remembrance, SymbolFinder};
 use Doctrine\ORM\EntityManagerInterface;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Schema\ToolAnnotations;
@@ -23,7 +23,24 @@ final readonly class MemorialTools
         private EntityManagerInterface $em,
         private ImageDelivery $images,
         private UrlGeneratorInterface $urls,
+        private MemorialVectors $vectors,
     ) {}
+
+    /**
+     * Find the stones whose dense summary is closest in meaning to a question, for example "veterans",
+     * "music or musical instruments" or "stones with scripture". Returns each stone's summary, nearest first.
+     *
+     * @param string $question What to look for, in plain words
+     * @param int    $limit    Maximum number of stones (1 to 30)
+     *
+     * @return list<array<string, mixed>>
+     */
+    #[McpTool(name: 'find_memorials', annotations: new ToolAnnotations(title: 'Find memorials by meaning', readOnlyHint: true, openWorldHint: false))]
+    public function find(string $question, int $limit = 10): array
+    {
+        return array_map(fn (array $hit): array => $hit + ['url' => $this->urls->generate('item_show', ['id' => $hit['id']], UrlGeneratorInterface::ABSOLUTE_URL)],
+            $this->vectors->find($question, max(1, min(30, $limit))));
+    }
 
     /**
      * Search memorial records by name, inscription text, description or a symbol on the stone (for example guitar, hockey, army).

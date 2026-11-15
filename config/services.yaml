@@ -28,3 +28,9 @@ services:
         class: Symfony\AI\Platform\PlatformInterface
         factory: ['@App\Service\RustoMistralPlatform', 'create']
         lazy: true
+
+    # The Hugging Face router rejects the reasoning of earlier assistant turns; see the normalizer.
+    ai.platform.contract.huggingface:
+        class: Symfony\AI\Platform\Contract
+        factory: ['Symfony\AI\Platform\Bridge\HuggingFace\Contract\HuggingFaceContract', 'create']
+        arguments: [['@App\Platform\HuggingFaceAssistantMessageNormalizer']]

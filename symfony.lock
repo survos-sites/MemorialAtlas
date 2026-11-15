@@ -190,6 +190,15 @@
             "ref": "1815c0412f5ef5da5f924ea5fe84ebd6a5422476"
         }
     },
+    "symfony/ai-postgres-store": {
+        "version": "1.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "0.1",
+            "ref": "f8eb18e2a912725d85813c1b978926be99717e2b"
+        }
+    },
     "symfony/asset-mapper": {
         "version": "8.2",
         "recipe": {

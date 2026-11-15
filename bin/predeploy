@@ -6,4 +6,9 @@ php bin/console importmap:install
 php bin/console asset-map:compile
 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 php bin/console messenger:setup-transports --no-interaction
+# pgvector table for the chat's semantic search, and the chat's conversation table.
+php bin/console ai:store:setup memorials --no-interaction
+php bin/console ai:message-store:setup ai.message_store.doctrine.dbal.memorial_chat --no-interaction
+# Embeds only records whose text changed since the last run.
+php bin/console app:vectorize --no-interaction
 php bin/console elastic:index:rebuild --no-interaction

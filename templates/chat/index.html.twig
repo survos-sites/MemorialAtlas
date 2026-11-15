@@ -15,6 +15,7 @@
 .chat-form{display:flex;gap:10px;position:sticky;bottom:0;background:#f3f0e9;padding:14px 0}
 .chat-form input{flex:1;font:inherit;padding:13px 16px;border:1px solid #c9c9bd;border-radius:4px;background:#fff}
 .chat-examples{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}
+.chat-a.streaming{white-space:pre-wrap;padding:16px 22px}.chat-a.streaming:empty::before{content:'Looking at the stones…';color:#6c756a}
 .chat-examples button{background:#e1e8dd!important;color:#29362f!important;padding:8px 12px!important;font-size:.85rem;cursor:pointer}
 </style>
 <div class="chat">
@@ -22,23 +23,16 @@
     <h1>Every stone tells a story</h1>
     <p>Ask about the people buried in St. Peter's Church Graveyard. The assistant looks up the records with the same tools that the MCP server offers to other AI agents, and links each record it uses. Every record is an AI reading of a photo, for a person to check.</p>
 
-    <div class="chat-log">
+    <div data-controller="chat" data-chat-url-value="{{ path('chat_stream') }}">
+    <div class="chat-log" data-chat-target="log">
         {% for turn in turns %}
-            <div class="chat-q" id="turn-{{ loop.index0 }}">{{ turn.question }}</div>
-            {% if turn.tools %}
-                <div class="chat-tools" aria-label="Tools the assistant used">
-                    {% for call in turn.tools %}
-                        <span class="chat-tool{{ call.failed ? ' failed' }}">{{ call.name }}({% for key, value in call.arguments %}{{ value is iterable ? value|json_encode : value|json_encode }}{{ not loop.last ? ', ' }}{% endfor %}){% if call.results is not null %} <b>{{ call.results }}</b>{% elseif call.failed %} <b>failed</b>{% else %} <b>✓</b>{% endif %}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            <div class="chat-a">{{ turn.answer|markdown_to_html }}</div>
+            {{ include('chat/_turn.html.twig', {turn: turn, index: loop.index0}) }}
         {% endfor %}
     </div>
 
-    <form class="chat-form" method="post" action="{{ path('chat_ask') }}">
-        <input name="question" maxlength="500" required autofocus placeholder="Tell me about the veterans buried here" aria-label="Your question">
-        <button type="submit">Ask</button>
+    <form class="chat-form" method="post" action="{{ path('chat_ask') }}" data-action="chat#ask">
+        <input name="question" maxlength="500" required autofocus data-chat-target="input" placeholder="Tell me about the veterans buried here" aria-label="Your question">
+        <button type="submit" data-chat-target="button">Ask</button>
     </form>
     {% if not turns %}
         <div class="chat-examples">
@@ -49,5 +43,6 @@
     {% else %}
         <form method="post" action="{{ path('chat_reset') }}"><button class="chat-examples" style="background:none!important;color:#6c756a!important;padding:0!important">Start over</button></form>
     {% endif %}
+    </div>
 </div>
 {% endblock %}

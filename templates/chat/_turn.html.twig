@@ -1,0 +1,9 @@
+<div class="chat-q" id="turn-{{ index }}">{{ turn.question }}</div>
+{% if turn.tools %}
+    <div class="chat-tools" aria-label="Tools the assistant used">
+        {% for call in turn.tools %}
+            <span class="chat-tool{{ call.failed ? ' failed' }}">{{ call.name }}({% for key, value in call.arguments %}{{ value|json_encode }}{{ not loop.last ? ', ' }}{% endfor %}){% if call.results is not null %} <b>{{ call.results }}</b>{% elseif call.failed %} <b>failed</b>{% else %} <b>✓</b>{% endif %}</span>
+        {% endfor %}
+    </div>
+{% endif %}
+<div class="chat-a">{{ turn.answer|markdown_to_html }}</div>

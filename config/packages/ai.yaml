@@ -14,41 +14,57 @@ ai:
             api_key: '%env(HUGGINGFACE_API_KEY)%'
             model_catalog:
                 models:
-                    'Qwen/Qwen3.8-27B': { class: 'Symfony\AI\Platform\Bridge\HuggingFace\Completions', capabilities: ['input-messages', 'input-text', 'input-image', 'input-multimodal', 'output-text', 'output-structured'] }
-                    'moonshotai/Kimi-K3.1-Pro': { class: 'Symfony\AI\Platform\Bridge\HuggingFace\Completions', capabilities: ['input-messages', 'input-text', 'input-image', 'input-multimodal', 'output-text', 'output-structured'] }
-                    'google/gemma-4-31B-it': { class: 'Symfony\AI\Platform\Bridge\HuggingFace\Completions', capabilities: ['input-messages', 'input-text', 'input-image', 'input-multimodal', 'output-text', 'output-structured'] }
+                    'Qwen/Qwen3.8-27B': { class: 'Symfony\AI\Platform\Bridge\HuggingFace\Completions', capabilities: ['input-messages', 'input-text', 'input-image', 'input-multimodal', 'output-text', 'output-structured', 'output-streaming', 'tool-calling'] }
+                    'moonshotai/Kimi-K3.1-Pro': { class: 'Symfony\AI\Platform\Bridge\HuggingFace\Completions', capabilities: ['input-messages', 'input-text', 'input-image', 'input-multimodal', 'output-text', 'output-structured', 'output-streaming', 'tool-calling'] }
+                    'google/gemma-4-31B-it': { class: 'Symfony\AI\Platform\Bridge\HuggingFace\Completions', capabilities: ['input-messages', 'input-text', 'input-image', 'input-multimodal', 'output-text', 'output-structured', 'output-streaming', 'tool-calling'] }
 
     # see https://symfony.com/doc/current/ai/bundles/ai-bundle.html
     agent:
         # The chat page calls the MCP tool methods directly, not through MCP:
         # https://github.com/symfony/ai/issues/2539
         memorial_chat:
-            platform: 'ai.platform.mistral'
+            platform: 'ai.platform.huggingface'
             model: '%env(MEMORIAL_CHAT_MODEL)%'
             prompt:
                 file: '%kernel.project_dir%/config/prompts/memorial-chat.md'
             tools:
                 - service: 'App\Mcp\MemorialTools'
+                  name: 'find_memorials'
+                  description: 'Find the stones closest in meaning to a question (for example veterans, music, sports, physicians, scripture). Returns each stone with its dense summary and link, nearest first. Use it first for questions about themes.'
+                  method: 'find'
+                - service: 'App\Mcp\MemorialTools'
                   name: 'search_memorials'
-                  description: 'Search memorial records by name, inscription text, photo description or a symbol on the stone (for example guitar, hockey, army). Returns record ids, titles and links.'
+                  description: 'Exact word search in names, carved text and descriptions. Use it for a surname or a specific word, not for themes. Returns record ids, titles and links.'
                   method: 'search'
                 - service: 'App\Mcp\MemorialTools'
                   name: 'get_memorial'
                   description: 'Read one memorial record: proposed people with dates, inscriptions, open questions, photos and other photos of the same stone.'
                   method: 'get'
-                - service: 'App\Mcp\MemorialTools'
-                  name: 'list_records_to_review'
-                  description: 'List processed records that wait for a person to check them, with the open questions.'
-                  method: 'toReview'
-                - service: 'App\Mcp\MemorialTools'
-                  name: 'collection_digest'
-                  description: 'Every record in one call, as a dense summary each: people, carved words, symbols, scripture and a one-line remembrance. Use it first for questions about themes such as veterans, hobbies, families or scripture.'
-                  method: 'digest'
-                - service: 'App\Mcp\MemorialTools'
-                  name: 'collection_overview'
-                  description: 'Count records by status and photos by AI treatment, per cemetery.'
-                  method: 'overview'
-            max_tool_calls: 12
+            max_tool_calls: 6
+            # The conversation (questions and answers) is kept in Postgres under the id of its MessageBag.
+            message_store: 'ai.message_store.doctrine.dbal.memorial_chat'
+            # The stones nearest to the question go into the system prompt before the first model call.
+            memory:
+                service: 'App\Chat\StoneMemory'
 
     # see https://symfony.com/doc/current/ai/components/store.html
     store:
+        postgres:
+            # One vector per stone, built from its dense summary by app:vectorize.
+            memorials:
+                dbal_connection: 'doctrine.dbal.default_connection'
+                table_name: 'memorial_vectors'
+                metric: 'cosine'
+                dimensions: 1024
+
+    message_store:
+        doctrine:
+            dbal:
+                memorial_chat:
+                    connection: 'default'
+                    table_name: 'chat_messages'
+
+    vectorizer:
+        huggingface:
+            platform: 'ai.platform.huggingface'
+            model: 'BAAI/bge-m3'
