@@ -7,3 +7,11 @@
     </div>
 {% endif %}
 <div class="chat-a">{{ turn.answer|markdown_to_html }}</div>
+{% set stones = chat_stones(turn.answer) %}
+{% if stones %}
+    <div class="chat-stones" aria-label="Stones in this answer">
+        {% for stone in stones %}
+            <a href="{{ path('item_show', {id: stone.item.id}) }}"><img src="{{ memorial_thumbnail(stone.photo) }}" loading="lazy" alt="{{ stone.item.title }}"><span>{{ stone.item.title }}</span></a>
+        {% endfor %}
+    </div>
+{% endif %}
