@@ -11,6 +11,7 @@ use Doctrine\Migrations\AbstractMigration;
  * The table of the "memorial_chat" message store (DoctrineDbalMessageStore::addTableToSchema()).
  * It is created here because ai:message-store:setup fails on a second run: the schema_filter in
  * doctrine.yaml hides chat_messages from introspection, so the store does not see the table.
+ * Upstream: https://github.com/symfony/ai/issues/2960
  */
 final class Version20261115180000 extends AbstractMigration
 {
