@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Twig;
 
 use App\Entity\{Image, Item};
+use App\Service\ImageDelivery;
 use Doctrine\ORM\EntityManagerInterface;
 use Twig\Attribute\AsTwigFunction;
 
@@ -12,12 +13,12 @@ final readonly class ChatExtension
 {
     public const MAX_STONES = 8;
 
-    public function __construct(private EntityManagerInterface $em) {}
+    public function __construct(private EntityManagerInterface $em, private ImageDelivery $images) {}
 
     /**
-     * The stones an answer links to, in the order of their first link, each with its first photo.
+     * The stones an answer links to, in the order of their first link, each with the same thumbnail as its search card.
      *
-     * @return list<array{item: Item, photo: Image}>
+     * @return list<array{item: Item, url: string, aiCleaned: bool}>
      */
     #[AsTwigFunction('chat_stones')]
     public function stones(string $answer): array
@@ -31,7 +32,7 @@ final readonly class ChatExtension
         $stones = [];
         foreach ($ids as $id) {
             $photo = ($items[$id] ?? null)?->media->findFirst(static fn ($key, $media): bool => $media instanceof Image);
-            if ($photo !== null) $stones[] = ['item' => $items[$id], 'photo' => $photo];
+            if ($photo !== null) $stones[] = ['item' => $items[$id], ...$this->images->card($photo)];
         }
 
         return $stones;

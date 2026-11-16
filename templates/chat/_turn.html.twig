@@ -11,7 +11,7 @@
 {% if stones %}
     <div class="chat-stones" aria-label="Stones in this answer">
         {% for stone in stones %}
-            <a href="{{ path('item_show', {id: stone.item.id}) }}"><img src="{{ memorial_thumbnail(stone.photo) }}" loading="lazy" alt="{{ stone.item.title }}"><span>{{ stone.item.title }}</span></a>
+            <a href="{{ path('item_show', {id: stone.item.id}) }}"><img src="{{ stone.url }}" loading="lazy" alt="{{ stone.aiCleaned ? 'AI-cleaned view of ' }}{{ stone.item.title }}"{% if stone.aiCleaned %} title="AI-cleaned view: straightened and relit for display. The original photograph is the evidence."{% endif %}><span>{{ stone.item.title }}</span></a>
         {% endfor %}
     </div>
 {% endif %}

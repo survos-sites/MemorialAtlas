@@ -19,9 +19,7 @@ final class ImageSearch extends AbstractFieldSearch implements HitTemplateSearch
     public function document(Image $image): array
     {
         $document = get_object_vars(ImageDocument::fromImage($image));
-        $cleaned = $this->imagor->cleaned($image, \App\Image\ImagePreset::Thumb);
-        $document['thumbnailUrl'] = $cleaned ?? $this->imagor->thumbnail($image);
-        $document['aiCleaned'] = $cleaned !== null;
+        ['url' => $document['thumbnailUrl'], 'aiCleaned' => $document['aiCleaned']] = $this->imagor->card($image);
         return $document;
     }
 

@@ -59,6 +59,19 @@ final readonly class ImageDelivery
         return $url;
     }
 
+    /**
+     * The thumbnail that search cards and the chat show. The AI-cleaned copy is a small file on S3;
+     * the original is a full-size photo on Hugging Face, which Imagor takes 30 to 50 seconds to resize the first time.
+     *
+     * @return array{url: string, aiCleaned: bool}
+     */
+    public function card(Image $image): array
+    {
+        $cleaned = $this->cleaned($image, ImagePreset::Thumb);
+
+        return ['url' => $cleaned ?? $this->thumbnail($image), 'aiCleaned' => $cleaned !== null];
+    }
+
     public function thumbnail(Image $image): string
     {
         return $this->url($image, ImagePreset::Thumb);
