@@ -50,8 +50,34 @@ Production runs as the Dokku app `memorialatlas` on `fsn1`. The deployment remot
 
 ## Setup
 
-Requires PHP 8.5+ (GD, PDO PostgreSQL and SQLite), Composer, Docker for Imagor,
-and PostgreSQL (existing or the optional Compose service below). The [public Sperryville demo](https://huggingface.co/datasets/museado/memorialatlas-demo)
+### Requirements
+
+All of these are required.
+
+- PHP 8.5+ with GD, PDO PostgreSQL and SQLite, Composer and the [Symfony CLI](https://symfony.com/download).
+- PostgreSQL 16+ with the [pgvector](https://github.com/pgvector/pgvector) extension. The chat stores one embedding per stone in it.
+- Imagor, for thumbnails and image metadata.
+- Elasticsearch 9, for the search page.
+
+The installer starts all three services with Docker Compose. To start one yourself:
+
+```bash
+# PostgreSQL with pgvector, on the port that .env.local.example uses
+docker run -d --name memorialatlas-db -p 127.0.0.1:5544:5432 -e POSTGRES_USER=app -e POSTGRES_PASSWORD=app -e POSTGRES_DB=memorialatlas pgvector/pgvector:pg18
+```
+
+```bash
+# Imagor, on the port of LOCAL_IMAGOR_DSN in .env
+docker compose up -d imagor
+```
+
+On an existing PostgreSQL server, install pgvector and run `CREATE EXTENSION vector;` as a superuser once.
+To add pgvector to another Compose file, use the image `pgvector/pgvector:pg18`.
+
+The chat also needs `HUGGINGFACE_API_KEY` in `.env.local`, and `symfony console app:vectorize`
+after a load, to embed the stones. Browsing and search work without it.
+
+The [public Sperryville demo](https://huggingface.co/datasets/museado/memorialatlas-demo)
 includes four photographs with saved OCR and extraction results, plus two raw
 photographs that demonstrate processing setup.
 No S3, Hugging Face or AI credentials are required to load and browse it.
@@ -112,7 +138,7 @@ The selected saved receipts retain source IDs as provenance. No AI calls occur.
 
 The five-minute target assumes PHP/Composer and Docker are already available;
 the first container-image download depends on your connection. To use an existing
-PostgreSQL server, set DATABASE_URL in .env.local and start only
+PostgreSQL server (with pgvector), set DATABASE_URL in .env.local and start only
 `docker compose up -d imagor`.
 Your database user needs permission to create the application database, or you
 can create that database beforehand. Startup never provisions a server.

@@ -37,7 +37,8 @@ final readonly class Startup
         if (!str_starts_with($this->databaseUrl,'postgresql://') && !str_starts_with($this->databaseUrl,'postgres://')) {
             $io->error('Configure an existing PostgreSQL server in DATABASE_URL. Startup never creates a server.'); return 1;
         }
-        foreach ([['doctrine:database:create','--if-not-exists'],['doctrine:migrations:migrate','--no-interaction']] as $arguments) {
+        // The chat's vector table needs the pgvector extension on the PostgreSQL server.
+        foreach ([['doctrine:database:create','--if-not-exists'],['doctrine:migrations:migrate','--no-interaction'],['ai:store:setup','memorials','--no-interaction']] as $arguments) {
             $process=new Process([PHP_BINARY,$this->directory.'/bin/console',...$arguments],$this->directory,timeout:120);
             $process->run(static fn ($type,$buffer)=>$io->write($buffer));
             if (!$process->isSuccessful()) return 1;
