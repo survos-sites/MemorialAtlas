@@ -16,7 +16,7 @@ final class RustoOcr
 {
     public function __construct(
         private readonly HttpClientInterface $http,
-        #[Autowire(env: 'default:rusto_ocr_default:RUSTO_OCR_URL')] private readonly string $baseUrl,
+        #[Autowire(env: 'RUSTO_OCR_URL')] private readonly string $baseUrl,
         #[Autowire(env: 'default::RUSTO_OCR_KEY')] private readonly ?string $apiKey = null,
     ) {
     }
