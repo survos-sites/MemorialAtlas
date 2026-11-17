@@ -1,0 +1,404 @@
+{
+    "title": "St. Peter\u2019s \u00b7 first row study",
+    "date": "2026-11-13",
+    "width": 2182,
+    "height": 2421,
+    "coordinateSystem": "overview pixels; no geographic coordinates",
+    "projection": {
+        "type": "approximate equidistant downward lens",
+        "calibration": 0.946,
+        "fieldOfView": 120,
+        "size": 1600
+    },
+    "registration": [
+        {
+            "source": "frame-03",
+            "target": "frame-02",
+            "inliers": 1739,
+            "medianError": 0.6653429269790649
+        },
+        {
+            "source": "frame-04",
+            "target": "frame-03",
+            "inliers": 1445,
+            "medianError": 0.7901608943939209
+        },
+        {
+            "source": "frame-05",
+            "target": "frame-04",
+            "inliers": 1582,
+            "medianError": 0.9374798536300659
+        },
+        {
+            "source": "frame-06",
+            "target": "frame-05",
+            "inliers": 49,
+            "medianError": 1.5296441316604614
+        }
+    ],
+    "photos": [
+        {
+            "id": "frame-02",
+            "filename": "frame-02.jpg",
+            "sha256": "be4f9d281270a172e248428fb24278f6f370f4319943277dde53e57bef961b64",
+            "sourceWidth": 7680,
+            "sourceHeight": 3840,
+            "transform": [
+                [
+                    1,
+                    0,
+                    90
+                ],
+                [
+                    0,
+                    1,
+                    460
+                ],
+                [
+                    0,
+                    0,
+                    1
+                ]
+            ],
+            "center": [
+                889.5,
+                1259.5
+            ],
+            "footprint": [
+                [
+                    90,
+                    460
+                ],
+                [
+                    1690,
+                    460
+                ],
+                [
+                    1690,
+                    2060
+                ],
+                [
+                    90,
+                    2060
+                ]
+            ],
+            "kind": "video-frame",
+            "sourceVideo": "VID_20261113_125412_237.insv",
+            "seconds": 307.5,
+            "time": "12:59:19",
+            "panorama": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/row-demo-v1/views/frame-02.jpg",
+            "sourceImage": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/row-demo-v1/frame-02.jpg"
+        },
+        {
+            "id": "frame-03",
+            "filename": "frame-03.jpg",
+            "sha256": "7e25062419dc400c70cfbe620db441d152716642ed8d35abf6d5d7e5f4a6abd0",
+            "sourceWidth": 7680,
+            "sourceHeight": 3840,
+            "transform": [
+                [
+                    0.7118444499999766,
+                    0.07959971414550865,
+                    127.28429955379576
+                ],
+                [
+                    -0.305597470101353,
+                    0.6322932546032006,
+                    808.0427683922676
+                ],
+                [
+                    -8.957127055087116e-5,
+                    -0.0001237010426183126,
+                    1
+                ]
+            ],
+            "center": [
+                916.2799072265625,
+                1289.0301513671875
+            ],
+            "footprint": [
+                [
+                    127.2843017578125,
+                    808.0427856445312
+                ],
+                [
+                    1478.0625,
+                    372.46649169921875
+                ],
+                [
+                    2115.46826171875,
+                    2020.0791015625
+                ],
+                [
+                    317.4800109863281,
+                    2268.745849609375
+                ]
+            ],
+            "kind": "video-frame",
+            "sourceVideo": "VID_20261113_125412_237.insv",
+            "seconds": 312.5,
+            "time": "12:59:24",
+            "panorama": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/row-demo-v1/views/frame-03.jpg",
+            "sourceImage": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/row-demo-v1/frame-03.jpg"
+        },
+        {
+            "id": "frame-04",
+            "filename": "frame-04.jpg",
+            "sha256": "70f137eedfad67b988952de5cc99a7964869badf8caa7dacee70c3608e833c9e",
+            "sourceWidth": 7680,
+            "sourceHeight": 3840,
+            "transform": [
+                [
+                    0.9744665721579273,
+                    0.08657588270443944,
+                    48.99644896294361
+                ],
+                [
+                    -0.12510284332885907,
+                    0.9116050466473227,
+                    647.5947889793989
+                ],
+                [
+                    1.9651836065354242e-6,
+                    -4.5674477813175145e-5,
+                    1.0429530293450762
+                ]
+            ],
+            "center": [
+                890.171875,
+                1266.2637939453125
+            ],
+            "footprint": [
+                [
+                    46.97857666015625,
+                    620.9241943359375
+                ],
+                [
+                    1537.278564453125,
+                    427.7137756347656
+                ],
+                [
+                    1795.0994873046875,
+                    1958.8516845703125
+                ],
+                [
+                    193.342529296875,
+                    2171.584228515625
+                ]
+            ],
+            "kind": "video-frame",
+            "sourceVideo": "VID_20261113_125412_237.insv",
+            "seconds": 317.5,
+            "time": "12:59:29",
+            "panorama": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/row-demo-v1/views/frame-04.jpg",
+            "sourceImage": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/row-demo-v1/frame-04.jpg"
+        },
+        {
+            "id": "frame-05",
+            "filename": "frame-05.jpg",
+            "sha256": "5fbfc30aa359a0b5b578751b079a32c5d887ba33403ce551f15ef32e3877a43e",
+            "sourceWidth": 7680,
+            "sourceHeight": 3840,
+            "transform": [
+                [
+                    0.7161932725867214,
+                    0.24929234161136565,
+                    30.907651084238168
+                ],
+                [
+                    -0.4289706269375174,
+                    0.590165734308623,
+                    999.9022327318705
+                ],
+                [
+                    -4.874162365072049e-5,
+                    -0.0001326590585039509,
+                    1.0255261161135831
+                ]
+            ],
+            "center": [
+                911.7737426757812,
+                1281.97900390625
+            ],
+            "footprint": [
+                [
+                    30.138336181640625,
+                    975.013916015625
+                ],
+                [
+                    1241.9713134765625,
+                    330.90887451171875
+                ],
+                [
+                    2142.95751953125,
+                    1710.6488037109375
+                ],
+                [
+                    528.4524536132812,
+                    2390.551025390625
+                ]
+            ],
+            "kind": "video-frame",
+            "sourceVideo": "VID_20261113_125412_237.insv",
+            "seconds": 322.5,
+            "time": "12:59:34",
+            "panorama": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/row-demo-v1/views/frame-05.jpg",
+            "sourceImage": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/row-demo-v1/frame-05.jpg"
+        },
+        {
+            "id": "frame-06",
+            "filename": "frame-06.jpg",
+            "sha256": "495be125ae2aca9ab3b6dde44010cd72df13abb8805192f0e9c18a89cc6014d0",
+            "sourceWidth": 7680,
+            "sourceHeight": 3840,
+            "transform": [
+                [
+                    0.4734271752346461,
+                    0.7691300644919363,
+                    41.788113901633274
+                ],
+                [
+                    -0.8394930124858702,
+                    0.9380345060416537,
+                    1362.506962827655
+                ],
+                [
+                    -0.0002103286658895707,
+                    0.00019570423193252334,
+                    0.967035954968752
+                ]
+            ],
+            "center": [
+                1083.602294921875,
+                1508.662109375
+            ],
+            "footprint": [
+                [
+                    43.21257400512695,
+                    1408.95166015625
+                ],
+                [
+                    1267.65869140625,
+                    30.638912200927734
+                ],
+                [
+                    2151.123779296875,
+                    1610.9727783203125
+                ],
+                [
+                    993.9331665039062,
+                    2236.71728515625
+                ]
+            ],
+            "kind": "video-frame",
+            "sourceVideo": "VID_20261113_125412_237.insv",
+            "seconds": 327.5,
+            "time": "12:59:39",
+            "panorama": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/row-demo-v1/views/frame-06.jpg",
+            "sourceImage": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/row-demo-v1/frame-06.jpg"
+        },
+        {
+            "id": "IMG_20261113_125930_239",
+            "filename": "IMG_20261113_125930_239.insp",
+            "kind": "still",
+            "sourceWidth": 7680,
+            "sourceHeight": 3840,
+            "sha256": "b5f414fa3d558efb6adb0a7a8fe948c072b3ffede08bdd85bbbd0e03d6baf2ec",
+            "transform": [
+                [
+                    0.9579188746585703,
+                    0.12674262430444302,
+                    15.239696516518151
+                ],
+                [
+                    -0.1306808590817586,
+                    0.9475404196570162,
+                    599.3960583913843
+                ],
+                [
+                    1.2898307404100834e-6,
+                    -7.850458743351373e-6,
+                    1
+                ]
+            ],
+            "center": [
+                887.0794677734375,
+                1259.0794677734375
+            ],
+            "footprint": [
+                [
+                    15.239696502685547,
+                    599.3960571289062
+                ],
+                [
+                    1544.7220458984375,
+                    389.50286865234375
+                ],
+                [
+                    1769.2701416015625,
+                    1926.5948486328125
+                ],
+                [
+                    220.8013153076172,
+                    2142.370361328125
+                ]
+            ],
+            "panorama": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/row-demo-v1/views/IMG_20261113_125930_239.jpg",
+            "registrationInliers": 1687,
+            "registeredTo": "frame-02",
+            "sourceImage": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/spheres/125930_239.jpg"
+        },
+        {
+            "id": "IMG_20261113_125945_240",
+            "filename": "IMG_20261113_125945_240.insp",
+            "kind": "still",
+            "sourceWidth": 7680,
+            "sourceHeight": 3840,
+            "sha256": "59f6913ae973fc27683a159a32f0b28ccb4b82a2ce06bcd50ba7dcfb447cacad",
+            "transform": [
+                [
+                    0.5331387264657086,
+                    0.23833690392968548,
+                    323.10609013219306
+                ],
+                [
+                    -0.4898538173727446,
+                    0.38061797361006006,
+                    1427.6794980960963
+                ],
+                [
+                    -9.4123860051775e-5,
+                    -0.00011397746996721022,
+                    0.9737317853341051
+                ]
+            ],
+            "center": [
+                1164.17333984375,
+                1660.1690673828125
+            ],
+            "footprint": [
+                [
+                    331.8224792480469,
+                    1466.19384765625
+                ],
+                [
+                    1428.8421630859375,
+                    782.2708129882812
+                ],
+                [
+                    2430.619384765625,
+                    1955.3082275390625
+                ],
+                [
+                    890.1614379882812,
+                    2573.60498046875
+                ]
+            ],
+            "panorama": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/row-demo-v1/views/IMG_20261113_125945_240.jpg",
+            "registrationInliers": 218,
+            "registeredTo": "frame-06",
+            "sourceImage": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/spheres/125945_240.jpg"
+        }
+    ],
+    "overview": "https://museado.fsn1.your-objectstorage.com/cemetery/st-peter/row-demo-v1/overview.jpg"
+}
