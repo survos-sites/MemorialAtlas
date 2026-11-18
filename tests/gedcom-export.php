@@ -3,22 +3,22 @@
 declare(strict_types=1);
 
 use App\Entity\{Cemetery, Item};
-use App\Service\GedcomExporter;
+use App\Command\GedcomExportCommand;
 use Korin\Gedcom\{Gedcom, Version};
 
 require dirname(__DIR__).'/vendor/autoload.php';
 $check = static function (bool $ok, string $message): void { if (!$ok) throw new RuntimeException($message); };
 
-$check(GedcomExporter::date('Jan. 20, 1957') === '20 JAN 1957', 'Abbreviated month with a period.');
-$check(GedcomExporter::date('SEPT 25, 1970') === '25 SEP 1970', 'SEPT is read as September.');
-$check(GedcomExporter::date('DECEMBER 1, 1937') === '1 DEC 1937', 'Full upper-case month.');
-$check(GedcomExporter::date('9 Sept. 1946') === '9 SEP 1946', 'Day before month.');
-$check(GedcomExporter::date('APR 4 1939') === '4 APR 1939', 'No comma.');
-$check(GedcomExporter::date('1977-12-16') === '16 DEC 1977', 'ISO date.');
-$check(GedcomExporter::date('January 1826') === 'JAN 1826', 'Month and year.');
-$check(GedcomExporter::date('1945') === '1945', 'Year only.');
-$check(GedcomExporter::date('CHICAGO, WASHINGTON') === null, 'Text that is not a date gives no date.');
-$check(GedcomExporter::date('Feb. 30, 1950') === null, 'An impossible day gives no date.');
+$check(GedcomExportCommand::date('Jan. 20, 1957') === '20 JAN 1957', 'Abbreviated month with a period.');
+$check(GedcomExportCommand::date('SEPT 25, 1970') === '25 SEP 1970', 'SEPT is read as September.');
+$check(GedcomExportCommand::date('DECEMBER 1, 1937') === '1 DEC 1937', 'Full upper-case month.');
+$check(GedcomExportCommand::date('9 Sept. 1946') === '9 SEP 1946', 'Day before month.');
+$check(GedcomExportCommand::date('APR 4 1939') === '4 APR 1939', 'No comma.');
+$check(GedcomExportCommand::date('1977-12-16') === '16 DEC 1977', 'ISO date.');
+$check(GedcomExportCommand::date('January 1826') === 'JAN 1826', 'Month and year.');
+$check(GedcomExportCommand::date('1945') === '1945', 'Year only.');
+$check(GedcomExportCommand::date('CHICAGO, WASHINGTON') === null, 'Text that is not a date gives no date.');
+$check(GedcomExportCommand::date('Feb. 30, 1950') === null, 'An impossible day gives no date.');
 
 $cemetery = new Cemetery();
 $cemetery->name = "St. Peter's churchyard";
@@ -36,7 +36,7 @@ $unreadable->aiResults['catalog'] = ['record' => ['people' => [
 ]]];
 $noCatalog = new Item('Not processed yet');
 
-$ged = (new GedcomExporter())->export([$stone, $unreadable, $noCatalog], static fn (Item $i): string => 'https://mematlas.test/item/'.($i->id ?? 0));
+$ged = GedcomExportCommand::export([$stone, $unreadable, $noCatalog], static fn (Item $i): string => 'https://mematlas.test/item/'.($i->id ?? 0));
 $doc = Gedcom::parse($ged);
 $check($doc->version() === Version::V5_5_1, 'The default version is 5.5.1.');
 $check(Gedcom::validate($doc)->isValid(), 'The file validates: '.json_encode(Gedcom::validate($doc)));
