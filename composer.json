@@ -17,6 +17,7 @@
         "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "^3.6",
         "easycorp/easyadmin-bundle": "^5.0@beta",
+        "korin/gedcom": "^0.5.0",
         "league/commonmark": "^2.10",
         "nelmio/cors-bundle": "^2.6",
         "survos/cloudflared-bundle": "^2.41",

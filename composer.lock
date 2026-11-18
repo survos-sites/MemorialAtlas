@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c6ec5b664990c147195cbb6b79c13fb4",
+    "content-hash": "4b66eaa63f62d6e00a482cb973ac4965",
     "packages": [
         {
             "name": "api-platform/doctrine-common",
@@ -2844,6 +2844,65 @@
             },
             "time": "2026-08-04T14:31:01+00:00",
             "published-time": "2026-08-05T13:21:21+00:00"
+        },
+        {
+            "name": "korin/gedcom",
+            "version": "v0.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/serjio-dev/korin-php.git",
+                "reference": "3f01b39cbea99ab8bf900c5cb2a5639585efeb12"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/serjio-dev/korin-php/zipball/3f01b39cbea99ab8bf900c5cb2a5639585efeb12",
+                "reference": "3f01b39cbea99ab8bf900c5cb2a5639585efeb12",
+                "shasum": ""
+            },
+            "require": {
+                "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0 || ~8.6.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.95",
+                "korin/gedcom-corpus": "dev-main",
+                "nikic/php-fuzzer": "^0.0.11",
+                "phpbench/phpbench": "^1.4",
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "phpunit/phpunit": "^11.5 || ^12.5 || ^13",
+                "rector/rector": "^2.0",
+                "symfony/yaml": "^6.4 || ^7.0"
+            },
+            "suggest": {
+                "ext-intl": "Exact Unicode normalization (NFC) for ANSEL input",
+                "ext-mbstring": "Faster UTF-16 and single-byte decoding",
+                "ext-zip": "GEDZIP (.gdz) support"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Korin\\Gedcom\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "description": "Lossless GEDCOM 5.5–7.0 reader, validator, converter and writer for PHP",
+            "homepage": "https://github.com/serjio-dev/korin-php",
+            "keywords": [
+                "Family-tree",
+                "gedcom",
+                "gedzip",
+                "genealogy",
+                "parser"
+            ],
+            "support": {
+                "issues": "https://github.com/serjio-dev/korin-php/issues",
+                "source": "https://github.com/serjio-dev/korin-php/tree/v0.5.0"
+            },
+            "time": "2026-11-18T20:32:30+00:00",
+            "published-time": "2026-11-18T20:36:49+00:00"
         },
         {
             "name": "league/commonmark",
