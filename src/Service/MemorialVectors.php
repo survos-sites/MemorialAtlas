@@ -23,7 +23,7 @@ final class MemorialVectors
 {
     /** The table of the "memorials" store in config/packages/ai.yaml. */
     public const TABLE = 'memorial_vectors';
-    private const NAMESPACE = 'b6f6a3c2-6f0e-4d38-9a51-5d1f2e7c4a90';
+    private const UUID_NAMESPACE = 'b6f6a3c2-6f0e-4d38-9a51-5d1f2e7c4a90';
 
     public function __construct(
         private EntityManagerInterface $em,
@@ -79,7 +79,7 @@ final class MemorialVectors
         $documents = [];
         $wanted = [];
         foreach ($items as $item) {
-            $id = Uuid::v5(Uuid::fromString(self::NAMESPACE), 'item-'.$item->id)->toRfc4122();
+            $id = Uuid::v5(Uuid::fromString(self::UUID_NAMESPACE), 'item-'.$item->id)->toRfc4122();
             $wanted[$id] = true;
             $text = self::text($item);
             $hash = hash('sha256', $text);
