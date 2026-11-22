@@ -32,6 +32,9 @@ What happens to each photo:
      never read by OCR or extraction, because an image model can change letters.
    - Photos of the same stone are linked: shared names and camera GPS pick pairs, and Jev compares
      the two photos.
+   - Jev also sees four turned copies of each photo and says which one reads upright
+     (`app:images:orient`), because phones photographing a flat marker from above often record the
+     wrong orientation. Cards and the AI-cleaned view use that turn.
 3. **Remember**: Mistral proposes the record and one line about the stone, from what is carved
    ("This stone remembers Fred Wesley, a Colonel and Silver Star recipient."). A vision model on
    Hugging Face (Qwen) then checks every stored reading against the photos and writes the dense
@@ -335,10 +338,11 @@ symfony php tests/access.php # isolated app_test database, test-only password
 MemorialAtlas is deployed independently of Harvest. The repository contains the application, migrations, and tests; photographs, database exports, reference annotations, credentials, and generated folios stay outside Git. Import images from a directory and configure PostgreSQL, Elasticsearch, Imagor/S3, and the chosen AI providers. Harvest can supply images, but is not required at runtime.
 
 The Dokku app is `memorialatlas` on `fsn1`, served at https://memorialatlas.org.
-The multistage `Dockerfile` builds OpenCV 5.1.0 and the pinned PHP extension into
-FrankenPHP with PHP 8.5. Caddy listens on port 5000 behind Dokku's TLS proxy.
-`bin/predeploy` verifies the extension, compiles assets, applies migrations,
-creates Messenger transports and rebuilds search indexes.
+The `Dockerfile` builds FrankenPHP with PHP 8.5. It does not build OpenCV, so
+perspective correction is off in production (see below). Caddy listens on port
+5000 behind Dokku's TLS proxy. `bin/predeploy` compiles assets, applies
+migrations, creates Messenger transports, embeds the stones and rebuilds search
+indexes.
 
 Run `web=1 worker=1 processing=1`: `worker` flushes the Elasticsearch spool;
 `processing` consumes the existing Doctrine-backed processing queue, including
@@ -360,9 +364,7 @@ or the assembled DSN in Dokku config.
 `SYMFONY_TRUSTED_PROXIES` must cover the private Dokku proxy network so generated
 media URLs retain HTTPS. The application uses classic FrankenPHP request mode.
 
-Rehearse with `docker build --load -t memorialatlas:opencv .` and
-`docker run --rm memorialatlas:opencv php tests/perspective.php` before switching
-builders. Configure Dokku's Dockerfile builder and port mappings
+Configure Dokku's Dockerfile builder and port mappings
 `http:80:5000 https:443:5000`.
 
 Before every deployment, run `symfony console doctrine:schema:validate` against local PostgreSQL. Push the tested commit to the repository, then to Dokku. Load demo data separately after migrations and run `elastic:index:rebuild images --keep-old`. Admin sign-in remains disabled until `ADMIN_PASSWORD_HASH` is configured.
@@ -760,18 +762,18 @@ workers after installing this code. A failed OCR call leaves the derivative save
 rerunning the same selection retries OCR. Successful identical corrections reuse
 stored evidence. Changed selections keep earlier corrections in image metadata.
 
-Correction is default-on (`?bool $correction`, then `$correction ??= true`).
-If OpenCV is missing, processing reports: “Install the OpenCV extension or run
-this with --no-correction.” `app:import ... --process --no-correction` skips the
-step and records the policy; import without processing does not require OpenCV.
+Correction is optional. It runs when the PHP OpenCV extension is installed and
+is skipped otherwise; `--no-correction` turns it off explicitly. The corner
+editor, `app:image:correct` and uploads with corners need the extension and say
+so when it is missing.
 Images without selected corners are not automatically rectified. The existing
 item/media workflows still govern general AI processing; correction adds no states.
 
 Correction assets live under `var/media/corrections`; persist that directory with
 other media in production. Browsers still use the UX Imagor `detail` preset for
 both views. The source-file route provides immutable assets to hosted Imagor.
-Production requires PHP OpenCV in the worker process and the configured hosted
-OCR endpoint/key. These changes do not install the extension on production.
+The production image does not include OpenCV, so these steps run only on a
+machine with the extension.
 
 `StoneCorrectionExport` maps a stored reading to the Stone contract's JSON shape.
 The caller must supply an explicit folio page reference and durable image source;
@@ -873,7 +875,7 @@ original; after processing, use the correction editor to select the whole marker
 and read its corrected frame. Automatic marker detection is still future work.
 No new queue or workstation processing dependency is needed.
 
-The production image includes PHP EXIF and OpenCV. The existing processing
+The production image includes PHP EXIF. The existing processing
 consumer shares persistent media storage with the web process. The outer Dokku
 Nginx request limit must permit 32 MB, matching Caddy/PHP. Run
 `php tests/photo-upload.php` against the migrated test database to check intake,
