@@ -9,6 +9,12 @@ export default class extends Controller {
     static targets = ['log', 'input', 'button'];
     static values = { url: String };
 
+    /** An example question is asked at once, so the box never shows one question while another is answered. */
+    example(event) {
+        this.inputTarget.value = event.currentTarget.textContent.trim();
+        this.inputTarget.form.requestSubmit();
+    }
+
     async ask(event) {
         event.preventDefault();
         const question = this.inputTarget.value.trim();
