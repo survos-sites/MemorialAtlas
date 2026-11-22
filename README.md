@@ -57,7 +57,7 @@ goes through a Symfony AI platform bridge.
 | Structured output | Responses map to typed DTOs such as `MarkerFacts` and `MarkerPerson`. | `src/` |
 | Agent | `memorial_chat` answers questions on the Ask page with three tools, keeps the conversation in a Doctrine message store, and puts the nearest stones in its prompt through a memory provider. | `config/packages/ai.yaml`, `src/Controller/ChatController.php`, `src/Chat/StoneMemory.php` |
 | Store | One vector per stone in PostgreSQL (pgvector), built by `app:vectorize`. | `ai.store.postgres.memorials` |
-| MCP server | `symfony/mcp-bundle` and `mcp/sdk` expose four read-only `#[McpTool]` tools over STDIO and HTTP. | `src/Mcp/MemorialTools.php`, `config/packages/mcp.yaml` |
+| MCP server | `symfony/mcp-bundle` and `mcp/sdk` expose six read-only `#[McpTool]` tools over STDIO and HTTP. | `src/Mcp/MemorialTools.php`, `config/packages/mcp.yaml` |
 
 The agent and the MCP server share the same tool methods. The agent calls them in-process, not over
 MCP ([symfony/ai#2539](https://github.com/symfony/ai/issues/2539)). A small guarded patch fixes the
@@ -103,7 +103,7 @@ With the site URL that the installer printed:
 - `/`: the home page. `/search` and `/search/images`: full-text search with facets.
 - `/items/1`: one record, with its photos, OCR and proposed people.
 - `/api/docs`: the read-only API (see [Public genealogy API](#public-genealogy-api)).
-- `/mcp`: the MCP server over HTTP. Over STDIO: `php bin/console mcp:server`
+- `/mcp`: the MCP server over HTTP, and `/chat/connect`: how to add it to an assistant. Over STDIO: `php bin/console mcp:server`
   (see [MCP server](#mcp-server)).
 - `/chat`: the Ask page. It needs a Hugging Face token. Add `HUGGINGFACE_API_KEY=hf_...` to
   `.env.local`, then embed the stones:
@@ -532,13 +532,19 @@ credentials or absolute developer paths are required by this patch.
 
 MemorialAtlas is also an MCP server, built with `symfony/mcp-bundle` and the PHP MCP SDK (`mcp/sdk`).
 An AI assistant can search the collection and read a marker record with its photos, OCR text and
-open questions. The tools are read-only.
+open questions. The tools are read-only and need no account.
+
+To connect Claude, ChatGPT or another assistant to the public server, add a custom connector with
+the URL `https://memorialatlas.org/mcp` (Streamable HTTP, no authentication). The
+[Connect your assistant](https://memorialatlas.org/chat/connect) page has step-by-step instructions.
 
 | Tool | What it returns |
 | --- | --- |
 | `collection_overview` | Records per cemetery, records per processing status, photos with OCR, AI-cleaned views. |
-| `search_memorials` | Records whose title, description or OCR text contains the query. |
+| `search_memorials` | Records whose names, inscriptions, descriptions or symbols contain the query. |
+| `find_memorials` | The records closest in meaning to a question (semantic search over the pgvector store). |
 | `get_memorial` | One record: proposed people, uncertainties, and each photo with its OCR text, Jev route and AI-cleaned view. |
+| `collection_digest` | Summaries across the processed collection. |
 | `list_records_to_review` | Processed records that wait for a person, with the AI's open questions. |
 
 Every record says that it is an AI proposal for review, not a verified burial record, and that an
@@ -552,7 +558,7 @@ Over STDIO, for Claude Desktop and other local clients, add this to the client c
   "mcpServers": {
     "memorialatlas": {
       "command": "php",
-      "args": ["/path/to/MemorialAtlas/bin/console", "mcp:server"]
+      "args": ["/path/to/MemorialAtlas/bin/console", "mcp:server", "memorialatlas", "--no-debug", "--no-interaction"]
     }
   }
 }
