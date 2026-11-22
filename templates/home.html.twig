@@ -4,16 +4,14 @@
 <style>
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0}.pair img{width:100%;height:auto;display:block;border-radius:4px;background:#e6e6dd}.pair figcaption{grid-column:1/-1;font-size:.78rem;color:#6c756a;line-height:1.5}
 .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#6c756a;margin:6px 0 0}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;border-top:1px solid #d7d4cb;border-bottom:1px solid #d7d4cb;padding:20px 0;margin:8px 0 12px}.stats b{display:block;font-family:Georgia,serif;font-size:2.2rem;font-weight:400}.stats span{font-size:.8rem;color:#6c756a}
 .flow{list-style:none;padding:0;counter-reset:step;display:grid;gap:14px}.flow li{counter-increment:step;display:grid;grid-template-columns:2.2rem 1fr;gap:4px 12px}.flow li::before{content:counter(step);grid-row:span 2;font-family:Georgia,serif;font-size:1.6rem;color:#345c49}.flow strong{font-weight:600}.flow p{margin:0;font-size:.93rem;line-height:1.55}
-@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 <section class="hero">
     <div>
         <span class="eyebrow">Symfony AI &amp; MCP Hackathon entry</span>
         <h1>Gravestone photos in, searchable records out.</h1>
         <p>MemorialAtlas reads phone photos of grave markers. For each marker it proposes a record: the names, the dates and the inscription, with what is still uncertain.</p>
-        <p>A person checks every record against the photo. The photo stays the evidence.</p>
+        <p>These AI-generated records have not been systematically reviewed. Check the original photograph before relying on a reading.</p>
         <p><a class="button" href="{{ path('item_search') }}">Search the collection</a> &nbsp; <a href="#how">How it works ↓</a></p>
     </div>
     {% if heroImage %}{% set cleaned = memorial_cleaned(heroImage) %}
@@ -45,19 +43,13 @@
 <section style="max-width:860px">
 <h2>The collection</h2>
 <p>{{ stats.photos }} photos of headstones in St. Peter's Church Graveyard, Rappahannock County, Virginia, taken on 11 and 13 November 2026. The photos are public on <a href="https://huggingface.co/datasets/museado/memorialatlas-st-peters">Hugging Face</a>, so anyone can run the same pipeline on them.</p>
-<div class="stats">
-    <div><b>{{ stats.photos }}</b><span>photos</span></div>
-    <div><b>{{ stats.withOcr }}</b><span>read by OCR</span></div>
-    <div><b>{{ stats.records }}</b><span>records ready to review</span></div>
-    <div><b>{{ stats.cleaned }}</b><span>AI-cleaned views</span></div>
-</div>
-<p class="muted" style="font-size:.85rem">Counts come from the database when the page loads. The view from the drone is on the <a href="{{ path('drone') }}">Drone page</a>.</p>
+<p><a href="{{ path('item_search') }}">Browse the records</a> or <a href="{{ path('drone') }}">explore the aerial view</a>.</p>
 
 <h2 id="how">What happens to each photo</h2>
 <ol class="flow">
     <li><strong>Read.</strong><p>Mistral OCR reads the text on the stone.</p></li>
     <li><strong>Notice.</strong><p>Jev, a TypeSafe decision model, answers fixed questions with probabilities: is this a gravestone, is the OCR usable, does the photo need alignment, is there a carved symbol or a verse. The answers choose the next steps, so a clear photo costs less than a hard one. When Jev sees a symbol, Mistral names it: a polo player, a caduceus, lacrosse sticks, scales of justice. When the photo needs alignment, Gemini makes a straightened copy for display only, because an image model can change letters.</p></li>
-    <li><strong>Remember.</strong><p>Mistral proposes the record and one line about the stone, only from what is carved: "This stone remembers Fred Wesley, a Colonel and Silver Star recipient." A vision model on Hugging Face then checks every reading against the photo and lists the ones it does not support, for a person to review.</p></li>
+    <li><strong>Remember.</strong><p>Mistral proposes the record and one line about the stone, only from what is carved: "This stone remembers Fred Wesley, a Colonel and Silver Star recipient." A vision model on Hugging Face then checks every reading against the photo and flags readings it does not support. This automated check is not human verification.</p></li>
     <li><strong>Search it, or ask about it.</strong><p>Records go into Elasticsearch, a public read-only API and an MCP server. The <a href="{{ path('chat') }}">Ask page</a> answers questions such as "which stones show hobbies?" with the same tools, in-process.</p></li>
 </ol>
 
