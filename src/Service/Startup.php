@@ -19,7 +19,9 @@ final readonly class Startup
     public function load(SymfonyStyle $io): int
     {
         $item = $this->demo->load();
-        if ($this->index->populateCommand($io) !== 0) return 1;
+        // Rebuild, not populate: an index left by an older install has an older strict mapping, and
+        // populate would write into it and fail on any field added since.
+        if ($this->index->rebuildCommand($io) !== 0) return 1;
         $io->success('HF records and search are ready. Start at /items/'.$item->id.'. Raw records are queued; no AI calls were made.');
         return 0;
     }
