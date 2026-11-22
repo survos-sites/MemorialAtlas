@@ -25,6 +25,7 @@ export default class extends Controller {
         tools.className = 'chat-tools';
         const answer = document.createElement('div');
         answer.className = 'chat-a streaming';
+        answer.dataset.status = 'Looking at the stones…';
         turn.append(q, tools, answer);
         this.logTarget.append(turn);
         q.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -60,11 +61,19 @@ export default class extends Controller {
         const event = block.match(/^event: (.*)$/m)?.[1];
         const data = JSON.parse(block.match(/^data: (.*)$/m)?.[1] ?? 'null');
         if (event === 'tool') {
+            // Text before a tool call is the model's plan, not the answer: keep it as a note instead of erasing it.
+            if (answer.textContent.trim()) {
+                const plan = document.createElement('p');
+                plan.className = 'chat-plan';
+                plan.textContent = answer.textContent.trim();
+                tools.append(plan);
+            }
             const chip = document.createElement('span');
             chip.className = 'chat-tool';
             chip.textContent = `${data.name}(${Object.values(data.arguments).map((v) => JSON.stringify(v)).join(', ')})`;
             tools.append(chip);
             answer.textContent = '';
+            answer.dataset.status = `Running ${data.name}…`;
         } else if (event === 'delta') {
             answer.textContent += data;
         } else if (event === 'done') {
