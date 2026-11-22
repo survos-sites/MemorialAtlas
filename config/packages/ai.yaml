@@ -53,9 +53,9 @@ ai:
             # One vector per stone, built from its dense summary by app:vectorize.
             memorials:
                 dbal_connection: 'doctrine.dbal.default_connection'
-                table_name: 'memorial_vectors'
+                table_name: 'memorial_vectors_openai'
                 metric: 'cosine'
-                dimensions: 1024
+                dimensions: 1536
 
     message_store:
         doctrine:
@@ -65,6 +65,7 @@ ai:
                     table_name: 'chat_messages'
 
     vectorizer:
-        huggingface:
-            platform: 'ai.platform.huggingface'
-            model: 'BAAI/bge-m3'
+        # Hugging Face hf-inference took 4 to 12 seconds per question embedding; OpenAI answers in well under a second.
+        openai:
+            platform: 'ai.platform.openai'
+            model: 'text-embedding-3-small'

@@ -22,13 +22,13 @@ use Symfony\Component\Uid\Uuid;
 final class MemorialVectors
 {
     /** The table of the "memorials" store in config/packages/ai.yaml. */
-    public const TABLE = 'memorial_vectors';
+    public const TABLE = 'memorial_vectors_openai';
     private const UUID_NAMESPACE = 'b6f6a3c2-6f0e-4d38-9a51-5d1f2e7c4a90';
 
     public function __construct(
         private EntityManagerInterface $em,
         private Connection $connection,
-        #[Autowire(service: 'ai.vectorizer.huggingface')] private VectorizerInterface $vectorizer,
+        #[Autowire(service: 'ai.vectorizer.openai')] private VectorizerInterface $vectorizer,
         #[Autowire(service: 'ai.store.postgres.memorials')] private StoreInterface $store,
     ) {}
 
@@ -87,7 +87,7 @@ final class MemorialVectors
             $documents[] = new TextDocument($id, $text, new Metadata(['itemId' => $item->id, 'title' => $item->title, 'textHash' => $hash, Metadata::KEY_TEXT => $text]));
         }
 
-        // mistral-embed takes a batch of texts per call.
+        // The embeddings API takes a batch of texts per call.
         foreach (array_chunk($documents, 64) as $chunk) $this->store->add($this->vectorizer->vectorize($chunk));
         $gone = array_keys(array_diff_key($stored, $wanted));
         if ($gone !== []) $this->store->remove($gone);

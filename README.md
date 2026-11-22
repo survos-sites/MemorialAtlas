@@ -53,7 +53,7 @@ goes through a Symfony AI platform bridge.
 
 | Piece | What it does here | Where |
 | --- | --- | --- |
-| Platform bridges | Mistral (OCR, vision, extraction), TypeSafe (Jev decisions), Gemini (straightened display copy), Hugging Face (Qwen checks and summaries, chat, `BAAI/bge-m3` embeddings). | `config/packages/ai.yaml` |
+| Platform bridges | Mistral (OCR, vision, extraction), TypeSafe (Jev decisions), Gemini (straightened display copy), Hugging Face (Qwen checks, summaries and chat), OpenAI (`text-embedding-3-small` embeddings). | `config/packages/ai.yaml` |
 | Structured output | Responses map to typed DTOs such as `MarkerFacts` and `MarkerPerson`. | `src/` |
 | Agent | `memorial_chat` answers questions on the Ask page with three tools, keeps the conversation in a Doctrine message store, and puts the nearest stones in its prompt through a memory provider. | `config/packages/ai.yaml`, `src/Controller/ChatController.php`, `src/Chat/StoneMemory.php` |
 | Store | One vector per stone in PostgreSQL (pgvector), built by `app:vectorize`. | `ai.store.postgres.memorials` |
@@ -105,8 +105,9 @@ With the site URL that the installer printed:
 - `/api/docs`: the read-only API (see [Public genealogy API](#public-genealogy-api)).
 - `/mcp`: the MCP server over HTTP, and `/chat/connect`: how to add it to an assistant. Over STDIO: `php bin/console mcp:server`
   (see [MCP server](#mcp-server)).
-- `/chat`: the Ask page. It needs a Hugging Face token. Add `HUGGINGFACE_API_KEY=hf_...` to
-  `.env.local`, then embed the stones:
+- `/chat`: the Ask page. It needs a Hugging Face token for the chat model and an OpenAI key for
+  the embeddings. Add `HUGGINGFACE_API_KEY=hf_...` and `OPENAI_API_KEY=sk-...` to `.env.local`,
+  then embed the stones:
 
   ```bash
   symfony console app:vectorize
@@ -196,7 +197,7 @@ Jev decisions retain probabilities, confidence, model, timing and token usage. T
 
 Image requests use TypeSafe's experimental images API. The app prepares baseline JPEGs within its 280–1568 pixel dimension limits. See [TypeSafe image documentation](https://docs.typesafe.ai/images). The current Symfony TypeSafe bridge does not implement this assets request format, so the app uses Symfony HttpClient with typed questions and response validation.
 
-`SCANFONY_META_OCR=0` is the hackathon default: no custom OCR service is needed. Optional `SCANFONY_META_OCR=1` requests our Imagor/RustO OCR. Requested OCR missing from the response is an error. `SCANFONY_OCR_ENABLED=1` enables hosted Mistral OCR when no saved reading exists. `SCANFONY_VISION_PLATFORM` and `SCANFONY_VISION_MODEL` select the generative provider/model (default Mistral). It must support images and structured output. Hugging Face serves the chat model, the embeddings and the Qwen check, not OCR or extraction.
+`SCANFONY_META_OCR=0` is the hackathon default: no custom OCR service is needed. Optional `SCANFONY_META_OCR=1` requests our Imagor/RustO OCR. Requested OCR missing from the response is an error. `SCANFONY_OCR_ENABLED=1` enables hosted Mistral OCR when no saved reading exists. `SCANFONY_VISION_PLATFORM` and `SCANFONY_VISION_MODEL` select the generative provider/model (default Mistral). It must support images and structured output. Hugging Face serves the chat model and the Qwen check, and OpenAI the embeddings; neither does OCR or extraction.
 
 Workflow decisions live in the app, with no AI workflow bundle dependency:
 
