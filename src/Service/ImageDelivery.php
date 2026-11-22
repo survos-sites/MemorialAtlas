@@ -11,13 +11,6 @@ use Symfony\UX\Image\ImageUrlGenerator;
 
 final readonly class ImageDelivery
 {
-    /**
-     * Degrees for Imagor's rotate(), which turns counter-clockwise. Set by app:image:rotate for photos of
-     * flat markers taken straight down, where the camera's EXIF orientation is wrong. Original photos turn
-     * on cards only, because the record page draws OCR boxes in the original frame.
-     */
-    public const ROTATION = 'displayRotation';
-
     public function __construct(
         private ImageUrlGenerator $urls,
         #[Autowire('%kernel.environment%')] private string $environment,
@@ -35,7 +28,7 @@ final readonly class ImageDelivery
             }
         }
 
-        return $this->generate($source, $preset, $preset === ImagePreset::Thumb ? $this->rotation($image) : []);
+        return $this->generate($source, $preset);
     }
 
     /** The AI-cleaned display copy, or null when the photo has none (or dev lacks the local copy). */
@@ -43,9 +36,9 @@ final readonly class ImageDelivery
     {
         $view = $image->imageMetadata[ImageCleaner::KEY] ?? null;
         if (!is_array($view)) return null;
-        if ($this->environment === 'prod') return $this->generate(substr($view['sourceUrl'], strlen('s3://')), $preset, $this->rotation($image));
+        if ($this->environment === 'prod') return $this->generate(substr($view['sourceUrl'], strlen('s3://')), $preset);
 
-        return is_file($this->mediaDirectory.'/'.$view['storagePath']) ? $this->generate($view['storagePath'], $preset, $this->rotation($image)) : null;
+        return is_file($this->mediaDirectory.'/'.$view['storagePath']) ? $this->generate($view['storagePath'], $preset) : null;
     }
 
     public function storedDetail(string $storagePath, string $publicUrl): string
@@ -53,18 +46,9 @@ final readonly class ImageDelivery
         return $this->generate($this->environment === 'prod' ? $publicUrl : $storagePath, ImagePreset::Detail);
     }
 
-    /** @return array<string, array<string, int>> */
-    private function rotation(Image $image): array
+    private function generate(string $source, ImagePreset $preset): string
     {
-        $degrees = (int) ($image->imageMetadata[self::ROTATION] ?? 0);
-
-        return $degrees === 0 ? [] : ['imagor' => ['rotate' => $degrees]];
-    }
-
-    /** @param array<string, array<string, int>> $operations */
-    private function generate(string $source, ImagePreset $preset, array $operations = []): string
-    {
-        $url = $this->urls->generate($source, operations: $operations, preset: $preset->value);
+        $url = $this->urls->generate($source, preset: $preset->value);
         if ($this->environment === 'prod'
             && (parse_url($url, PHP_URL_HOST) !== 'imagor.survos.com'
                 || parse_url($url, PHP_URL_SCHEME) !== 'https'
