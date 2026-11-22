@@ -1,6 +1,6 @@
 """Render a straight-down rectilinear view from the down-facing lens of an A1 dual-fisheye still.
 
-Usage: python3 bin/aerial-nadir.py <in.jpg> <out.jpg> [fov_deg] [size] [c]
+Usage: python3 tools/aerial-nadir.py <in.jpg> <out.jpg> [fov_deg] [size] [c]
 Equidistant fisheye: r = R * c * theta / (pi/2), where c = radius fraction at 90 degrees
 (the viewer uses c = 0.946 for this camera).
 """
