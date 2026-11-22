@@ -8,7 +8,7 @@
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js","@photo-sphere-viewer/core":"https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5.15.1/index.module.js","@photo-sphere-viewer/dual-fisheye-adapter":"https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/dual-fisheye-adapter@5.15.1/index.module.js"}}</script>
 </head><body>
-<header><div><div class="eyebrow"><a href="/drone#inscription-study" style="color:inherit">MemorialAtlas / crop and tentative reading ↗</a></div><h1>St. Peter’s · one row</h1><div class="subtitle">November 13, 2026 · Rappahannock County</div></div><span class="subtitle">2 photos · 5 frames</span></header>
+<header><div><div class="eyebrow"><a href="{{ path('drone') }}#inscription-study" style="color:inherit">MemorialAtlas / crop and tentative reading ↗</a></div><h1>St. Peter’s · one row</h1><div class="subtitle">November 13, 2026 · Rappahannock County</div></div><span class="subtitle">2 photos · 5 frames</span></header>
 <main><aside><div class="maphead"><strong>Explore the stitched overview</strong><button id="fit">Fit overview</button></div><div id="map" aria-label="Stitched overview with clickable capture centers"></div>
 <div class="legend"><span class="gold">● Original stills</span> &nbsp; <span class="blue">● Video frames</span><br>Click a center to open its sphere. Hover to see its footprint.</div><div id="list" aria-label="Choose a capture"></div>
 <details><summary>About this overview</summary><p>Five overlapping video frames form this local overview. Two original still photos are independently aligned to it. Points are projected downward-view centers, not GPS positions. Upright stones may show seams or doubled edges; this is a navigation aid, not a surveyed map.</p><p>The sphere uses an approximate dual-fisheye lens projection. Drag to look around; zoom to inspect a stone. <a href="manifest.json">Alignment and source manifest</a></p></details></aside>
@@ -23,7 +23,7 @@ class A1Adapter extends DualFisheyeAdapter {
 A1Adapter.id='a1-row';
 const $=id=>document.getElementById(id);
 try{
-const response=await fetch('manifest.json');if(!response.ok)throw Error('Could not load capture manifest');const data=await response.json();
+const response=await fetch('{{ asset('drone/st-peter-row/manifest.json') }}');if(!response.ok)throw Error('Could not load capture manifest');const data=await response.json();
 const photos=data.photos.sort((a,b)=>{const t=r=>r.kind==='still'?r.filename.split('_')[2]:r.time.replaceAll(':','');return t(a).localeCompare(t(b))});
 const initialId=new URL(location.href).searchParams.get('photo');let current=photos.findIndex(p=>p.id===initialId);if(current<0)current=photos.findIndex(p=>p.kind==='still');if(current<0)current=0;
 const map=L.map('map',{crs:L.CRS.Simple,minZoom:-4,maxZoom:3,zoomSnap:.1});const bounds=[[0,0],[data.height,data.width]];

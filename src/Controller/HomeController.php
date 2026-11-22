@@ -48,6 +48,13 @@ final class HomeController extends AbstractController
         return $this->render('drone.html.twig');
     }
 
+    /** The full-screen sphere viewer that the Drone page embeds. */
+    #[Route('/drone/row', name: 'drone_row', methods: ['GET'])]
+    public function droneRow(): Response
+    {
+        return $this->render('drone/row.html.twig');
+    }
+
     #[Route('/cemeteries/{id}', name: 'cemetery_show', requirements: ['id' => '\\d+'])]
     public function cemetery(Cemetery $cemetery, EntityManagerInterface $em, \Symfony\Component\HttpFoundation\Request $request): Response
     {
