@@ -130,6 +130,12 @@ you set a password hash.
    symfony console security:hash-password
    ```
 
+   Scripts and agents can pass the password instead of answering the prompt:
+
+   ```bash
+   symfony console security:hash-password 'your-password' --no-interaction
+   ```
+
 2. Add the hash to `.env.local`, in single quotes so the `$` signs stay:
 
    ```dotenv
