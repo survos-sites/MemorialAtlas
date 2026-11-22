@@ -42,7 +42,7 @@ final class ImportCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         if ($input->getOption('process') && !$input->getOption('dry-run')) {
-            \App\Service\PerspectiveCorrector::enabled(!$input->getOption('no-correction'));
+            \App\Service\PerspectiveCorrector::enabled($input->getOption('no-correction') ? false : null);
         }
         $directory = $input->getArgument('directory');
         $perItem = filter_var($input->getOption('images-per-item'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);

@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-php --ri opencv >/dev/null
 php --ri exif >/dev/null
 php bin/console importmap:install
 php bin/console asset-map:compile

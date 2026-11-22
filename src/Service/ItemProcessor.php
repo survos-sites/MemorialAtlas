@@ -58,8 +58,8 @@ final readonly class ItemProcessor
             $progress('Already processed; keeping the reviewed draft.');
             return;
         }
-        $correction ??= $item->aiResults['processingPolicy']['correction'] ?? true;
-        PerspectiveCorrector::enabled($correction);
+        // Only an explicit opt-out is kept; otherwise correction runs when OpenCV is installed.
+        $correction = PerspectiveCorrector::enabled(($correction ?? $item->aiResults['processingPolicy']['correction'] ?? null) === false ? false : null);
         $visionEnabled ??= $item->aiResults['processingPolicy']['visionEnabled'] ?? $this->visionEnabled;
         $item->aiResults['processingPolicy'] = ['visionEnabled'=>$visionEnabled, 'correction'=>$correction];
         $extraction = $this->platforms->get($this->extractionPlatform);

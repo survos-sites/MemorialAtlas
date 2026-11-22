@@ -6,9 +6,16 @@ namespace App\Service;
 
 final class PerspectiveCorrector
 {
+    /** The production image does not build OpenCV, so correction is optional. */
+    public static function available(): bool
+    {
+        return extension_loaded('opencv');
+    }
+
+    /** Null means "when OpenCV is installed"; true requires it. */
     public static function enabled(?bool $correction = null): bool
     {
-        $correction ??= true;
+        $correction ??= self::available();
         if ($correction && !extension_loaded('opencv')) {
             throw new \RuntimeException('Install the OpenCV extension or run this with --no-correction.');
         }
@@ -18,7 +25,7 @@ final class PerspectiveCorrector
     /** @return array{bytes: string, width: int, height: int, sourceCorners: array} */
     public function correct(string $bytes, array $corners): array
     {
-        self::enabled();
+        self::enabled(true);
         $size = getimagesizefromstring($bytes);
         if (false === $size || $size[0] * $size[1] > 4_000_000) {
             throw new \InvalidArgumentException('Use the bounded detail image as the correction source.');

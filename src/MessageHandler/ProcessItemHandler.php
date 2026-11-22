@@ -26,7 +26,7 @@ final readonly class ProcessItemHandler
             if ($item === null) return;
             $this->em->refresh($item);
             $correction = $message->correction ?? $item->aiResults['processingPolicy']['correction'] ?? null;
-            $correction ??= true;
+            $correction ??= \App\Service\PerspectiveCorrector::available();
             if (($message->correctionImageId ?? null) !== null) {
                 if (!$correction) return;
                 $image = $this->em->find(Image::class, $message->correctionImageId);

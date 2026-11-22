@@ -27,7 +27,7 @@ final class ImageCorrectionController extends AbstractController
     public function save(Image $image, #[MapRequestPayload] CorrectionRequest $input, PerspectiveCorrector $corrector, EntityManagerInterface $em, MessageBusInterface $bus): JsonResponse
     {
         if (!$this->isCsrfTokenValid('correct-'.$image->id, $input->token)) throw $this->createAccessDeniedException('Invalid correction token.');
-        PerspectiveCorrector::enabled();
+        PerspectiveCorrector::enabled(true);
         try { $corrector->points($input->corners, 1600, 1600); }
         catch (\InvalidArgumentException $error) { return $this->json(['error' => $error->getMessage()], 422); }
         $image->imageMetadata['correctionCorners'] = $input->corners;

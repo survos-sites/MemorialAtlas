@@ -30,13 +30,14 @@ final class PhotoUploadController extends AbstractController
     {
         if (!$this->isCsrfTokenValid('photo-upload', $input->token)) throw $this->createAccessDeniedException('Invalid upload token.');
         if (!extension_loaded('exif')) return $this->json(['error' => 'Install the PHP EXIF extension before accepting photographs.'], 503);
-        $correction = $input->correction;
-        $correction ??= true;
         $corners = $input->normalizedCorners();
+        $correction = $input->correction ?? true;
         try {
-            PerspectiveCorrector::enabled($correction);
-            if ($corners !== null) {
+            if ($corners === null) {
+                $correction = $correction && PerspectiveCorrector::available();
+            } else {
                 if (!$correction) throw new \InvalidArgumentException('Corners require correction to be enabled.');
+                if (!PerspectiveCorrector::available()) throw new \InvalidArgumentException('Perspective correction needs the OpenCV extension, which this server does not have. Upload without corners.');
                 $corrector->points($corners, 1600, 1600);
             }
         } catch (\InvalidArgumentException $error) {
