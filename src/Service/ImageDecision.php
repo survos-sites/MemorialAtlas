@@ -63,12 +63,13 @@ final readonly class ImageDecision
     }
 
     /** The bounded JPEG that Jev receives: at most 1568 px, at least 280 px. */
-    public function decisionJpeg(string $url): string
+    /** @param int $maxSide TypeSafe accepts 280 to 1568 pixels; smaller costs fewer tokens */
+    public function decisionJpeg(string $url, int $maxSide = 1568): string
     {
         $bytes = $this->http->request('GET', $url, ['max_duration'=>60])->getContent();
         $bitmap = imagecreatefromstring($bytes);
         if ($bitmap === false) throw new \RuntimeException('Cannot decode decision image.');
-        $scale = min(1, 1568/max(imagesx($bitmap),imagesy($bitmap)));
+        $scale = min(1, max(280, min(1568, $maxSide))/max(imagesx($bitmap),imagesy($bitmap)));
         if ($scale < 1) {
             $resized = imagescale($bitmap, (int)(imagesx($bitmap)*$scale));
             imagedestroy($bitmap);

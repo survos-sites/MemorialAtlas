@@ -22,6 +22,8 @@ final readonly class OrientationFinder
     /** Below this, or without a clear lead over the photo as taken, the photo keeps its orientation. */
     public const MIN_UPRIGHT = 0.60;
     public const MIN_LEAD = 0.30;
+    /** Each photo is sent four times. On five test photos 768 px matched 1568 px confidence; 512 px fell to 0.51. */
+    public const MAX_SIDE = 768;
 
     public function __construct(
         private JevClient $jev,
@@ -44,7 +46,7 @@ final readonly class OrientationFinder
     /** @return array{turn: int, upright: array<int, float>, model: string} */
     public function evaluate(string $url): array
     {
-        $bitmap = imagecreatefromstring($this->decisions->decisionJpeg($url)) ?: throw new \RuntimeException('Cannot decode the photo.');
+        $bitmap = imagecreatefromstring($this->decisions->decisionJpeg($url, self::MAX_SIDE)) ?: throw new \RuntimeException('Cannot decode the photo.');
         $images = [];
         foreach (Q::TURNS as $turn) {
             $turned = $turn === 0 ? $bitmap : imagerotate($bitmap, $turn, 0);
