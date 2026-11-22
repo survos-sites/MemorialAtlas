@@ -13,4 +13,4 @@ mcp:
                 stdio: true
             http:
                 path: /mcp
-                allowed_hosts: ['localhost', 'mematlas.wip', 'memorialatlas.org']
+                allowed_hosts: ['localhost', '127.0.0.1', 'mematlas.wip', 'memorialatlas.org']

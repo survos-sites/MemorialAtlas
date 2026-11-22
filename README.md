@@ -5,9 +5,11 @@
 MemorialAtlas reads phone photos of grave markers. For each marker it proposes a record: the
 names, the dates and the inscription, with what is still uncertain. A person checks every record
 against the photo, and the photo stays the evidence. It is an entry for the
-[Symfony AI & MCP Hackathon](https://symfony.com/hackathon/).
+[Symfony AI & MCP Hackathon](https://symfony.com/hackathon/projects/memorial-atlas-every-stone-tell-a-story).
 
-[Live site: MemorialAtlas.org](https://memorialatlas.org) · [Public API documentation](https://memorialatlas.org/api/docs) ·
+[Live site: MemorialAtlas.org](https://memorialatlas.org) ·
+[90-second video](https://www.youtube.com/watch?v=9iiOFCiBXcE) ·
+[Public API documentation](https://memorialatlas.org/api/docs) ·
 [Photos on Hugging Face](https://huggingface.co/datasets/museado/memorialatlas-st-peters)
 
 The collection is phone photos of headstones in St. Peter's Church Graveyard, Rappahannock County,
@@ -44,121 +46,143 @@ as `manifest-processed.json`.
 
 Questions and ideas: [GitHub Discussions](https://github.com/survos-sites/MemorialAtlas/discussions).
 
-Every model is a Symfony AI platform bridge. Built with Symfony 8, Doctrine, PostgreSQL, Messenger, Elasticsearch and Imagor.
+## How it uses Symfony AI and the PHP MCP SDK
 
-Production runs as the Dokku app `memorialatlas` on `fsn1`. The deployment remote is `dokku@fsn1:memorialatlas`.
+Built with Symfony 8, Doctrine, PostgreSQL, Messenger, Elasticsearch and Imagor. Every model call
+goes through a Symfony AI platform bridge.
 
-## Setup
+| Piece | What it does here | Where |
+| --- | --- | --- |
+| Platform bridges | Mistral (OCR, vision, extraction), TypeSafe (Jev decisions), Gemini (straightened display copy), Hugging Face (Qwen checks and summaries, chat, `BAAI/bge-m3` embeddings). | `config/packages/ai.yaml` |
+| Structured output | Responses map to typed DTOs such as `MarkerFacts` and `MarkerPerson`. | `src/` |
+| Agent | `memorial_chat` answers questions on the Ask page with three tools, keeps the conversation in a Doctrine message store, and puts the nearest stones in its prompt through a memory provider. | `config/packages/ai.yaml`, `src/Controller/ChatController.php`, `src/Chat/StoneMemory.php` |
+| Store | One vector per stone in PostgreSQL (pgvector), built by `app:vectorize`. | `ai.store.postgres.memorials` |
+| MCP server | `symfony/mcp-bundle` and `mcp/sdk` expose four read-only `#[McpTool]` tools over STDIO and HTTP. | `src/Mcp/MemorialTools.php`, `config/packages/mcp.yaml` |
 
-### Requirements
+The agent and the MCP server share the same tool methods. The agent calls them in-process, not over
+MCP ([symfony/ai#2539](https://github.com/symfony/ai/issues/2539)). A small guarded patch fixes the
+Mistral OCR base URL until a release contains it ([symfony/ai#2900](https://github.com/symfony/ai/issues/2900),
+see [Mistral OCR bridge fix](#mistral-ocr-bridge-fix)).
 
-All of these are required.
+## Quickstart
 
-- PHP 8.5+ with GD, PDO PostgreSQL and SQLite, Composer and the [Symfony CLI](https://symfony.com/download).
-- PostgreSQL 16+ with the [pgvector](https://github.com/pgvector/pgvector) extension. The chat stores one embedding per stone in it.
-- Imagor, for thumbnails and image metadata.
-- Elasticsearch 9, for the search page.
+The installer loads a public demo (six photos, four with saved AI results) and needs no API keys.
+It makes no AI calls.
 
-The installer starts all three services with Docker Compose. To start one yourself:
+You need:
 
-```bash
-# PostgreSQL with pgvector, on the port that .env.local.example uses
-docker run -d --name memorialatlas-db -p 127.0.0.1:5544:5432 -e POSTGRES_USER=app -e POSTGRES_PASSWORD=app -e POSTGRES_DB=memorialatlas pgvector/pgvector:pg18
-```
+- Git, Composer and the [Symfony CLI](https://symfony.com/download).
+- PHP 8.5+ with the `gd`, `pdo_pgsql` and `pdo_sqlite` extensions.
+- Docker (or Podman) with Compose, running.
+- Free local ports 5544 (PostgreSQL with pgvector), 8088 (Imagor) and 19200 (Elasticsearch).
 
-```bash
-# Imagor, on the port of LOCAL_IMAGOR_DSN in .env
-docker compose up -d imagor
-```
-
-On an existing PostgreSQL server, install pgvector and run `CREATE EXTENSION vector;` as a superuser once.
-To add pgvector to another Compose file, use the image `pgvector/pgvector:pg18`.
-
-The chat also needs `HUGGINGFACE_API_KEY` in `.env.local`, and `symfony console app:vectorize`
-after a load, to embed the stones. Browsing and search work without it.
-
-The [public Sperryville demo](https://huggingface.co/datasets/museado/memorialatlas-demo)
-includes four photographs with saved OCR and extraction results, plus two raw
-photographs that demonstrate processing setup.
-No S3, Hugging Face or AI credentials are required to load and browse it.
-
-Install Git, PHP 8.5+ with the extensions above, Composer, Docker with Compose,
-and the [Symfony CLI](https://symfony.com/download) first. Start Docker, then run:
+Then run:
 
 ```bash
-install_dir="$HOME/sites/hackathon"
+install_dir="$HOME/sites/memorialatlas"
 (set -o pipefail; curl -fsSL https://raw.githubusercontent.com/survos-sites/MemorialAtlas/main/bin/install.sh |
   bash -s -- --dir "$install_dir") && cd "$install_dir"
 ```
 
-The final `cd` runs in your terminal, so you finish in the new checkout. A piped
-installer runs in a child shell and cannot change its parent shell’s directory.
-You can use `wget -qO-` in place of `curl -fsSL`. To inspect the installer first,
-download that URL to a file and read it before running `bash install.sh`.
+To read the installer first, download that URL and run it with `bash install.sh --dir DIRECTORY`.
+From an existing checkout, run `bash bin/install.sh`.
 
-The installer uses `~/sites/hackathon` by default (or the directory passed with
-`--dir`) and generates a private `.env.local`
-with editable API-key placeholders from `.env.local.example`. It
-starts PostgreSQL, Elasticsearch and Imagor, installs Composer dependencies,
-loads six image references (four with saved results, two raw), builds both search indexes, reports processing
-readiness, starts Symfony with `symfony server:start -d`, and opens the site with
-`symfony open:local`. It then prints commands for refreshing the Hugging Face
-listing, rebuilding search, and checking processing configuration. The demo has
-already been imported; refreshing is optional. No AI calls are made.
-The first download of container images can take several minutes.
+The installer clones the repository, writes a private `.env.local` from `.env.local.example`,
+starts PostgreSQL, Elasticsearch and Imagor with Docker Compose, runs `composer install`, creates
+the database, loads the demo from Hugging Face, builds both search indexes, starts
+`symfony server:start -d` and opens the site. It prints the local URL (for example
+`https://127.0.0.1:8000`).
 
-From an existing checkout, run `bash bin/install.sh`. To choose a destination:
+On 21 November 2026, a fresh install took 30 seconds with the container images already
+downloaded. The first download of the images adds a few minutes, depending on your connection.
+
+### Try it
+
+With the site URL that the installer printed:
+
+- `/`: the home page. `/search` and `/search/images`: full-text search with facets.
+- `/items/1`: one record, with its photos, OCR and proposed people.
+- `/api/docs`: the read-only API (see [Public genealogy API](#public-genealogy-api)).
+- `/mcp`: the MCP server over HTTP. Over STDIO: `php bin/console mcp:server`
+  (see [MCP server](#mcp-server)).
+- `/chat`: the Ask page. It needs a Hugging Face token. Add `HUGGINGFACE_API_KEY=hf_...` to
+  `.env.local`, then embed the stones:
+
+  ```bash
+  symfony console app:vectorize
+  ```
+
+- `/admin`: EasyAdmin, after you create the administrator below.
+
+### Create the administrator
+
+There is one administrator account, `admin`, and no default password. Sign-in is disabled until
+you set a password hash.
+
+1. Hash a password. The command asks for the password and prints a table; copy the value of
+   `Password hash`:
+
+   ```bash
+   symfony console security:hash-password
+   ```
+
+2. Add the hash to `.env.local`, in single quotes so the `$` signs stay:
+
+   ```dotenv
+   ADMIN_PASSWORD_HASH='$2y$13$...'
+   ```
+
+3. Open `/login`, sign in as `admin`, and you land on `/admin`.
+
+The admin area manages items, images, audio and cemeteries, and has the photo upload form
+(`/admin/photos/upload`), the OCR lab (`/admin/ocr-lab`) and the corner editor for perspective
+correction. Search, records, the API and MCP stay public and read-only.
+
+### Stop and remove
 
 ```bash
-install_dir="$HOME/sites/hackathon"
-(set -o pipefail; curl -fsSL https://raw.githubusercontent.com/survos-sites/MemorialAtlas/main/bin/install.sh |
-  bash -s -- --dir "$install_dir") && cd "$install_dir"
+bin/stop
 ```
 
-Existing `.env.local` files are preserved. Unless created by this installer,
-they select existing services: the installer does not start another database.
-Configure `DATABASE_URL`, `ELASTICSEARCH_DSN` and `UX_IMAGE_DSN` before running
-`bash bin/install.sh --existing-services`. Rerunning preserves demo review
-changes and does not pull Git updates or overwrite credentials.
+`bin/stop` stops the Symfony server and this checkout's containers. Database files stay in
+`var/postgres`. Run it before you delete the directory or install another copy.
 
-Saved OCR and claims are usable immediately. Unprocessed photographs retain their
-status and show an “Awaiting processing” badge; failed photos show “Processing
-needs retry.” Run `symfony console app:processing:status` to see counts and missing
-configuration. To process your own photos, fill in the S3, Imagor `/meta`, TypeSafe and
-selected AI provider placeholders in `.env.local`. Existing configuration files
-are preserved; older installations can copy missing names from `.env.local.example`. The stock
-thumbnail container does not supply OCR. No vault or API-key prompt is needed for
-the saved demo, and the installer never starts paid processing.
+### Use your own services
 
+To use an existing PostgreSQL (with pgvector), Elasticsearch 9 and Imagor, create `.env.local` with
+`DATABASE_URL`, `ELASTICSEARCH_DSN` and `UX_IMAGE_DSN`, then run
+`bash bin/install.sh --existing-services`. No containers are started. On an existing PostgreSQL
+server, run `CREATE EXTENSION vector;` as a superuser once. The database user needs permission to
+create the application database, or you can create it beforehand.
 
-Startup creates the application database if needed, applies migrations, downloads
-the public demo listing and prints its item URL. Repeating it preserves the existing
-demo and review changes. Image URLs and checksums are retained from the manifest. Originals stay on Hugging Face; Imagor fetches them only when a thumbnail is requested.
-The selected saved receipts retain source IDs as provenance. No AI calls occur.
+`symfony console app:startup` creates the database, applies migrations and loads the demo.
+`--skip-demo` gives an empty schema. `DEMO_MANIFEST_URL` selects a different public manifest.
+`symfony console app:load` refreshes the demo and both search indexes. The home, About and record
+pages work without Elasticsearch.
 
-The five-minute target assumes PHP/Composer and Docker are already available;
-the first container-image download depends on your connection. To use an existing
-PostgreSQL server (with pgvector), set DATABASE_URL in .env.local and start only
-`docker compose up -d imagor`.
-Your database user needs permission to create the application database, or you
-can create that database beforehand. Startup never provisions a server.
-Use `symfony console app:startup --skip-demo` for an empty schema. DEMO_MANIFEST_URL selects a different
-public demo manifest.
+Rerunning the installer keeps `.env.local`, credentials and review changes, and does not pull Git
+updates. The committed `.env` points at a shared PostgreSQL on port 5434; `.env.local.example`
+selects the standalone service on port 5544.
 
-The installer includes Elasticsearch and builds search indexes. With existing
-services, configure ELASTICSEARCH_DSN and run
-symfony console app:load to import the HF listing and refresh both search indexes.
-Production deployments rebuild both indexes before releasing the application.
-The home, About and record pages do not need Elasticsearch.
+### Process new photos
 
-S3 and provider credentials are for processing new photographs or the optional
-app:demo:publish legacy S3 export, not for loading the public demo.
-All /admin routes require ROLE_ADMIN and an administrator password hash.
+Saved results are usable immediately. Unprocessed photos show an "Awaiting processing" badge.
+To process them, or your own photos, fill in the provider keys in `.env.local` (Mistral, TypeSafe,
+and S3 for local uploads), then:
 
-The committed .env defaults use the shared PostgreSQL service on port 5434;
-.env.local.example selects the standalone service on port 5544. Change
-`DATABASE_URL` for another developer's server. The optional standalone database uses a fixed port and a Symfony CLI ignore
-label so Docker cannot silently replace this explicit connection.
+```bash
+symfony console app:processing:status         # what is pending and which settings are missing
+symfony console messenger:consume processing -vv
+```
+
+Processing calls paid providers. The installer never starts it. See
+[Populate raw photographs](#populate-raw-photographs) and
+[Cemeteries and your photographs](#cemeteries-and-your-photographs).
+
+## License
+
+MIT, see [LICENSE](LICENSE). The demo photos on Hugging Face have their own license on their
+dataset pages. TombReader data, if you import it, is CC BY-NC 4.0.
 
 ## Image processing
 
@@ -172,7 +196,7 @@ Jev decisions retain probabilities, confidence, model, timing and token usage. T
 
 Image requests use TypeSafe's experimental images API. The app prepares baseline JPEGs within its 280–1568 pixel dimension limits. See [TypeSafe image documentation](https://docs.typesafe.ai/images). The current Symfony TypeSafe bridge does not implement this assets request format, so the app uses Symfony HttpClient with typed questions and response validation.
 
-`SCANFONY_META_OCR=0` is the hackathon default: no custom OCR service is needed. Optional `SCANFONY_META_OCR=1` requests our Imagor/RustO OCR. Requested OCR missing from the response is an error. `SCANFONY_OCR_ENABLED=1` enables hosted Mistral OCR when no saved reading exists. `SCANFONY_VISION_PLATFORM` and `SCANFONY_VISION_MODEL` select the generative provider/model (default Mistral). It must support images and structured output. Hugging Face is not an active inference backend.
+`SCANFONY_META_OCR=0` is the hackathon default: no custom OCR service is needed. Optional `SCANFONY_META_OCR=1` requests our Imagor/RustO OCR. Requested OCR missing from the response is an error. `SCANFONY_OCR_ENABLED=1` enables hosted Mistral OCR when no saved reading exists. `SCANFONY_VISION_PLATFORM` and `SCANFONY_VISION_MODEL` select the generative provider/model (default Mistral). It must support images and structured output. Hugging Face serves the chat model, the embeddings and the Qwen check, not OCR or extraction.
 
 Workflow decisions live in the app, with no AI workflow bundle dependency:
 
@@ -249,11 +273,7 @@ Tests cover Doctrine hydration, cemetery context, workflow guards, decision rout
 
 Open /search without an account. EasyAdmin's sidebar links to the same public search. Editing, deletion and administrative listings require the admin account with ROLE_ADMIN.
 
-Run the command below, then put its hash in .env.local as ADMIN_PASSWORD_HASH='the-generated-hash'. Use single quotes to preserve dollar signs. An empty hash leaves sign-in disabled. No default password is shipped. The login form and admin mutations use CSRF protection.
-
-~~~bash
-symfony console security:hash-password
-~~~
+To create the administrator, see [Create the administrator](#create-the-administrator). An empty hash leaves sign-in disabled. No default password is shipped. The login form and admin mutations use CSRF protection.
 
 The media field template uses EA 5's ea() context function. The removed global ea variable must not be used.
 
@@ -274,7 +294,7 @@ symfony console elastic:spool:flush
 
 The bundle queues image changes by ID in a durable spool. The app also queues affected images when an item or cemetery changes or is deleted. A spool consumer must run regularly for ongoing administration; until it drains, search may show the previous indexed version. Database writes do not depend on Elasticsearch availability. Rebuilds derive the index from current database state.
 
-The projection is a foundation for RAG, not an implemented RAG feature. Embeddings, model/version fingerprints, semantic retrieval and cited generation still need to be added. Do not label lexical relevance scores as model confidence.
+Semantic retrieval for the Ask page uses a separate pgvector store (`app:vectorize`), not this index. Do not label lexical relevance scores as model confidence.
 
 ## Existing Washington collection
 
@@ -348,7 +368,7 @@ Before every deployment, run `symfony console doctrine:schema:validate` against 
 
 ### Local tunnel testing
 
-`survos/cloudflared-bundle` detects this checkout in the Symfony proxy index and reads the running tunnel's ingress. Set `CLOUDFLARED_MACHINE` for your machine, then run `symfony console cloudflared:status`. Run `symfony console cloudflared:ingress scanfony` to preview the additional development route, and `symfony console cloudflared:probe` after that route is active. The bundle guards profiler routes on Cloudflare requests and is disabled in production by default. Development tunnels use `survos.org`; the production hostname remains `stonestory.survos.com`.
+`survos/cloudflared-bundle` detects this checkout in the Symfony proxy index and reads the running tunnel's ingress. Set `CLOUDFLARED_MACHINE` for your machine, then run `symfony console cloudflared:status`. Run `symfony console cloudflared:ingress scanfony` to preview the additional development route, and `symfony console cloudflared:probe` after that route is active. The bundle guards profiler routes on Cloudflare requests and is disabled in production by default. Development tunnels use `survos.org`; the production hostname is `memorialatlas.org`.
 
 ### Review consecutive cemetery captures
 
@@ -411,7 +431,7 @@ extracted names and inscriptions, OCR and observations from every attached image
 and available audio transcripts. Results show the photo count and open the full
 item. Cemetery, source, record type, review status and photo count are facets.
 `/search/images` retains photograph-level search and Jev classification facets.
-Both are full-text search; semantic retrieval remains a separate future step.
+Both are full-text search. Semantic retrieval is on the Ask page (`/chat`).
 
 ```bash
 symfony console elastic:index:rebuild items --keep-old
@@ -539,7 +559,7 @@ Over STDIO, for Claude Desktop and other local clients, add this to the client c
 ```
 
 Over HTTP, the server answers at `/mcp` on the running site. Allowed hosts are `localhost`,
-`mematlas.wip` and `memorialatlas.org`.
+`127.0.0.1`, `mematlas.wip` and `memorialatlas.org`.
 
 ```bash
 curl -s https://memorialatlas.org/mcp -H 'Content-Type: application/json' \

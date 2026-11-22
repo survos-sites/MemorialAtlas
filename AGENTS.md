@@ -31,14 +31,45 @@ Messenger, Scheduler, RateLimiter, Workflow... Usually there is one, and
   `.env.local`, which is ignored by git, or in the vault
   (`bin/console secrets:set`).
 
+## This project
+
+MemorialAtlas turns gravestone photos into proposed records that a person reviews.
+The photo is the evidence; every AI result is a proposal, stored with its model and
+input hash. README.md describes the pipeline and the setup.
+
+- `src/Mcp/MemorialTools.php`: the read-only tools. The MCP server
+  (`config/packages/mcp.yaml`) and the `memorial_chat` agent
+  (`config/packages/ai.yaml`) share these methods. Change a tool in one place.
+- `config/packages/ai.yaml`: platforms, the chat agent, the pgvector store and
+  the vectorizer. `config/prompts/memorial-chat.md` is the agent's prompt.
+- `src/Workflow/`, `src/MessageHandler/`: item and image processing. Messages go
+  to the Doctrine `processing` transport.
+- `src/Decision/`: Jev (TypeSafe) questions and routing thresholds.
+- `src/Search/`: Elasticsearch documents for items and images.
+- `src/Controller/Admin/`: EasyAdmin. `/admin` requires `ROLE_ADMIN`; the only
+  user is `admin`, with the hash in `ADMIN_PASSWORD_HASH`.
+- `bin/install.sh`: the fresh-install path in README.md. Keep it and the README
+  Quickstart in step.
+
+Rules for this domain:
+
+- Never present a proposed reading as a verified fact. Keep uncertainty.
+- An AI-cleaned or straightened image is for display only. OCR and extraction
+  read the original or an OpenCV-corrected frame.
+- Camera GPS is the camera position, not a grave location.
+- Commands and tests must not call paid providers unless the user asks.
+
 ## Running the app
 
-- Local development uses the shared PostgreSQL server on port 5434, database
-  `scanfony`. Override credentials in `.env.local`. Do not start another database
-  for this app. `symfony serve -d` starts the web server.
-- `docker-compose.yaml` contains Imagor and an optional `standalone` database
-  profile. Use the database only without shared services. Service-ignore labels
-  prevent Symfony CLI from overriding DATABASE_URL.
+- `bash bin/install.sh` starts PostgreSQL (5544), Elasticsearch (19200) and
+  Imagor (8088) with Docker Compose, loads the public demo and starts
+  `symfony server:start -d`. `bin/stop` stops them.
+- The committed `.env` points at a shared PostgreSQL on port 5434;
+  `.env.local` overrides it. Service-ignore labels keep the Symfony CLI from
+  overriding `DATABASE_URL`.
+- `symfony console app:processing:status` lists pending photos and missing keys.
+  `symfony console messenger:consume processing -vv` processes them and calls paid
+  providers.
 - There's no need to clear the cache in dev: the kernel rebuilds what changed.
 - When something fails, read `var/log/dev.log` and the profiler (`/_profiler`
   lists the last requests) before changing code.
@@ -48,17 +79,16 @@ Messenger, Scheduler, RateLimiter, Workflow... Usually there is one, and
 
 ## Tests
 
-`symfony/test-pack` provides PHPUnit: run `php bin/phpunit`. Extend
-`WebTestCase` to test HTTP requests and `KernelTestCase` to test services. These
-helpers replace a lot of setup code:
+Tests are standalone PHP scripts in `tests/`, not PHPUnit. Each one boots the
+kernel and exits non-zero on failure. Run one with `symfony php tests/NAME.php`.
+None of them call paid AI providers. README.md lists the main ones under
+Validation. Also run:
 
-- `$client->loginUser($user)` instead of submitting a login form;
-- `MessengerAssertionsTrait`: a message sent to an async transport isn't handled
-  during a test. Call `consumeQueuedMessages()` and check what the handler did,
-  such as the email it sent, or the handler stays untested;
-- `#[UseRecord]` to record HTTP exchanges once and replay them, instead of
-  calling real APIs;
-- `ClockSensitiveTrait::mockTime()` to control the time.
+```bash
+symfony console lint:container
+symfony console lint:twig templates
+symfony console doctrine:schema:validate
+```
 
 ## Writing
 
