@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Decision\ImageQuestions;
 use App\Entity\Image;
 use App\Image\ImagePreset;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -28,17 +29,19 @@ final readonly class ImageDelivery
             }
         }
 
-        return $this->generate($source, $preset);
+        // Only cards turn the original: the record page draws OCR boxes in the camera's frame.
+        return $this->generate($source, $preset, $preset === ImagePreset::Thumb ? $this->turn($image, 'original') : 0);
     }
 
     /** The AI-cleaned display copy, or null when the photo has none (or dev lacks the local copy). */
-    public function cleaned(Image $image, ImagePreset $preset): ?string
+    public function cleaned(Image $image, ImagePreset $preset, bool $rotated = true): ?string
     {
         $view = $image->imageMetadata[ImageCleaner::KEY] ?? null;
         if (!is_array($view)) return null;
-        if ($this->environment === 'prod') return $this->generate(substr($view['sourceUrl'], strlen('s3://')), $preset);
+        $turn = $rotated ? $this->turn($image, 'cleaned') : 0;
+        if ($this->environment === 'prod') return $this->generate(substr($view['sourceUrl'], strlen('s3://')), $preset, $turn);
 
-        return is_file($this->mediaDirectory.'/'.$view['storagePath']) ? $this->generate($view['storagePath'], $preset) : null;
+        return is_file($this->mediaDirectory.'/'.$view['storagePath']) ? $this->generate($view['storagePath'], $preset, $turn) : null;
     }
 
     public function storedDetail(string $storagePath, string $publicUrl): string
@@ -46,9 +49,15 @@ final readonly class ImageDelivery
         return $this->generate($this->environment === 'prod' ? $publicUrl : $storagePath, ImagePreset::Detail);
     }
 
-    private function generate(string $source, ImagePreset $preset): string
+    /** Jev's counter-clockwise turn for the original or the cleaned copy (app:images:orient); 0 when not assessed. */
+    private function turn(Image $image, string $view): int
     {
-        $url = $this->urls->generate($source, preset: $preset->value);
+        return (int) ($image->aiResults[ImageQuestions::ORIENTATION_RUN][$view]['turn'] ?? 0);
+    }
+
+    private function generate(string $source, ImagePreset $preset, int $turn = 0): string
+    {
+        $url = $this->urls->generate($source, operations: $turn === 0 ? [] : ['imagor' => ['rotate' => $turn]], preset: $preset->value);
         if ($this->environment === 'prod'
             && (parse_url($url, PHP_URL_HOST) !== 'imagor.survos.com'
                 || parse_url($url, PHP_URL_SCHEME) !== 'https'
