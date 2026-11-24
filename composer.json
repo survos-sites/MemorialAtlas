@@ -20,6 +20,7 @@
         "korin/gedcom": "^0.5.0",
         "league/commonmark": "^2.10",
         "nelmio/cors-bundle": "^2.6",
+        "survos/ai-chat-bundle": "^2.45.87",
         "survos/cloudflared-bundle": "^2.41",
         "survos/elastic-bundle": "^2.43",
         "survos/field-bundle": "^2.45",

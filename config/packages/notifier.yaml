@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../schema.json
+notifier:
+    chatter_transports:
+        mattermost: '%env(MATTERMOST_DSN)%'
+    texter_transports:
+    channel_policy:
+        # use chat/slack, chat/telegram, sms/twilio or sms/vonage
+        urgent: ['email']
+        high: ['email']
+        medium: ['email']
+        low: ['email']
+    admin_recipients:
+        - { email: admin@example.com }

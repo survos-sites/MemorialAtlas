@@ -2,33 +2,34 @@
 {% block title %}Connect your assistant · MemorialAtlas{% endblock %}
 {% block body %}
 <section style="max-width:860px">
-<a href="{{ path('chat') }}">← Ask MemorialAtlas</a>
-<h1>Connect your assistant</h1>
-<p>Explore the collection from your own AI assistant. Search inscriptions, read proposed records, and follow links back to the photographs. No MemorialAtlas account is needed.</p>
-{% include 'chat/_connect_instructions.html.twig' with {serverName: serverName, endpoint: endpoint} only %}
-<h2>Try asking</h2>
-<blockquote>Use MemorialAtlas to find stones that mention military service. Read the matching records, link to the photographs, and distinguish carved words from AI interpretations.</blockquote>
-<h2>What the connector provides</h2>
-<dl>
-<dt><code>collection_overview</code></dt><dd>Collection coverage and processing counts.</dd>
-<dt><code>search_memorials</code></dt><dd>Search names, inscriptions, descriptions, and symbols.</dd>
-<dt><code>find_memorials</code></dt><dd>Find records by meaning using semantic search.</dd>
-<dt><code>get_memorial</code></dt><dd>Read one record, its proposed people, uncertainties, and photo links.</dd>
-<dt><code>collection_digest</code></dt><dd>Read summaries across the processed collection.</dd>
-<dt><code>list_records_to_review</code></dt><dd>List records marked for review. This does not mean human review has taken place.</dd>
-</dl>
-<p>These are AI-generated readings, not verified burial records. The original photographs remain the evidence. A shared marker may name several people; a symbol does not necessarily describe every person named.</p>
-<details><summary>Developers: use a local checkout</summary>
-<p>For clients that support stdio, replace the path below with your checkout. The application must already be configured with access to its database and services.</p>
-<pre><code>{
-  "mcpServers": {
-    "memorialatlas": {
-      "command": "php",
-      "args": ["/absolute/path/to/mematlas/bin/console", "mcp:server", "memorialatlas", "--no-debug", "--no-interaction"]
-    }
-  }
-}</code></pre>
-<p>No application provider keys need to be copied into your assistant. Semantic lookup uses the application’s configured embedding provider.</p>
-</details>
+{% embed '@SurvosAiChat/mcp_connect.html.twig' with {
+    name: serverName,
+    endpoint: endpoint,
+    server: 'memorialatlas',
+    app_name: 'mematlas',
+    checkout: 'MemorialAtlas',
+    title: 'Connect your assistant',
+    back: {url: path('chat'), label: 'Ask MemorialAtlas'},
+    intro: 'Explore the collection from your own AI assistant. Search inscriptions, read proposed records, and follow links back to the photographs. No MemorialAtlas account is needed.',
+    section_class: '',
+    body_class: '',
+    tool_descriptions: {
+        collection_overview: 'Collection coverage and processing counts.',
+        search_memorials: 'Search names, inscriptions, descriptions, and symbols.',
+        find_memorials: 'Find records by meaning using semantic search.',
+        get_memorial: 'Read one record, its proposed people, uncertainties, and photo links.',
+        collection_digest: 'Read summaries across the processed collection.',
+        list_records_to_review: 'List records marked for review. This does not mean human review has taken place.',
+    },
+    prompt: 'Use MemorialAtlas to find stones that mention military service. Read the matching records, link to the photographs, and distinguish carved words from AI interpretations.',
+    footnotes: ['These are AI-generated readings, not verified burial records. The original photographs remain the evidence. A shared marker may name several people; a symbol does not necessarily describe every person named.'],
+} %}
+    {% block url_note %}
+        <p>Use the public URL above for cloud assistants. They cannot reach a local <code>.wip</code> address on your computer.</p>
+    {% endblock %}
+    {% block local_note %}
+        <p>The application must already be configured with access to its database and services. No application provider keys need to be copied into your assistant. Semantic lookup uses the application’s configured embedding provider.</p>
+    {% endblock %}
+{% endembed %}
 </section>
 {% endblock %}

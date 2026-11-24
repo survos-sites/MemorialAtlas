@@ -533,6 +533,18 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         },
  *     }>,
  * }
+ * @psalm-type NotifierConfig = bool|array{
+ *     enabled?: bool|Param, // Resolved at compile time // Default: true
+ *     message_bus?: scalar|Param|null, // The message bus to use. Defaults to the default bus if the Messenger component is installed. // Default: null
+ *     chatter_transports?: array<string, scalar|Param|null>,
+ *     texter_transports?: array<string, scalar|Param|null>,
+ *     notification_on_failed_messages?: bool|Param, // Default: false
+ *     channel_policy?: array<string, Param|string|list<scalar|Param|null>>,
+ *     admin_recipients?: list<array{ // Default: []
+ *         email?: scalar|Param|null,
+ *         phone?: scalar|Param|null, // Default: ""
+ *     }>,
+ * }
  * @psalm-type FrameworkConfig = array{
  *     secret?: scalar|Param|null, // A secret that must not change. The options that sign data default to it and take a list of secrets to rotate theirs.
  *     http_method_override?: bool|Param, // Set true to enable support for the '_method' request parameter to determine the intended HTTP method on POST requests. // Default: false
@@ -623,7 +635,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     scheduler?: mixed,
  *     http_client?: HttpClientConfig,
  *     mailer?: mixed,
- *     notifier?: mixed,
+ *     notifier?: NotifierConfig,
  *     rate_limiter?: mixed,
  *     uid?: UidConfig,
  *     html_sanitizer?: mixed,
@@ -3115,6 +3127,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     uid?: UidConfig,
  *     asset_mapper?: AssetMapperConfig,
  *     http_client?: HttpClientConfig,
+ *     notifier?: NotifierConfig,
  *     framework?: FrameworkConfig,
  *     doctrine?: DoctrineConfig,
  *     doctrine_migrations?: DoctrineMigrationsConfig,
@@ -3158,6 +3171,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         uid?: UidConfig,
  *         asset_mapper?: AssetMapperConfig,
  *         http_client?: HttpClientConfig,
+ *         notifier?: NotifierConfig,
  *         framework?: FrameworkConfig,
  *         doctrine?: DoctrineConfig,
  *         doctrine_migrations?: DoctrineMigrationsConfig,
@@ -3203,6 +3217,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         uid?: UidConfig,
  *         asset_mapper?: AssetMapperConfig,
  *         http_client?: HttpClientConfig,
+ *         notifier?: NotifierConfig,
  *         framework?: FrameworkConfig,
  *         doctrine?: DoctrineConfig,
  *         doctrine_migrations?: DoctrineMigrationsConfig,
@@ -3247,6 +3262,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         uid?: UidConfig,
  *         asset_mapper?: AssetMapperConfig,
  *         http_client?: HttpClientConfig,
+ *         notifier?: NotifierConfig,
  *         framework?: FrameworkConfig,
  *         doctrine?: DoctrineConfig,
  *         doctrine_migrations?: DoctrineMigrationsConfig,

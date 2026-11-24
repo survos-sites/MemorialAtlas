@@ -10681,7 +10681,7 @@
                         "$ref": "#/$defs/types/variable"
                     },
                     "notifier": {
-                        "$ref": "#/$defs/types/variable"
+                        "$ref": "#/$defs/nodes/notifier"
                     },
                     "rate_limiter": {
                         "$ref": "#/$defs/types/variable"
@@ -13243,6 +13243,130 @@
                     }
                 },
                 "additionalProperties": false
+            },
+            "notifier": {
+                "anyOf": [
+                    {
+                        "$ref": "#/$defs/types/object_null",
+                        "properties": {
+                            "enabled": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": true
+                            },
+                            "message_bus": {
+                                "$ref": "#/$defs/types/scalar",
+                                "default": null,
+                                "description": "The message bus to use. Defaults to the default bus if the Messenger component is installed."
+                            },
+                            "chatter_transports": {
+                                "$ref": "#/$defs/types/object_null",
+                                "additionalProperties": {
+                                    "$ref": "#/$defs/types/scalar"
+                                }
+                            },
+                            "texter_transports": {
+                                "$ref": "#/$defs/types/object_null",
+                                "additionalProperties": {
+                                    "$ref": "#/$defs/types/scalar"
+                                }
+                            },
+                            "notification_on_failed_messages": {
+                                "$ref": "#/$defs/types/boolean",
+                                "default": false
+                            },
+                            "channel_policy": {
+                                "$ref": "#/$defs/types/object_null",
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/$defs/types/array_null",
+                                            "items": {
+                                                "$ref": "#/$defs/types/scalar"
+                                            }
+                                        },
+                                        {
+                                            "type": [
+                                                "string"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "admin_recipients": {
+                                "$ref": "#/$defs/types/array_null",
+                                "items": {
+                                    "$ref": "#/$defs/types/object_null",
+                                    "properties": {
+                                        "email": {
+                                            "$ref": "#/$defs/types/scalar"
+                                        },
+                                        "phone": {
+                                            "$ref": "#/$defs/types/scalar",
+                                            "default": ""
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                }
+                            }
+                        },
+                        "patternProperties": {
+                            "^chatter_transport$": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "^texter_transport$": {
+                                "$ref": "#/$defs/types/variable"
+                            },
+                            "^admin_recipient$": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/$defs/types/object_null",
+                                        "properties": {
+                                            "email": {
+                                                "$ref": "#/$defs/types/scalar"
+                                            },
+                                            "phone": {
+                                                "$ref": "#/$defs/types/scalar",
+                                                "default": ""
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "$ref": "#/$defs/types/array_null",
+                                        "items": {
+                                            "$ref": "#/$defs/types/object_null",
+                                            "properties": {
+                                                "email": {
+                                                    "$ref": "#/$defs/types/scalar"
+                                                },
+                                                "phone": {
+                                                    "$ref": "#/$defs/types/scalar",
+                                                    "default": ""
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    {
+                        "type": [
+                            "boolean"
+                        ]
+                    }
+                ],
+                "default": {
+                    "enabled": true,
+                    "message_bus": null,
+                    "chatter_transports": [],
+                    "texter_transports": [],
+                    "notification_on_failed_messages": false,
+                    "channel_policy": [],
+                    "admin_recipients": []
+                }
             },
             "property_access": {
                 "anyOf": [
@@ -20719,6 +20843,9 @@
         "nelmio_cors": {
             "$ref": "#/$defs/nodes/nelmio_cors"
         },
+        "notifier": {
+            "$ref": "#/$defs/nodes/notifier"
+        },
         "property_access": {
             "$ref": "#/$defs/nodes/property_access"
         },
@@ -20839,6 +20966,9 @@
                 },
                 "nelmio_cors": {
                     "$ref": "#/$defs/nodes/nelmio_cors"
+                },
+                "notifier": {
+                    "$ref": "#/$defs/nodes/notifier"
                 },
                 "parameters": true,
                 "property_access": {
@@ -20969,6 +21099,9 @@
                 "nelmio_cors": {
                     "$ref": "#/$defs/nodes/nelmio_cors"
                 },
+                "notifier": {
+                    "$ref": "#/$defs/nodes/notifier"
+                },
                 "parameters": true,
                 "property_access": {
                     "$ref": "#/$defs/nodes/property_access"
@@ -21098,6 +21231,9 @@
                 },
                 "nelmio_cors": {
                     "$ref": "#/$defs/nodes/nelmio_cors"
+                },
+                "notifier": {
+                    "$ref": "#/$defs/nodes/notifier"
                 },
                 "property_access": {
                     "$ref": "#/$defs/nodes/property_access"

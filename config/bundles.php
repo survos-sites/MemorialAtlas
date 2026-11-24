@@ -27,4 +27,5 @@ return [
     Nelmio\CorsBundle\NelmioCorsBundle::class => ['all' => true],
     Symfony\UX\Image\UXImageBundle::class => ['all' => true],
     Symfony\AI\McpBundle\McpBundle::class => ['all' => true],
+    Survos\AiChatBundle\SurvosAiChatBundle::class => ['all' => true],
 ];

@@ -97,6 +97,9 @@
             "config/packages/http_discovery.yaml"
         ]
     },
+    "survos/ai-chat-bundle": {
+        "version": "2.45.87"
+    },
     "survos/atlas-bundle": {
         "version": "2.45.33"
     },
@@ -285,6 +288,15 @@
             "config/packages/lock.yaml"
         ]
     },
+    "symfony/mattermost-notifier": {
+        "version": "8.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "8.2",
+            "ref": "5d9d3b2594cb1b347370ec866eb6b54c08b4cca1"
+        }
+    },
     "symfony/mcp-bundle": {
         "version": "1.0",
         "recipe": {
@@ -308,6 +320,18 @@
         },
         "files": [
             "config/packages/messenger.yaml"
+        ]
+    },
+    "symfony/notifier": {
+        "version": "8.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "8.2",
+            "ref": "59a850f2e18e98b324e6bfcaf84081c0cef39426"
+        },
+        "files": [
+            "config/packages/notifier.yaml"
         ]
     },
     "symfony/property-info": {
