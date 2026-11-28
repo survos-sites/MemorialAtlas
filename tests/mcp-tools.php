@@ -40,7 +40,7 @@ try {
     try {
         $tools->get(2_000_000_000);
         throw new LogicException('Unknown id accepted.');
-    } catch (Mcp\Exception\ToolCallException $e) {
+    } catch (Mcp\Server\Exception\ToolCallException $e) {
         $check(str_contains($e->getMessage(), 'search_memorials'), 'An unknown id tells the client how to find one.');
     }
 

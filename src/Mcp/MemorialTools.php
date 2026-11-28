@@ -9,7 +9,7 @@ use App\Entity\{Image, Item};
 use App\Image\ImagePreset;
 use App\Service\{ImageCleaner, ImageDelivery, MemorialVectors, Remembrance, SymbolFinder};
 use Doctrine\ORM\EntityManagerInterface;
-use Mcp\Capability\Attribute\McpTool;
+use Mcp\Server\Capability\Attribute\McpTool;
 use Mcp\Schema\ToolAnnotations;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -74,7 +74,7 @@ final readonly class MemorialTools
     #[McpTool(name: 'get_memorial', annotations: new ToolAnnotations(title: 'Get a memorial record', readOnlyHint: true, openWorldHint: false))]
     public function get(int $id): array
     {
-        $item = $this->em->find(Item::class, $id) ?? throw new \Mcp\Exception\ToolCallException('No memorial record with id '.$id.'. Use search_memorials to find ids.');
+        $item = $this->em->find(Item::class, $id) ?? throw new \Mcp\Server\Exception\ToolCallException('No memorial record with id '.$id.'. Use search_memorials to find ids.');
         $record = $item->aiResults['catalog']['record'] ?? [];
 
         return $this->summary($item) + [
