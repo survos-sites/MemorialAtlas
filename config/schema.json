@@ -6535,6 +6535,7 @@
                                         "description": "Keywords or phrases that trigger handoff to this agent"
                                     },
                                     "minProperties": 1,
+                                    "minItems": 1,
                                     "description": "Handoff rules mapping agent service IDs to trigger keywords"
                                 },
                                 "fallback": {
@@ -8575,7 +8576,8 @@
                                         "additionalProperties": {
                                             "$ref": "#/$defs/types/variable"
                                         },
-                                        "minProperties": 1
+                                        "minProperties": 1,
+                                        "minItems": 1
                                     }
                                 },
                                 "patternProperties": {
@@ -9314,7 +9316,8 @@
                                                 "identity_generation_preferences": []
                                             }
                                         },
-                                        "minProperties": 1
+                                        "minProperties": 1,
+                                        "minItems": 1
                                     },
                                     "resolve_target_entities": {
                                         "$ref": "#/$defs/types/object_null",
@@ -10780,7 +10783,7 @@
                                     },
                                     "save_path": {
                                         "$ref": "#/$defs/types/scalar",
-                                        "description": "Defaults to \"%kernel.cache_dir%/sessions\" if the \"handler_id\" option is not null."
+                                        "description": "Defaults to \"%kernel.share_dir%/sessions\" if the \"handler_id\" option is not null."
                                     },
                                     "metadata_update_threshold": {
                                         "$ref": "#/$defs/types/integer",
@@ -13558,7 +13561,8 @@
                                     "!php/enum Symfony\\Component\\Security\\Http\\Authentication\\ExposeSecurityLevel::AccountStatus",
                                     "account_status",
                                     "!php/enum Symfony\\Component\\Security\\Http\\Authentication\\ExposeSecurityLevel::All",
-                                    "all"
+                                    "all",
+                                    null
                                 ]
                             },
                             {
@@ -13689,6 +13693,7 @@
                             ]
                         },
                         "minProperties": 1,
+                        "minItems": 1,
                         "examples": [
                             {
                                 "App\\Entity\\User1": "auto",
@@ -13916,6 +13921,7 @@
                             "additionalProperties": false
                         },
                         "minProperties": 1,
+                        "minItems": 1,
                         "examples": [
                             {
                                 "my_memory_provider": {
@@ -15978,10 +15984,9 @@
                                                             "minItems": 1,
                                                             "default": [
                                                                 "ES256",
-                                                                "PS256",
                                                                 "RS256"
                                                             ],
-                                                            "description": "The algorithms a proof may be signed with, announced in the challenge."
+                                                            "description": "The algorithms a proof may be signed with, announced in the challenge. \"PS256\", \"PS384\" and \"PS512\" need the GMP or BCMath extension."
                                                         },
                                                         "cache": {
                                                             "$ref": "#/$defs/types/scalar",
@@ -16015,10 +16020,9 @@
                                                                     "minItems": 1,
                                                                     "default": [
                                                                         "ES256",
-                                                                        "PS256",
                                                                         "RS256"
                                                                     ],
-                                                                    "description": "The algorithms a proof may be signed with, announced in the challenge."
+                                                                    "description": "The algorithms a proof may be signed with, announced in the challenge. \"PS256\", \"PS384\" and \"PS512\" need the GMP or BCMath extension."
                                                                 }
                                                             ]
                                                         }
@@ -16035,7 +16039,6 @@
                                                 "enabled": false,
                                                 "algorithms": [
                                                     "ES256",
-                                                    "PS256",
                                                     "RS256"
                                                 ],
                                                 "cache": "cache.security",
@@ -16375,7 +16378,8 @@
                             },
                             "additionalProperties": false
                         },
-                        "minProperties": 1
+                        "minProperties": 1,
+                        "minItems": 1
                     },
                     "access_control": {
                         "$ref": "#/$defs/types/array_null",
@@ -17031,6 +17035,32 @@
                 },
                 "additionalProperties": false
             },
+            "survos_ai_chat": {
+                "$ref": "#/$defs/types/object_null",
+                "properties": {
+                    "routes_enabled": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": true,
+                        "description": "Set false to manage this bundle's routes manually in your app. Bundles exposing sensitive routes (e.g. running console commands) should default this off."
+                    },
+                    "route_prefix": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "",
+                        "description": "URL prefix applied to all routes from this bundle."
+                    },
+                    "locale_prefix": {
+                        "$ref": "#/$defs/types/boolean",
+                        "default": false,
+                        "description": "Prepend {_locale} (constrained to kernel.enabled_locales) to this bundle's route prefix, e.g. /{_locale}/f instead of /f -- for bundles whose routes are meant to be shared/bookmarked, so the URL itself carries the locale instead of a query param."
+                    },
+                    "connect": {
+                        "$ref": "#/$defs/types/variable",
+                        "default": [],
+                        "description": "Variables of @SurvosAiChat/mcp_connect.html.twig for the page at /ask/connect: name (required), server, lead, prompt, ... (see the README)."
+                    }
+                },
+                "additionalProperties": false
+            },
             "survos_cloudflared": {
                 "$ref": "#/$defs/types/object_null",
                 "properties": {
@@ -17154,6 +17184,42 @@
                         "$ref": "#/$defs/types/scalar",
                         "default": null,
                         "description": "Browser-facing Kibana base URL (including any space/base path). In debug, null defaults to localhost:5601 only when all ES connections are loopback; otherwise the link is hidden."
+                    },
+                    "transport_dsn": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": null,
+                        "description": "Declare the \"elastic\" Messenger transport that ReindexDocuments and RemoveDocuments are routed to with this DSN. Null declares it as sync://: the messages are handled where they are dispatched."
+                    },
+                    "driver": {
+                        "anyOf": [
+                            {
+                                "enum": [
+                                    "doctrine",
+                                    "amqp",
+                                    "phpamqplib"
+                                ]
+                            },
+                            {
+                                "$ref": "#/$defs/types/param"
+                            }
+                        ],
+                        "default": "doctrine",
+                        "description": "Options shape of the declared transport: a queue_name of the Doctrine table, one AMQP exchange and queue (amqp), or a jwage/phpamqplib-messenger DSN path segment (phpamqplib). Explicit because the DSN is usually an unresolved env placeholder."
+                    },
+                    "queue_name": {
+                        "$ref": "#/$defs/types/scalar",
+                        "default": "elastic",
+                        "description": "Queue (and AMQP exchange) behind the \"elastic\" transport. Prefix it on a broker shared by several applications, e.g. \"myapp.elastic\"."
+                    },
+                    "transport_options": {
+                        "$ref": "#/$defs/types/variable",
+                        "default": [],
+                        "description": "Options added to the declared transport, e.g. prefetch_count."
+                    },
+                    "retry_strategy": {
+                        "$ref": "#/$defs/types/variable",
+                        "default": [],
+                        "description": "Retry strategy of the declared transport; Messenger defaults when empty."
                     },
                     "server_url": {
                         "$ref": "#/$defs/types/scalar",
@@ -19247,7 +19313,8 @@
                                                         },
                                                         "additionalProperties": false
                                                     },
-                                                    "minProperties": 1
+                                                    "minProperties": 1,
+                                                    "minItems": 1
                                                 }
                                             ]
                                         },
@@ -19782,7 +19849,8 @@
                                                                 },
                                                                 "additionalProperties": false
                                                             },
-                                                            "minProperties": 1
+                                                            "minProperties": 1,
+                                                            "minItems": 1
                                                         }
                                                     ]
                                                 }
@@ -20227,7 +20295,8 @@
                                                 },
                                                 "additionalProperties": false
                                             },
-                                            "minProperties": 1
+                                            "minProperties": 1,
+                                            "minItems": 1
                                         }
                                     ]
                                 },
@@ -20762,7 +20831,8 @@
                                                         },
                                                         "additionalProperties": false
                                                     },
-                                                    "minProperties": 1
+                                                    "minProperties": 1,
+                                                    "minItems": 1
                                                 }
                                             ]
                                         }
@@ -20863,6 +20933,9 @@
         },
         "stimulus": {
             "$ref": "#/$defs/nodes/stimulus"
+        },
+        "survos_ai_chat": {
+            "$ref": "#/$defs/nodes/survos_ai_chat"
         },
         "survos_cloudflared": {
             "$ref": "#/$defs/nodes/survos_cloudflared"
@@ -20989,6 +21062,9 @@
                 "services": true,
                 "stimulus": {
                     "$ref": "#/$defs/nodes/stimulus"
+                },
+                "survos_ai_chat": {
+                    "$ref": "#/$defs/nodes/survos_ai_chat"
                 },
                 "survos_cloudflared": {
                     "$ref": "#/$defs/nodes/survos_cloudflared"
@@ -21122,6 +21198,9 @@
                 "stimulus": {
                     "$ref": "#/$defs/nodes/stimulus"
                 },
+                "survos_ai_chat": {
+                    "$ref": "#/$defs/nodes/survos_ai_chat"
+                },
                 "survos_cloudflared": {
                     "$ref": "#/$defs/nodes/survos_cloudflared"
                 },
@@ -21252,6 +21331,9 @@
                 },
                 "stimulus": {
                     "$ref": "#/$defs/nodes/stimulus"
+                },
+                "survos_ai_chat": {
+                    "$ref": "#/$defs/nodes/survos_ai_chat"
                 },
                 "survos_cloudflared": {
                     "$ref": "#/$defs/nodes/survos_cloudflared"

@@ -38,22 +38,22 @@
         "symfony/ai-store": "^1.0.0-beta1",
         "symfony/ai-type-safe-platform": "^1.0.0-beta1",
         "symfony/asset-mapper": "^8.2",
-        "symfony/console": "^8.2@beta",
+        "symfony/console": "^8.2",
         "symfony/doctrine-messenger": "^8.2",
-        "symfony/dotenv": "^8.2@beta",
+        "symfony/dotenv": "^8.2",
         "symfony/flex": "^2",
-        "symfony/framework-bundle": "^8.2@beta",
+        "symfony/framework-bundle": "^8.2",
         "symfony/mcp-bundle": "^1.0.0-beta1",
         "symfony/messenger": "^8.2",
-        "symfony/runtime": "^8.2@beta",
-        "symfony/security-csrf": "^8.2@beta",
+        "symfony/runtime": "^8.2",
+        "symfony/security-csrf": "^8.2",
         "symfony/stimulus-bundle": "^3.7",
-        "symfony/twig-bundle": "^8.2@beta",
+        "symfony/twig-bundle": "^8.2",
         "symfony/ux-image": "^3.7",
         "symfony/ux-imagor-image": "^3.7",
-        "symfony/validator": "^8.2@beta",
-        "symfony/workflow": "^8.2@beta",
-        "symfony/yaml": "^8.2@beta",
+        "symfony/validator": "^8.2",
+        "symfony/workflow": "^8.2",
+        "symfony/yaml": "^8.2",
         "twig/markdown-extra": "^3.29"
     },
     "require-dev": {
@@ -113,8 +113,7 @@
     },
     "extra": {
         "symfony": {
-            "allow-contrib": false,
-            "require": "^8.2"
+            "allow-contrib": false
         }
     },
     "name": "survos/scanfony",
